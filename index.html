@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Click the Button Game</title>
+  <title>PIOSI - Click the Button Game</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -38,21 +38,81 @@
       font-size: 18px;
       color: #555;
     }
+    #title-screen {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.8);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 10;
+    }
+    #stats {
+      margin-top: 20px;
+      font-size: 16px;
+      color: #555;
+    }
+    #start-button {
+      padding: 15px 30px;
+      font-size: 20px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    #start-button:hover {
+      background-color: #218838;
+    }
   </style>
 </head>
 <body>
-  <h1>Click the Button Game</h1>
-  <button id="game-button">Click Me!</button>
+
+  <!-- Title Screen -->
+  <div id="title-screen">
+    <h1>Welcome to PIOSI!</h1>
+    <p>Click the button as many times as you can in 10 seconds!</p>
+    <button id="start-button">Start Game</button>
+  </div>
+
+  <!-- Game UI -->
+  <h1>PIOSI - Click the Button Game</h1>
+  <button id="game-button" style="display: none;">Click Me!</button>
   <div id="score">Score: 0</div>
   <div id="timer">Time Left: 10s</div>
+  <div id="stats">
+    <p>Total Clicks: <span id="total-clicks">0</span></p>
+    <p>Average Score: <span id="average-score">0</span></p>
+    <p>Games Played: <span id="games-played">0</span></p>
+  </div>
 
   <script>
     const button = document.getElementById('game-button');
     const scoreDisplay = document.getElementById('score');
     const timerDisplay = document.getElementById('timer');
+    const startButton = document.getElementById('start-button');
+    const titleScreen = document.getElementById('title-screen');
+    const totalClicksDisplay = document.getElementById('total-clicks');
+    const averageScoreDisplay = document.getElementById('average-score');
+    const gamesPlayedDisplay = document.getElementById('games-played');
 
     let score = 0;
     let timeLeft = 10;
+    let totalClicks = parseInt(localStorage.getItem('totalClicks')) || 0;
+    let totalScore = parseInt(localStorage.getItem('totalScore')) || 0;
+    let gamesPlayed = parseInt(localStorage.getItem('gamesPlayed')) || 0;
+
+    // Update stats display
+    function updateStats() {
+      totalClicksDisplay.textContent = totalClicks;
+      averageScoreDisplay.textContent = gamesPlayed > 0 ? (totalScore / gamesPlayed).toFixed(2) : 0;
+      gamesPlayedDisplay.textContent = gamesPlayed;
+    }
 
     // Function to move the button to a random position
     function moveButton() {
@@ -63,28 +123,52 @@
       button.style.top = Math.random() * height + 'px';
     }
 
+    // Start the game
+    function startGame() {
+      titleScreen.style.display = 'none';
+      button.style.display = 'block';
+      score = 0;
+      timeLeft = 10;
+      scoreDisplay.textContent = `Score: ${score}`;
+      timerDisplay.textContent = `Time Left: ${timeLeft}s`;
+      button.disabled = false;
+      button.textContent = "Click Me!";
+      moveButton();
+
+      const timerInterval = setInterval(() => {
+        timeLeft--;
+        timerDisplay.textContent = `Time Left: ${timeLeft}s`;
+        if (timeLeft <= 0) {
+          clearInterval(timerInterval);
+          button.disabled = true;
+          button.textContent = "Game Over!";
+          alert(`Game Over! Your score: ${score}`);
+          gamesPlayed++;
+          totalScore += score;
+          localStorage.setItem('totalScore', totalScore);
+          localStorage.setItem('gamesPlayed', gamesPlayed);
+          updateStats();
+          titleScreen.style.display = 'flex';
+          button.style.display = 'none';
+        }
+      }, 1000);
+    }
+
     // Event listener for button clicks
     button.addEventListener('click', () => {
       score++;
+      totalClicks++;
+      localStorage.setItem('totalClicks', totalClicks);
       scoreDisplay.textContent = `Score: ${score}`;
       moveButton();
+      updateStats();
     });
 
-    // Timer countdown
-    const timerInterval = setInterval(() => {
-      timeLeft--;
-      timerDisplay.textContent = `Time Left: ${timeLeft}s`;
+    // Event listener for start button
+    startButton.addEventListener('click', startGame);
 
-      if (timeLeft <= 0) {
-        clearInterval(timerInterval);
-        button.disabled = true;
-        button.textContent = "Game Over!";
-        alert(`Game Over! Your score: ${score}`);
-      }
-    }, 1000);
-
-    // Initial button placement
-    moveButton();
+    // Initial stats update
+    updateStats();
   </script>
 </body>
 </html>
