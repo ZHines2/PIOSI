@@ -1,0 +1,439 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2821
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fnil\fcharset0 Menlo-Regular;\f1\fnil\fcharset0 Menlo-Italic;}
+{\colortbl;\red255\green255\blue255;\red155\green162\blue177;\red17\green25\blue34;\red214\green85\blue98;
+\red197\green136\blue83;\red136\green185\blue102;\red81\green157\blue235;\red184\green93\blue213;\red108\green113\blue123;
+\red72\green168\blue181;\red222\green180\blue104;\red140\green211\blue254;}
+{\*\expandedcolortbl;;\cssrgb\c67059\c69804\c74902;\cssrgb\c8235\c13333\c18039;\cssrgb\c87843\c42353\c45882;
+\cssrgb\c81961\c60392\c40000;\cssrgb\c59608\c76471\c47451;\cssrgb\c38039\c68627\c93725;\cssrgb\c77647\c47059\c86667;\cssrgb\c49804\c51765\c55686;
+\cssrgb\c33725\c71373\c76078;\cssrgb\c89804\c75294\c48235;\cssrgb\c61176\c86275\c99608;}
+\margl1440\margr1440\vieww35480\viewh20220\viewkind0
+\deftab720
+\pard\pardeftab720\partightenfactor0
+
+\f0\fs30 \cf2 \cb3 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 <!\cf4 \strokec4 DOCTYPE\cf2 \strokec2  \cf5 \strokec5 html\cf2 \strokec2 >\cb1 \
+\cb3 <\cf4 \strokec4 html\cf2 \strokec2  \cf5 \strokec5 lang\cf2 \strokec2 =\cf6 \strokec6 "en"\cf2 \strokec2 >\cb1 \
+\cb3   <\cf4 \strokec4 head\cf2 \strokec2 >\cb1 \
+\cb3     <\cf4 \strokec4 meta\cf2 \strokec2  \cf5 \strokec5 charset\cf2 \strokec2 =\cf6 \strokec6 "UTF-8"\cf2 \strokec2  />\cb1 \
+\cb3     <\cf4 \strokec4 meta\cf2 \strokec2  \cf5 \strokec5 name\cf2 \strokec2 =\cf6 \strokec6 "viewport"\cf2 \strokec2  \cf5 \strokec5 content\cf2 \strokec2 =\cf6 \strokec6 "width=device-width, initial-scale=1"\cf2 \strokec2  />\cb1 \
+\cb3     <\cf4 \strokec4 title\cf2 \strokec2 >PIOSI - Full Game</\cf4 \strokec4 title\cf2 \strokec2 >\cb1 \
+\cb3     <\cf4 \strokec4 style\cf2 \strokec2 >\cb1 \
+\cb3       \cf4 \strokec4 body\cf2 \strokec2  \{\cb1 \
+\cb3         font-family: \cf5 \strokec5 monospace\cf2 \strokec2 ;\cb1 \
+\cb3         text-align: \cf5 \strokec5 center\cf2 \strokec2 ;\cb1 \
+\cb3         background-color: \cf5 \strokec5 #222\cf2 \strokec2 ;\cb1 \
+\cb3         color: \cf5 \strokec5 white\cf2 \strokec2 ;\cb1 \
+\cb3         margin: \cf5 \strokec5 0\cf2 \strokec2 ;\cb1 \
+\cb3         padding: \cf5 \strokec5 0\cf2 \strokec2 ;\cb1 \
+\cb3       \}\cb1 \
+\cb3       #\cf7 \strokec7 title-screen\cf2 \strokec2 ,\cf8 \strokec8  \cf2 \strokec2 #\cf7 \strokec7 party-select\cf2 \strokec2 ,\cf8 \strokec8  \cf2 \strokec2 #\cf7 \strokec7 game-container\cf2 \strokec2  \{\cb1 \
+\cb3         display: \cf5 \strokec5 none\cf2 \strokec2 ;\cb1 \
+\cb3         padding: \cf5 \strokec5 20\cf4 \strokec4 px\cf2 \strokec2 ;\cb1 \
+\cb3       \}\cb1 \
+\cb3       #\cf7 \strokec7 battlefield\cf2 \strokec2  \{\cb1 \
+\cb3         display: \cf5 \strokec5 inline-block\cf2 \strokec2 ;\cb1 \
+\cb3         border: \cf5 \strokec5 2\cf4 \strokec4 px\cf2 \strokec2  \cf5 \strokec5 solid\cf2 \strokec2  \cf5 \strokec5 white\cf2 \strokec2 ;\cb1 \
+\cb3         padding: \cf5 \strokec5 10\cf4 \strokec4 px\cf2 \strokec2 ;\cb1 \
+\cb3         margin-bottom: \cf5 \strokec5 10\cf4 \strokec4 px\cf2 \strokec2 ;\cb1 \
+\cb3       \}\cb1 \
+\cb3       .\cf5 \strokec5 row\cf2 \strokec2  \{\cb1 \
+\cb3         display: \cf5 \strokec5 flex\cf2 \strokec2 ;\cb1 \
+\cb3         justify-content: \cf5 \strokec5 center\cf2 \strokec2 ;\cb1 \
+\cb3       \}\cb1 \
+\cb3       .\cf5 \strokec5 cell\cf2 \strokec2  \{\cb1 \
+\cb3         width: \cf5 \strokec5 40\cf4 \strokec4 px\cf2 \strokec2 ;\cb1 \
+\cb3         height: \cf5 \strokec5 40\cf4 \strokec4 px\cf2 \strokec2 ;\cb1 \
+\cb3         text-align: \cf5 \strokec5 center\cf2 \strokec2 ;\cb1 \
+\cb3         font-size: \cf5 \strokec5 24\cf4 \strokec4 px\cf2 \strokec2 ;\cb1 \
+\cb3         border: \cf5 \strokec5 1\cf4 \strokec4 px\cf2 \strokec2  \cf5 \strokec5 solid\cf2 \strokec2  \cf5 \strokec5 gray\cf2 \strokec2 ;\cb1 \
+\cb3         line-height: \cf5 \strokec5 40\cf4 \strokec4 px\cf2 \strokec2 ;\cb1 \
+\cb3       \}\cb1 \
+\cb3       .\cf5 \strokec5 active\cf2 \strokec2  \{\cb1 \
+\cb3         background-color: darkblue;\cb1 \
+\cb3         color: \cf5 \strokec5 white\cf2 \strokec2 ;\cb1 \
+\cb3       \}\cb1 \
+\cb3       .\cf5 \strokec5 attack-mode\cf2 \strokec2  \{\cb1 \
+\cb3         background-color: darkred;\cb1 \
+\cb3       \}\cb1 \
+\cb3       .\cf5 \strokec5 highlight\cf2 \strokec2  \{\cb1 \
+\cb3         border: \cf5 \strokec5 2\cf4 \strokec4 px\cf2 \strokec2  \cf5 \strokec5 solid\cf2 \strokec2  \cf5 \strokec5 yellow\cf2 \strokec2 ;\cb1 \
+\cb3       \}\cb1 \
+\cb3       \cf4 \strokec4 button\cf2 \strokec2  \{\cb1 \
+\cb3         padding: \cf5 \strokec5 10\cf4 \strokec4 px\cf2 \strokec2 ;\cb1 \
+\cb3         margin: \cf5 \strokec5 5\cf4 \strokec4 px\cf2 \strokec2 ;\cb1 \
+\cb3         font-size: \cf5 \strokec5 18\cf4 \strokec4 px\cf2 \strokec2 ;\cb1 \
+\cb3       \}\cb1 \
+\cb3     </\cf4 \strokec4 style\cf2 \strokec2 >\cb1 \
+\cb3   </\cf4 \strokec4 head\cf2 \strokec2 >\cb1 \
+\cb3   <\cf4 \strokec4 body\cf2 \strokec2 >\cb1 \
+\cb3     
+\f1\i \cf9 \strokec9 <!-- Title Screen -->
+\f0\i0 \cf2 \cb1 \strokec2 \
+\cb3     <\cf4 \strokec4 div\cf2 \strokec2  \cf5 \strokec5 id\cf2 \strokec2 =\cf6 \strokec6 "title-screen"\cf2 \strokec2 >\cb1 \
+\cb3       <\cf4 \strokec4 h1\cf2 \strokec2 >PIOSI</\cf4 \strokec4 h1\cf2 \strokec2 >\cb1 \
+\cb3       <\cf4 \strokec4 p\cf2 \strokec2 >Press Spacebar to Start</\cf4 \strokec4 p\cf2 \strokec2 >\cb1 \
+\cb3     </\cf4 \strokec4 div\cf2 \strokec2 >\cb1 \
+\
+\cb3     
+\f1\i \cf9 \strokec9 <!-- Party Selection Screen -->
+\f0\i0 \cf2 \cb1 \strokec2 \
+\cb3     <\cf4 \strokec4 div\cf2 \strokec2  \cf5 \strokec5 id\cf2 \strokec2 =\cf6 \strokec6 "party-select"\cf2 \strokec2 >\cb1 \
+\cb3       <\cf4 \strokec4 h2\cf2 \strokec2 >\cb1 \
+\cb3         Select Your Party<\cf4 \strokec4 br\cf2 \strokec2  />(Left/Right to Navigate, Spacebar to\cb1 \
+\cb3         Select/deselect, Spacebar again to Confirm if 3 selected)\cb1 \
+\cb3       </\cf4 \strokec4 h2\cf2 \strokec2 >\cb1 \
+\cb3       <\cf4 \strokec4 div\cf2 \strokec2  \cf5 \strokec5 id\cf2 \strokec2 =\cf6 \strokec6 "hero-display"\cf2 \strokec2 ></\cf4 \strokec4 div\cf2 \strokec2 >\cb1 \
+\cb3       <\cf4 \strokec4 p\cf2 \strokec2  \cf5 \strokec5 id\cf2 \strokec2 =\cf6 \strokec6 "selection-info"\cf2 \strokec2 ></\cf4 \strokec4 p\cf2 \strokec2 >\cb1 \
+\cb3     </\cf4 \strokec4 div\cf2 \strokec2 >\cb1 \
+\
+\cb3     
+\f1\i \cf9 \strokec9 <!-- Battle Screen -->
+\f0\i0 \cf2 \cb1 \strokec2 \
+\cb3     <\cf4 \strokec4 div\cf2 \strokec2  \cf5 \strokec5 id\cf2 \strokec2 =\cf6 \strokec6 "game-container"\cf2 \strokec2 >\cb1 \
+\cb3       <\cf4 \strokec4 h1\cf2 \strokec2 >Level 1: The Breaking Wall</\cf4 \strokec4 h1\cf2 \strokec2 >\cb1 \
+\cb3       <\cf4 \strokec4 div\cf2 \strokec2  \cf5 \strokec5 id\cf2 \strokec2 =\cf6 \strokec6 "battlefield"\cf2 \strokec2 ></\cf4 \strokec4 div\cf2 \strokec2 >\cb1 \
+\cb3       <\cf4 \strokec4 p\cf2 \strokec2  \cf5 \strokec5 id\cf2 \strokec2 =\cf6 \strokec6 "status"\cf2 \strokec2 >Wall HP: 20</\cf4 \strokec4 p\cf2 \strokec2 >\cb1 \
+\cb3       <\cf4 \strokec4 div\cf2 \cb1 \strokec2 \
+\cb3         \cf5 \strokec5 id\cf2 \strokec2 =\cf6 \strokec6 "log"\cf2 \cb1 \strokec2 \
+\cb3         \cf5 \strokec5 style\cf2 \strokec2 =\cf6 \strokec6 "\cf2 \strokec2 height:100px; overflow-y:auto; background-color:#111; padding:10px; border:1px solid white; text-align:left;"\cb1 \
+\cb3       ></\cf4 \strokec4 div\cf2 \strokec2 >\cb1 \
+\cb3       <\cf4 \strokec4 p\cf2 \strokec2 >\cb1 \
+\cb3         Use Arrow Keys to Move | Spacebar to Attack | Then use Arrow Keys to\cb1 \
+\cb3         choose attack direction\cb1 \
+\cb3       </\cf4 \strokec4 p\cf2 \strokec2 >\cb1 \
+\cb3     </\cf4 \strokec4 div\cf2 \strokec2 >\cb1 \
+\
+\cb3     <\cf4 \strokec4 script\cf2 \strokec2 >\cb1 \
+\cb3       
+\f1\i \cf9 \strokec9 // Global Variables and Data
+\f0\i0 \cf2 \cb1 \strokec2 \
+\cb3       \cf8 \strokec8 let\cf2 \strokec2  \cf4 \strokec4 currentScreen\cf2 \strokec2  \cf10 \strokec10 =\cf2 \strokec2  \cf6 \strokec6 "title"\cf2 \strokec2 ;\cb1 \
+\cb3       \cf8 \strokec8 let\cf2 \strokec2  \cf4 \strokec4 selectedHeroes\cf2 \strokec2  \cf10 \strokec10 =\cf2 \strokec2  [];\cb1 \
+\cb3       \cf8 \strokec8 let\cf2 \strokec2  \cf4 \strokec4 heroIndex\cf2 \strokec2  \cf10 \strokec10 =\cf2 \strokec2  \cf5 \strokec5 0\cf2 \strokec2 ;\cb1 \
+\cb3       \cf8 \strokec8 let\cf2 \strokec2  \cf4 \strokec4 allHeroes\cf2 \strokec2  \cf10 \strokec10 =\cf2 \strokec2  [\cb1 \
+\cb3         \{ \cf4 \strokec4 name\cf2 \strokec2 : \cf6 \strokec6 "Knight"\cf2 \strokec2 , \cf4 \strokec4 symbol\cf2 \strokec2 : \cf6 \strokec6 '\uc0\u9822 '\cf2 \strokec2 , \cf4 \strokec4 attack\cf2 \strokec2 : \cf5 \strokec5 4\cf2 \strokec2 , \cf4 \strokec4 range\cf2 \strokec2 : \cf5 \strokec5 1\cf2 \strokec2 , \cf4 \strokec4 agility\cf2 \strokec2 : \cf5 \strokec5 5\cf2 \strokec2  \},\cb1 \
+\cb3         \{ \cf4 \strokec4 name\cf2 \strokec2 : \cf6 \strokec6 "Archer"\cf2 \strokec2 , \cf4 \strokec4 symbol\cf2 \strokec2 : \cf6 \strokec6 '\uc0\u9876 '\cf2 \strokec2 , \cf4 \strokec4 attack\cf2 \strokec2 : \cf5 \strokec5 3\cf2 \strokec2 , \cf4 \strokec4 range\cf2 \strokec2 : \cf5 \strokec5 4\cf2 \strokec2 , \cf4 \strokec4 agility\cf2 \strokec2 : \cf5 \strokec5 3\cf2 \strokec2  \},\cb1 \
+\cb3         \{ \cf4 \strokec4 name\cf2 \strokec2 : \cf6 \strokec6 "Wizard"\cf2 \strokec2 , \cf4 \strokec4 symbol\cf2 \strokec2 : \cf6 \strokec6 '\uc0\u10017 '\cf2 \strokec2 , \cf4 \strokec4 attack\cf2 \strokec2 : \cf5 \strokec5 2\cf2 \strokec2 , \cf4 \strokec4 range\cf2 \strokec2 : \cf5 \strokec5 6\cf2 \strokec2 , \cf4 \strokec4 agility\cf2 \strokec2 : \cf5 \strokec5 2\cf2 \strokec2  \},\cb1 \
+\cb3         \{ \cf4 \strokec4 name\cf2 \strokec2 : \cf6 \strokec6 "Berserker"\cf2 \strokec2 , \cf4 \strokec4 symbol\cf2 \strokec2 : \cf6 \strokec6 '\uc0\u9874 '\cf2 \strokec2 , \cf4 \strokec4 attack\cf2 \strokec2 : \cf5 \strokec5 5\cf2 \strokec2 , \cf4 \strokec4 range\cf2 \strokec2 : \cf5 \strokec5 1\cf2 \strokec2 , \cf4 \strokec4 agility\cf2 \strokec2 : \cf5 \strokec5 4\cf2 \strokec2  \},\cb1 \
+\cb3         \{ \cf4 \strokec4 name\cf2 \strokec2 : \cf6 \strokec6 "Rogue"\cf2 \strokec2 , \cf4 \strokec4 symbol\cf2 \strokec2 : \cf6 \strokec6 '\uc0\u9760 '\cf2 \strokec2 , \cf4 \strokec4 attack\cf2 \strokec2 : \cf5 \strokec5 4\cf2 \strokec2 , \cf4 \strokec4 range\cf2 \strokec2 : \cf5 \strokec5 2\cf2 \strokec2 , \cf4 \strokec4 agility\cf2 \strokec2 : \cf5 \strokec5 4\cf2 \strokec2  \},\cb1 \
+\cb3         \{ \cf4 \strokec4 name\cf2 \strokec2 : \cf6 \strokec6 "Jester"\cf2 \strokec2 , \cf4 \strokec4 symbol\cf2 \strokec2 : \cf6 \strokec6 '\uc0\u9827 '\cf2 \strokec2 , \cf4 \strokec4 attack\cf2 \strokec2 : \cf5 \strokec5 3\cf2 \strokec2 , \cf4 \strokec4 range\cf2 \strokec2 : \cf5 \strokec5 2\cf2 \strokec2 , \cf4 \strokec4 agility\cf2 \strokec2 : \cf5 \strokec5 5\cf2 \strokec2 , \cf4 \strokec4 joke\cf2 \strokec2 : \cf5 \strokec5 true\cf2 \strokec2  \},\cb1 \
+\cb3         \{ \cf4 \strokec4 name\cf2 \strokec2 : \cf6 \strokec6 "Meatwalker"\cf2 \strokec2 , \cf4 \strokec4 symbol\cf2 \strokec2 : \cf6 \strokec6 '\uc0\u8379 '\cf2 \strokec2 , \cf4 \strokec4 attack\cf2 \strokec2 : \cf5 \strokec5 6\cf2 \strokec2 , \cf4 \strokec4 range\cf2 \strokec2 : \cf5 \strokec5 1\cf2 \strokec2 , \cf4 \strokec4 agility\cf2 \strokec2 : \cf5 \strokec5 3\cf2 \strokec2 , \cf4 \strokec4 meat\cf2 \strokec2 : \cf5 \strokec5 true\cf2 \strokec2  \}\cb1 \
+\cb3       ];\cb1 \
+\cb3       \cf8 \strokec8 let\cf2 \strokec2  \cf4 \strokec4 party\cf2 \strokec2  \cf10 \strokec10 =\cf2 \strokec2  [];\cb1 \
+\cb3       \cf8 \strokec8 let\cf2 \strokec2  \cf4 \strokec4 battlefield\cf2 \strokec2  \cf10 \strokec10 =\cf2 \strokec2  \cf11 \strokec11 Array\cf2 \strokec2 .\cf7 \strokec7 from\cf2 \strokec2 (\{ \cf4 \strokec4 length\cf2 \strokec2 : \cf5 \strokec5 5\cf2 \strokec2  \}, () \cf8 \strokec8 =>\cf2 \strokec2  \cf11 \strokec11 Array\cf2 \strokec2 (\cf5 \strokec5 10\cf2 \strokec2 ).\cf7 \strokec7 fill\cf2 \strokec2 (\cf6 \strokec6 '.'\cf2 \strokec2 ));\cb1 \
+\cb3       \cf8 \strokec8 let\cf2 \strokec2  \cf4 \strokec4 wallHP\cf2 \strokec2  \cf10 \strokec10 =\cf2 \strokec2  \cf5 \strokec5 20\cf2 \strokec2 ;\cb1 \
+\cb3       \cf8 \strokec8 let\cf2 \strokec2  \cf4 \strokec4 movePoints\cf2 \strokec2  \cf10 \strokec10 =\cf2 \strokec2  \cf5 \strokec5 0\cf2 \strokec2 ;\cb1 \
+\cb3       \cf8 \strokec8 let\cf2 \strokec2  \cf4 \strokec4 currentUnit\cf2 \strokec2  \cf10 \strokec10 =\cf2 \strokec2  \cf5 \strokec5 0\cf2 \strokec2 ;\cb1 \
+\cb3       \cf8 \strokec8 let\cf2 \strokec2  \cf4 \strokec4 awaitingAttackDirection\cf2 \strokec2  \cf10 \strokec10 =\cf2 \strokec2  \cf5 \strokec5 false\cf2 \strokec2 ;\cb1 \
+\
+\cb3       
+\f1\i \cf9 \strokec9 // Screen Management
+\f0\i0 \cf2 \cb1 \strokec2 \
+\cb3       \cf8 \strokec8 function\cf2 \strokec2  \cf7 \strokec7 showScreen\cf2 \strokec2 (
+\f1\i \cf12 \strokec12 screen
+\f0\i0 \cf2 \strokec2 ) \{\cb1 \
+\cb3         \cf4 \strokec4 document\cf2 \strokec2 .\cf7 \strokec7 getElementById\cf2 \strokec2 (\cf6 \strokec6 "title-screen"\cf2 \strokec2 ).\cf4 \strokec4 style\cf2 \strokec2 .\cf4 \strokec4 display\cf2 \strokec2  \cf10 \strokec10 =\cf2 \strokec2  (\cf4 \strokec4 screen\cf2 \strokec2  \cf10 \strokec10 ===\cf2 \strokec2  \cf6 \strokec6 "title"\cf2 \strokec2 ) \cf8 \strokec8 ?\cf2 \strokec2  \cf6 \strokec6 "block"\cf2 \strokec2  \cf8 \strokec8 :\cf2 \strokec2  \cf6 \strokec6 "none"\cf2 \strokec2 ;\cb1 \
+\cb3         \cf4 \strokec4 document\cf2 \strokec2 .\cf7 \strokec7 getElementById\cf2 \strokec2 (\cf6 \strokec6 "party-select"\cf2 \strokec2 ).\cf4 \strokec4 style\cf2 \strokec2 .\cf4 \strokec4 display\cf2 \strokec2  \cf10 \strokec10 =\cf2 \strokec2  (\cf4 \strokec4 screen\cf2 \strokec2  \cf10 \strokec10 ===\cf2 \strokec2  \cf6 \strokec6 "party"\cf2 \strokec2 ) \cf8 \strokec8 ?\cf2 \strokec2  \cf6 \strokec6 "block"\cf2 \strokec2  \cf8 \strokec8 :\cf2 \strokec2  \cf6 \strokec6 "none"\cf2 \strokec2 ;\cb1 \
+\cb3         \cf4 \strokec4 document\cf2 \strokec2 .\cf7 \strokec7 getElementById\cf2 \strokec2 (\cf6 \strokec6 "game-container"\cf2 \strokec2 ).\cf4 \strokec4 style\cf2 \strokec2 .\cf4 \strokec4 display\cf2 \strokec2  \cf10 \strokec10 =\cf2 \strokec2  (\cf4 \strokec4 screen\cf2 \strokec2  \cf10 \strokec10 ===\cf2 \strokec2  \cf6 \strokec6 "battle"\cf2 \strokec2 ) \cf8 \strokec8 ?\cf2 \strokec2  \cf6 \strokec6 "block"\cf2 \strokec2  \cf8 \strokec8 :\cf2 \strokec2  \cf6 \strokec6 "none"\cf2 \strokec2 ;\cb1 \
+\cb3         \cf4 \strokec4 currentScreen\cf2 \strokec2  \cf10 \strokec10 =\cf2 \strokec2  \cf4 \strokec4 screen\cf2 \strokec2 ;\cb1 \
+\cb3       \}\cb1 \
+\
+\cb3       
+\f1\i \cf9 \strokec9 // Fetch a joke from the JokeAPI
+\f0\i0 \cf2 \cb1 \strokec2 \
+\cb3       \cf8 \strokec8 async\cf2 \strokec2  \cf8 \strokec8 function\cf2 \strokec2  \cf7 \strokec7 fetchJoke\cf2 \strokec2 () \{\cb1 \
+\cb3         \cf8 \strokec8 let\cf2 \strokec2  \cf4 \strokec4 response\cf2 \strokec2  \cf10 \strokec10 =\cf2 \strokec2  \cf8 \strokec8 await\cf2 \strokec2  \cf7 \strokec7 fetch\cf2 \strokec2 (`\cf6 \strokec6 https://v2.jokeapi.dev/joke/Programming?type=single\cf2 \strokec2 `);\cb1 \
+\cb3         \cf8 \strokec8 let\cf2 \strokec2  \cf4 \strokec4 data\cf2 \strokec2  \cf10 \strokec10 =\cf2 \strokec2  \cf8 \strokec8 await\cf2 \strokec2  \cf4 \strokec4 response\cf2 \strokec2 .\cf7 \strokec7 json\cf2 \strokec2 ();\cb1 \
+\cb3         \cf8 \strokec8 return\cf2 \strokec2  \cf4 \strokec4 data\cf2 \strokec2 .\cf4 \strokec4 joke\cf2 \strokec2 ;\cb1 \
+\cb3       \}\cb1 \
+\
+\cb3       
+\f1\i \cf9 \strokec9 // Fetch Bacon Ipsum text from the API
+\f0\i0 \cf2 \cb1 \strokec2 \
+\cb3       \cf8 \strokec8 async\cf2 \strokec2  \cf8 \strokec8 function\cf2 \strokec2  \cf7 \strokec7 fetchBaconIpsum\cf2 \strokec2 () \{\cb1 \
+\cb3         \cf8 \strokec8 let\cf2 \strokec2  \cf4 \strokec4 response\cf2 \strokec2  \cf10 \strokec10 =\cf2 \strokec2  \cf8 \strokec8 await\cf2 \strokec2  \cf7 \strokec7 fetch\cf2 \strokec2 (\cf6 \strokec6 "https://baconipsum.com/api/?type=meat-and-filler&sentences=1"\cf2 \strokec2 );\cb1 \
+\cb3         \cf8 \strokec8 let\cf2 \strokec2  \cf4 \strokec4 data\cf2 \strokec2  \cf10 \strokec10 =\cf2 \strokec2  \cf8 \strokec8 await\cf2 \strokec2  \cf4 \strokec4 response\cf2 \strokec2 .\cf7 \strokec7 json\cf2 \strokec2 ();\cb1 \
+\cb3         \cf8 \strokec8 return\cf2 \strokec2  \cf4 \strokec4 data\cf2 \strokec2 [\cf5 \strokec5 0\cf2 \strokec2 ]; 
+\f1\i \cf9 \strokec9 // Return the first sentence
+\f0\i0 \cf2 \cb1 \strokec2 \
+\cb3       \}\cb1 \
+\
+\cb3       
+\f1\i \cf9 \strokec9 // Party Selection Functions
+\f0\i0 \cf2 \cb1 \strokec2 \
+\cb3       \cf8 \strokec8 async\cf2 \strokec2  \cf8 \strokec8 function\cf2 \strokec2  \cf7 \strokec7 updateHeroDisplay\cf2 \strokec2 () \{\cb1 \
+\cb3         \cf8 \strokec8 let\cf2 \strokec2  \cf4 \strokec4 hero\cf2 \strokec2  \cf10 \strokec10 =\cf2 \strokec2  \cf4 \strokec4 allHeroes\cf2 \strokec2 [\cf4 \strokec4 heroIndex\cf2 \strokec2 ];\cb1 \
+\cb3         \cf8 \strokec8 let\cf2 \strokec2  \cf4 \strokec4 display\cf2 \strokec2  \cf10 \strokec10 =\cf2 \strokec2  `\cf6 \strokec6 <p class="highlight">\cf8 \strokec8 $\{\cf4 \strokec4 hero\cf2 \strokec2 .\cf4 \strokec4 name\cf8 \strokec8 \}\cf6 \strokec6  (\cf8 \strokec8 $\{\cf4 \strokec4 hero\cf2 \strokec2 .\cf4 \strokec4 symbol\cf8 \strokec8 \}\cf6 \strokec6 )</p>\cf2 \strokec2 `;\cb1 \
+\
+\cb3         \cf8 \strokec8 if\cf2 \strokec2  (\cf4 \strokec4 hero\cf2 \strokec2 .\cf4 \strokec4 joke\cf2 \strokec2 ) \{\cb1 \
+\cb3           \cf8 \strokec8 let\cf2 \strokec2  \cf4 \strokec4 joke\cf2 \strokec2  \cf10 \strokec10 =\cf2 \strokec2  \cf8 \strokec8 await\cf2 \strokec2  \cf7 \strokec7 fetchJoke\cf2 \strokec2 ();\cb1 \
+\cb3           \cf4 \strokec4 display\cf2 \strokec2  \cf8 \strokec8 +=\cf2 \strokec2  `\cf6 \strokec6 <p>\cf8 \strokec8 $\{\cf4 \strokec4 joke\cf8 \strokec8 \}\cf6 \strokec6 </p>\cf2 \strokec2 `;\cb1 \
+\cb3         \} \cf8 \strokec8 else\cf2 \strokec2  \{\cb1 \
+\cb3           \cf4 \strokec4 display\cf2 \strokec2  \cf8 \strokec8 +=\cf2 \strokec2  `\cf6 \strokec6 <p>Attack: \cf8 \strokec8 $\{\cf4 \strokec4 hero\cf2 \strokec2 .\cf4 \strokec4 attack\cf8 \strokec8 \}\cf6 \strokec6  | Range: \cf8 \strokec8 $\{\cf4 \strokec4 hero\cf2 \strokec2 .\cf4 \strokec4 range\cf8 \strokec8 \}\cf6 \strokec6  | Agility: \cf8 \strokec8 $\{\cf4 \strokec4 hero\cf2 \strokec2 .\cf4 \strokec4 agility\cf8 \strokec8 \}\cf6 \strokec6 </p>\cf2 \strokec2 `;\cb1 \
+\cb3           \cf4 \strokec4 display\cf2 \strokec2  \cf8 \strokec8 +=\cf2 \strokec2  `\cf6 \strokec6 <p>\cf8 \strokec8 $\{\cf4 \strokec4 selectedHeroes\cf2 \strokec2 .\cf7 \strokec7 includes\cf2 \strokec2 (\cf4 \strokec4 heroIndex\cf2 \strokec2 ) \cf8 \strokec8 ?\cf2 \strokec2  \cf6 \strokec6 "SELECTED"\cf2 \strokec2  \cf8 \strokec8 :\cf2 \strokec2  \cf6 \strokec6 "Press Spacebar to Select"\cf8 \strokec8 \}\cf6 \strokec6 </p>\cf2 \strokec2 `;\cb1 \
+\cb3         \}\cb1 \
+\
+\cb3         \cf4 \strokec4 document\cf2 \strokec2 .\cf7 \strokec7 getElementById\cf2 \strokec2 (\cf6 \strokec6 "hero-display"\cf2 \strokec2 ).\cf4 \strokec4 innerHTML\cf2 \strokec2  \cf10 \strokec10 =\cf2 \strokec2  \cf4 \strokec4 display\cf2 \strokec2 ;\cb1 \
+\cb3         \cf4 \strokec4 document\cf2 \strokec2 .\cf7 \strokec7 getElementById\cf2 \strokec2 (\cf6 \strokec6 "selection-info"\cf2 \strokec2 ).\cf4 \strokec4 textContent\cf2 \strokec2  \cf10 \strokec10 =\cf2 \strokec2  `\cf6 \strokec6 Selected Heroes: \cf8 \strokec8 $\{\cf4 \strokec4 selectedHeroes\cf2 \strokec2 .\cf4 \strokec4 length\cf8 \strokec8 \}\cf6 \strokec6 /3\cf2 \strokec2 `;\cb1 \
+\cb3       \}\cb1 \
+\
+\cb3       \cf8 \strokec8 function\cf2 \strokec2  \cf7 \strokec7 selectHero\cf2 \strokec2 () \{\cb1 \
+\cb3         \cf8 \strokec8 if\cf2 \strokec2  (\cf4 \strokec4 selectedHeroes\cf2 \strokec2 .\cf7 \strokec7 includes\cf2 \strokec2 (\cf4 \strokec4 heroIndex\cf2 \strokec2 )) \{\cb1 \
+\cb3           \cf4 \strokec4 selectedHeroes\cf2 \strokec2  \cf10 \strokec10 =\cf2 \strokec2  \cf4 \strokec4 selectedHeroes\cf2 \strokec2 .\cf7 \strokec7 filter\cf2 \strokec2 (
+\f1\i \cf12 \strokec12 i
+\f0\i0 \cf2 \strokec2  \cf8 \strokec8 =>\cf2 \strokec2  \cf4 \strokec4 i\cf2 \strokec2  \cf10 \strokec10 !==\cf2 \strokec2  \cf4 \strokec4 heroIndex\cf2 \strokec2 );\cb1 \
+\cb3         \} \cf8 \strokec8 else\cf2 \strokec2  \cf8 \strokec8 if\cf2 \strokec2  (\cf4 \strokec4 selectedHeroes\cf2 \strokec2 .\cf4 \strokec4 length\cf2 \strokec2  \cf10 \strokec10 <\cf2 \strokec2  \cf5 \strokec5 3\cf2 \strokec2 ) \{\cb1 \
+\cb3           \cf4 \strokec4 selectedHeroes\cf2 \strokec2 .\cf7 \strokec7 push\cf2 \strokec2 (\cf4 \strokec4 heroIndex\cf2 \strokec2 );\cb1 \
+\cb3         \}\cb1 \
+\cb3         \cf7 \strokec7 updateHeroDisplay\cf2 \strokec2 ();\cb1 \
+\cb3       \}\cb1 \
+\
+\cb3       \cf8 \strokec8 function\cf2 \strokec2  \cf7 \strokec7 startGame\cf2 \strokec2 () \{\cb1 \
+\cb3         \cf8 \strokec8 if\cf2 \strokec2  (\cf4 \strokec4 selectedHeroes\cf2 \strokec2 .\cf4 \strokec4 length\cf2 \strokec2  \cf10 \strokec10 ===\cf2 \strokec2  \cf5 \strokec5 3\cf2 \strokec2 ) \{\cb1 \
+\cb3           \cf4 \strokec4 party\cf2 \strokec2  \cf10 \strokec10 =\cf2 \strokec2  \cf4 \strokec4 selectedHeroes\cf2 \strokec2 .\cf7 \strokec7 map\cf2 \strokec2 (
+\f1\i \cf12 \strokec12 i
+\f0\i0 \cf2 \strokec2  \cf8 \strokec8 =>\cf2 \strokec2  \cf4 \strokec4 allHeroes\cf2 \strokec2 [\cf4 \strokec4 i\cf2 \strokec2 ]);\cb1 \
+\cb3           
+\f1\i \cf9 \strokec9 // Sort party by agility (highest agility first)
+\f0\i0 \cf2 \cb1 \strokec2 \
+\cb3           \cf4 \strokec4 party\cf2 \strokec2 .\cf7 \strokec7 sort\cf2 \strokec2 ((
+\f1\i \cf12 \strokec12 a
+\f0\i0 \cf2 \strokec2 , 
+\f1\i \cf12 \strokec12 b
+\f0\i0 \cf2 \strokec2 ) \cf8 \strokec8 =>\cf2 \strokec2  \cf4 \strokec4 b\cf2 \strokec2 .\cf4 \strokec4 agility\cf2 \strokec2  \cf10 \strokec10 -\cf2 \strokec2  \cf4 \strokec4 a\cf2 \strokec2 .\cf4 \strokec4 agility\cf2 \strokec2 );\cb1 \
+\cb3           \cf7 \strokec7 initializeBattle\cf2 \strokec2 ();\cb1 \
+\cb3           \cf7 \strokec7 showScreen\cf2 \strokec2 (\cf6 \strokec6 "battle"\cf2 \strokec2 );\cb1 \
+\cb3         \} \cf8 \strokec8 else\cf2 \strokec2  \{\cb1 \
+\cb3           \cf7 \strokec7 alert\cf2 \strokec2 (\cf6 \strokec6 "Select exactly 3 heroes!"\cf2 \strokec2 );\cb1 \
+\cb3         \}\cb1 \
+\cb3       \}\cb1 \
+\
+\cb3       
+\f1\i \cf9 \strokec9 // Battle Functions
+\f0\i0 \cf2 \cb1 \strokec2 \
+\cb3       \cf8 \strokec8 function\cf2 \strokec2  \cf7 \strokec7 initializeBattle\cf2 \strokec2 () \{\cb1 \
+\cb3         
+\f1\i \cf9 \strokec9 // Reset the battlefield: 5 rows x 10 columns
+\f0\i0 \cf2 \cb1 \strokec2 \
+\cb3         \cf4 \strokec4 battlefield\cf2 \strokec2  \cf10 \strokec10 =\cf2 \strokec2  \cf11 \strokec11 Array\cf2 \strokec2 .\cf7 \strokec7 from\cf2 \strokec2 (\{ \cf4 \strokec4 length\cf2 \strokec2 : \cf5 \strokec5 5\cf2 \strokec2  \}, () \cf8 \strokec8 =>\cf2 \strokec2  \cf11 \strokec11 Array\cf2 \strokec2 (\cf5 \strokec5 10\cf2 \strokec2 ).\cf7 \strokec7 fill\cf2 \strokec2 (\cf6 \strokec6 '.'\cf2 \strokec2 ));\cb1 \
+\cb3         
+\f1\i \cf9 \strokec9 // Place each party member on row 0 starting from column 2
+\f0\i0 \cf2 \cb1 \strokec2 \
+\cb3         \cf8 \strokec8 for\cf2 \strokec2  (\cf8 \strokec8 let\cf2 \strokec2  \cf4 \strokec4 i\cf2 \strokec2  \cf10 \strokec10 =\cf2 \strokec2  \cf5 \strokec5 0\cf2 \strokec2 ; \cf4 \strokec4 i\cf2 \strokec2  \cf10 \strokec10 <\cf2 \strokec2  \cf4 \strokec4 party\cf2 \strokec2 .\cf4 \strokec4 length\cf2 \strokec2 ; \cf4 \strokec4 i\cf10 \strokec10 ++\cf2 \strokec2 ) \{\cb1 \
+\cb3           \cf4 \strokec4 party\cf2 \strokec2 [\cf4 \strokec4 i\cf2 \strokec2 ].\cf4 \strokec4 x\cf2 \strokec2  \cf10 \strokec10 =\cf2 \strokec2  \cf5 \strokec5 2\cf2 \strokec2  \cf10 \strokec10 +\cf2 \strokec2  \cf4 \strokec4 i\cf2 \strokec2 ;\cb1 \
+\cb3           \cf4 \strokec4 party\cf2 \strokec2 [\cf4 \strokec4 i\cf2 \strokec2 ].\cf4 \strokec4 y\cf2 \strokec2  \cf10 \strokec10 =\cf2 \strokec2  \cf5 \strokec5 0\cf2 \strokec2 ;\cb1 \
+\cb3           \cf4 \strokec4 battlefield\cf2 \strokec2 [\cf5 \strokec5 0\cf2 \strokec2 ][\cf5 \strokec5 2\cf2 \strokec2  \cf10 \strokec10 +\cf2 \strokec2  \cf4 \strokec4 i\cf2 \strokec2 ] \cf10 \strokec10 =\cf2 \strokec2  \cf4 \strokec4 party\cf2 \strokec2 [\cf4 \strokec4 i\cf2 \strokec2 ].\cf4 \strokec4 symbol\cf2 \strokec2 ;\cb1 \
+\cb3         \}\cb1 \
+\cb3         
+\f1\i \cf9 \strokec9 // Build the wall on the bottom row (row 4)
+\f0\i0 \cf2 \cb1 \strokec2 \
+\cb3         \cf8 \strokec8 for\cf2 \strokec2  (\cf8 \strokec8 let\cf2 \strokec2  \cf4 \strokec4 i\cf2 \strokec2  \cf10 \strokec10 =\cf2 \strokec2  \cf5 \strokec5 0\cf2 \strokec2 ; \cf4 \strokec4 i\cf2 \strokec2  \cf10 \strokec10 <\cf2 \strokec2  \cf5 \strokec5 10\cf2 \strokec2 ; \cf4 \strokec4 i\cf10 \strokec10 ++\cf2 \strokec2 ) \{\cb1 \
+\cb3           \cf4 \strokec4 battlefield\cf2 \strokec2 [\cf5 \strokec5 4\cf2 \strokec2 ][\cf4 \strokec4 i\cf2 \strokec2 ] \cf10 \strokec10 =\cf2 \strokec2  \cf6 \strokec6 '\uc0\u9608 '\cf2 \strokec2 ;\cb1 \
+\cb3         \}\cb1 \
+\cb3         \cf4 \strokec4 wallHP\cf2 \strokec2  \cf10 \strokec10 =\cf2 \strokec2  \cf5 \strokec5 20\cf2 \strokec2 ;\cb1 \
+\cb3         \cf4 \strokec4 currentUnit\cf2 \strokec2  \cf10 \strokec10 =\cf2 \strokec2  \cf5 \strokec5 0\cf2 \strokec2 ;\cb1 \
+\cb3         \cf4 \strokec4 movePoints\cf2 \strokec2  \cf10 \strokec10 =\cf2 \strokec2  \cf4 \strokec4 party\cf2 \strokec2 [\cf5 \strokec5 0\cf2 \strokec2 ].\cf4 \strokec4 agility\cf2 \strokec2 ;\cb1 \
+\cb3         \cf4 \strokec4 awaitingAttackDirection\cf2 \strokec2  \cf10 \strokec10 =\cf2 \strokec2  \cf5 \strokec5 false\cf2 \strokec2 ;\cb1 \
+\cb3         \cf7 \strokec7 logClear\cf2 \strokec2 ();\cb1 \
+\cb3         \cf7 \strokec7 drawBattlefield\cf2 \strokec2 ();\cb1 \
+\cb3       \}\cb1 \
+\
+\cb3       \cf8 \strokec8 function\cf2 \strokec2  \cf7 \strokec7 drawBattlefield\cf2 \strokec2 () \{\cb1 \
+\cb3         \cf8 \strokec8 let\cf2 \strokec2  \cf4 \strokec4 html\cf2 \strokec2  \cf10 \strokec10 =\cf2 \strokec2  \cf6 \strokec6 ''\cf2 \strokec2 ;\cb1 \
+\cb3         \cf8 \strokec8 for\cf2 \strokec2  (\cf8 \strokec8 let\cf2 \strokec2  \cf4 \strokec4 y\cf2 \strokec2  \cf10 \strokec10 =\cf2 \strokec2  \cf5 \strokec5 0\cf2 \strokec2 ; \cf4 \strokec4 y\cf2 \strokec2  \cf10 \strokec10 <\cf2 \strokec2  \cf4 \strokec4 battlefield\cf2 \strokec2 .\cf4 \strokec4 length\cf2 \strokec2 ; \cf4 \strokec4 y\cf10 \strokec10 ++\cf2 \strokec2 ) \{\cb1 \
+\cb3           \cf4 \strokec4 html\cf2 \strokec2  \cf8 \strokec8 +=\cf2 \strokec2  \cf6 \strokec6 '<div class="row">'\cf2 \strokec2 ;\cb1 \
+\cb3           \cf8 \strokec8 for\cf2 \strokec2  (\cf8 \strokec8 let\cf2 \strokec2  \cf4 \strokec4 x\cf2 \strokec2  \cf10 \strokec10 =\cf2 \strokec2  \cf5 \strokec5 0\cf2 \strokec2 ; \cf4 \strokec4 x\cf2 \strokec2  \cf10 \strokec10 <\cf2 \strokec2  \cf4 \strokec4 battlefield\cf2 \strokec2 [\cf4 \strokec4 y\cf2 \strokec2 ].\cf4 \strokec4 length\cf2 \strokec2 ; \cf4 \strokec4 x\cf10 \strokec10 ++\cf2 \strokec2 ) \{\cb1 \
+\cb3             \cf8 \strokec8 let\cf2 \strokec2  \cf4 \strokec4 cellClass\cf2 \strokec2  \cf10 \strokec10 =\cf2 \strokec2  \cf6 \strokec6 ''\cf2 \strokec2 ;\cb1 \
+\cb3             \cf8 \strokec8 if\cf2 \strokec2  (\cf4 \strokec4 party\cf2 \strokec2 [\cf4 \strokec4 currentUnit\cf2 \strokec2 ].\cf4 \strokec4 x\cf2 \strokec2  \cf10 \strokec10 ===\cf2 \strokec2  \cf4 \strokec4 x\cf2 \strokec2  \cf10 \strokec10 &&\cf2 \strokec2  \cf4 \strokec4 party\cf2 \strokec2 [\cf4 \strokec4 currentUnit\cf2 \strokec2 ].\cf4 \strokec4 y\cf2 \strokec2  \cf10 \strokec10 ===\cf2 \strokec2  \cf4 \strokec4 y\cf2 \strokec2 ) \{\cb1 \
+\cb3               \cf4 \strokec4 cellClass\cf2 \strokec2  \cf10 \strokec10 =\cf2 \strokec2  \cf4 \strokec4 awaitingAttackDirection\cf2 \strokec2  \cf8 \strokec8 ?\cf2 \strokec2  \cf6 \strokec6 "attack-mode"\cf2 \strokec2  \cf8 \strokec8 :\cf2 \strokec2  \cf6 \strokec6 "active"\cf2 \strokec2 ;\cb1 \
+\cb3             \}\cb1 \
+\cb3             \cf4 \strokec4 html\cf2 \strokec2  \cf8 \strokec8 +=\cf2 \strokec2  `\cf6 \strokec6 <div class="cell \cf8 \strokec8 $\{\cf4 \strokec4 cellClass\cf8 \strokec8 \}\cf6 \strokec6 ">\cf8 \strokec8 $\{\cf4 \strokec4 battlefield\cf2 \strokec2 [\cf4 \strokec4 y\cf2 \strokec2 ][\cf4 \strokec4 x\cf2 \strokec2 ]\cf8 \strokec8 \}\cf6 \strokec6 </div>\cf2 \strokec2 `;\cb1 \
+\cb3           \}\cb1 \
+\cb3           \cf4 \strokec4 html\cf2 \strokec2  \cf8 \strokec8 +=\cf2 \strokec2  \cf6 \strokec6 '</div>'\cf2 \strokec2 ;\cb1 \
+\cb3         \}\cb1 \
+\cb3         \cf4 \strokec4 document\cf2 \strokec2 .\cf7 \strokec7 getElementById\cf2 \strokec2 (\cf6 \strokec6 "battlefield"\cf2 \strokec2 ).\cf4 \strokec4 innerHTML\cf2 \strokec2  \cf10 \strokec10 =\cf2 \strokec2  \cf4 \strokec4 html\cf2 \strokec2 ;\cb1 \
+\cb3         \cf4 \strokec4 document\cf2 \strokec2 .\cf7 \strokec7 getElementById\cf2 \strokec2 (\cf6 \strokec6 "status"\cf2 \strokec2 ).\cf4 \strokec4 textContent\cf2 \strokec2  \cf10 \strokec10 =\cf2 \cb1 \strokec2 \
+\cb3           `\cf6 \strokec6 Wall HP: \cf8 \strokec8 $\{\cf4 \strokec4 wallHP\cf8 \strokec8 \}\cf6 \strokec6  | \cf8 \strokec8 $\{\cf4 \strokec4 party\cf2 \strokec2 [\cf4 \strokec4 currentUnit\cf2 \strokec2 ].\cf4 \strokec4 name\cf8 \strokec8 \}\cf6 \strokec6 's Turn (Moves Left: \cf8 \strokec8 $\{\cf4 \strokec4 movePoints\cf8 \strokec8 \}\cf6 \strokec6 )\cf2 \strokec2 `;\cb1 \
+\cb3       \}\cb1 \
+\
+\cb3       \cf8 \strokec8 function\cf2 \strokec2  \cf7 \strokec7 moveUnit\cf2 \strokec2 (
+\f1\i \cf12 \strokec12 dx
+\f0\i0 \cf2 \strokec2 , 
+\f1\i \cf12 \strokec12 dy
+\f0\i0 \cf2 \strokec2 ) \{\cb1 \
+\cb3         \cf8 \strokec8 if\cf2 \strokec2  (\cf4 \strokec4 awaitingAttackDirection\cf2 \strokec2  \cf10 \strokec10 ||\cf2 \strokec2  \cf4 \strokec4 movePoints\cf2 \strokec2  \cf10 \strokec10 <=\cf2 \strokec2  \cf5 \strokec5 0\cf2 \strokec2 ) \cf8 \strokec8 return\cf2 \strokec2 ;\cb1 \
+\cb3         \cf8 \strokec8 let\cf2 \strokec2  \cf4 \strokec4 unit\cf2 \strokec2  \cf10 \strokec10 =\cf2 \strokec2  \cf4 \strokec4 party\cf2 \strokec2 [\cf4 \strokec4 currentUnit\cf2 \strokec2 ];\cb1 \
+\cb3         \cf8 \strokec8 let\cf2 \strokec2  \cf4 \strokec4 newX\cf2 \strokec2  \cf10 \strokec10 =\cf2 \strokec2  \cf4 \strokec4 unit\cf2 \strokec2 .\cf4 \strokec4 x\cf2 \strokec2  \cf10 \strokec10 +\cf2 \strokec2  \cf4 \strokec4 dx\cf2 \strokec2 ;\cb1 \
+\cb3         \cf8 \strokec8 let\cf2 \strokec2  \cf4 \strokec4 newY\cf2 \strokec2  \cf10 \strokec10 =\cf2 \strokec2  \cf4 \strokec4 unit\cf2 \strokec2 .\cf4 \strokec4 y\cf2 \strokec2  \cf10 \strokec10 +\cf2 \strokec2  \cf4 \strokec4 dy\cf2 \strokec2 ;\cb1 \
+\cb3         
+\f1\i \cf9 \strokec9 // Check boundaries and prevent moving into the wall
+\f0\i0 \cf2 \cb1 \strokec2 \
+\cb3         \cf8 \strokec8 if\cf2 \strokec2  (\cf4 \strokec4 newX\cf2 \strokec2  \cf10 \strokec10 <\cf2 \strokec2  \cf5 \strokec5 0\cf2 \strokec2  \cf10 \strokec10 ||\cf2 \strokec2  \cf4 \strokec4 newX\cf2 \strokec2  \cf10 \strokec10 >=\cf2 \strokec2  \cf5 \strokec5 10\cf2 \strokec2  \cf10 \strokec10 ||\cf2 \strokec2  \cf4 \strokec4 newY\cf2 \strokec2  \cf10 \strokec10 <\cf2 \strokec2  \cf5 \strokec5 0\cf2 \strokec2  \cf10 \strokec10 ||\cf2 \strokec2  \cf4 \strokec4 newY\cf2 \strokec2  \cf10 \strokec10 >=\cf2 \strokec2  \cf5 \strokec5 5\cf2 \strokec2 ) \cf8 \strokec8 return\cf2 \strokec2 ;\cb1 \
+\cb3         \cf8 \strokec8 if\cf2 \strokec2  (\cf4 \strokec4 battlefield\cf2 \strokec2 [\cf4 \strokec4 newY\cf2 \strokec2 ][\cf4 \strokec4 newX\cf2 \strokec2 ] \cf10 \strokec10 ===\cf2 \strokec2  \cf6 \strokec6 '\uc0\u9608 '\cf2 \strokec2 ) \cf8 \strokec8 return\cf2 \strokec2 ;\cb1 \
+\cb3         
+\f1\i \cf9 \strokec9 // Clear old position, update unit position and battlefield grid
+\f0\i0 \cf2 \cb1 \strokec2 \
+\cb3         \cf4 \strokec4 battlefield\cf2 \strokec2 [\cf4 \strokec4 unit\cf2 \strokec2 .\cf4 \strokec4 y\cf2 \strokec2 ][\cf4 \strokec4 unit\cf2 \strokec2 .\cf4 \strokec4 x\cf2 \strokec2 ] \cf10 \strokec10 =\cf2 \strokec2  \cf6 \strokec6 '.'\cf2 \strokec2 ;\cb1 \
+\cb3         \cf4 \strokec4 unit\cf2 \strokec2 .\cf4 \strokec4 x\cf2 \strokec2  \cf10 \strokec10 =\cf2 \strokec2  \cf4 \strokec4 newX\cf2 \strokec2 ;\cb1 \
+\cb3         \cf4 \strokec4 unit\cf2 \strokec2 .\cf4 \strokec4 y\cf2 \strokec2  \cf10 \strokec10 =\cf2 \strokec2  \cf4 \strokec4 newY\cf2 \strokec2 ;\cb1 \
+\cb3         \cf4 \strokec4 battlefield\cf2 \strokec2 [\cf4 \strokec4 unit\cf2 \strokec2 .\cf4 \strokec4 y\cf2 \strokec2 ][\cf4 \strokec4 unit\cf2 \strokec2 .\cf4 \strokec4 x\cf2 \strokec2 ] \cf10 \strokec10 =\cf2 \strokec2  \cf4 \strokec4 unit\cf2 \strokec2 .\cf4 \strokec4 symbol\cf2 \strokec2 ;\cb1 \
+\cb3         \cf4 \strokec4 movePoints\cf10 \strokec10 --\cf2 \strokec2 ;\cb1 \
+\cb3         \cf7 \strokec7 drawBattlefield\cf2 \strokec2 ();\cb1 \
+\cb3         \cf8 \strokec8 if\cf2 \strokec2  (\cf4 \strokec4 movePoints\cf2 \strokec2  \cf10 \strokec10 ===\cf2 \strokec2  \cf5 \strokec5 0\cf2 \strokec2 ) \cf7 \strokec7 nextTurn\cf2 \strokec2 ();\cb1 \
+\cb3       \}\cb1 \
+\
+\cb3       \cf8 \strokec8 async\cf2 \strokec2  \cf8 \strokec8 function\cf2 \strokec2  \cf7 \strokec7 requestAttackDirection\cf2 \strokec2 () \{\cb1 \
+\cb3         \cf8 \strokec8 if\cf2 \strokec2  (\cf10 \strokec10 !\cf4 \strokec4 awaitingAttackDirection\cf2 \strokec2 ) \{\cb1 \
+\cb3           \cf4 \strokec4 awaitingAttackDirection\cf2 \strokec2  \cf10 \strokec10 =\cf2 \strokec2  \cf5 \strokec5 true\cf2 \strokec2 ;\cb1 \
+\cb3           \cf7 \strokec7 logMessage\cf2 \strokec2 (`\cf8 \strokec8 $\{\cf4 \strokec4 party\cf2 \strokec2 [\cf4 \strokec4 currentUnit\cf2 \strokec2 ].\cf4 \strokec4 name\cf8 \strokec8 \}\cf6 \strokec6  is ready to attack! Choose a direction.\cf2 \strokec2 `);\cb1 \
+\cb3           \cf7 \strokec7 drawBattlefield\cf2 \strokec2 ();\cb1 \
+\cb3         \}\cb1 \
+\cb3       \}\cb1 \
+\
+\cb3       \cf8 \strokec8 async\cf2 \strokec2  \cf8 \strokec8 function\cf2 \strokec2  \cf7 \strokec7 attackWall\cf2 \strokec2 (
+\f1\i \cf12 \strokec12 dx
+\f0\i0 \cf2 \strokec2 , 
+\f1\i \cf12 \strokec12 dy
+\f0\i0 \cf2 \strokec2 ) \{\cb1 \
+\cb3         \cf8 \strokec8 let\cf2 \strokec2  \cf4 \strokec4 unit\cf2 \strokec2  \cf10 \strokec10 =\cf2 \strokec2  \cf4 \strokec4 party\cf2 \strokec2 [\cf4 \strokec4 currentUnit\cf2 \strokec2 ];\cb1 \
+\cb3         \cf8 \strokec8 if\cf2 \strokec2  (\cf4 \strokec4 unit\cf2 \strokec2 .\cf4 \strokec4 joke\cf2 \strokec2 ) \{\cb1 \
+\cb3           \cf8 \strokec8 let\cf2 \strokec2  \cf4 \strokec4 joke\cf2 \strokec2  \cf10 \strokec10 =\cf2 \strokec2  \cf8 \strokec8 await\cf2 \strokec2  \cf7 \strokec7 fetchJoke\cf2 \strokec2 ();\cb1 \
+\cb3           \cf7 \strokec7 logMessage\cf2 \strokec2 (`\cf8 \strokec8 $\{\cf4 \strokec4 unit\cf2 \strokec2 .\cf4 \strokec4 name\cf8 \strokec8 \}\cf6 \strokec6  tells a joke: "\cf8 \strokec8 $\{\cf4 \strokec4 joke\cf8 \strokec8 \}\cf6 \strokec6 "\cf2 \strokec2 `);\cb1 \
+\cb3         \} \cf8 \strokec8 else\cf2 \strokec2  \cf8 \strokec8 if\cf2 \strokec2  (\cf4 \strokec4 unit\cf2 \strokec2 .\cf4 \strokec4 meat\cf2 \strokec2 ) \{\cb1 \
+\cb3           \cf8 \strokec8 let\cf2 \strokec2  \cf4 \strokec4 meatMessage\cf2 \strokec2  \cf10 \strokec10 =\cf2 \strokec2  \cf8 \strokec8 await\cf2 \strokec2  \cf7 \strokec7 fetchBaconIpsum\cf2 \strokec2 ();\cb1 \
+\cb3           \cf7 \strokec7 logMessage\cf2 \strokec2 (`\cf8 \strokec8 $\{\cf4 \strokec4 unit\cf2 \strokec2 .\cf4 \strokec4 name\cf8 \strokec8 \}\cf6 \strokec6  says: "\cf8 \strokec8 $\{\cf4 \strokec4 meatMessage\cf8 \strokec8 \}\cf6 \strokec6 "\cf2 \strokec2 `);\cb1 \
+\cb3         \}\cb1 \
+\cb3         
+\f1\i \cf9 \strokec9 // Check along the line in the chosen direction up to unit.range tiles
+\f0\i0 \cf2 \cb1 \strokec2 \
+\cb3         \cf8 \strokec8 for\cf2 \strokec2  (\cf8 \strokec8 let\cf2 \strokec2  \cf4 \strokec4 i\cf2 \strokec2  \cf10 \strokec10 =\cf2 \strokec2  \cf5 \strokec5 1\cf2 \strokec2 ; \cf4 \strokec4 i\cf2 \strokec2  \cf10 \strokec10 <=\cf2 \strokec2  \cf4 \strokec4 unit\cf2 \strokec2 .\cf4 \strokec4 range\cf2 \strokec2 ; \cf4 \strokec4 i\cf10 \strokec10 ++\cf2 \strokec2 ) \{\cb1 \
+\cb3           \cf8 \strokec8 let\cf2 \strokec2  \cf4 \strokec4 targetX\cf2 \strokec2  \cf10 \strokec10 =\cf2 \strokec2  \cf4 \strokec4 unit\cf2 \strokec2 .\cf4 \strokec4 x\cf2 \strokec2  \cf10 \strokec10 +\cf2 \strokec2  \cf4 \strokec4 dx\cf2 \strokec2  \cf10 \strokec10 *\cf2 \strokec2  \cf4 \strokec4 i\cf2 \strokec2 ;\cb1 \
+\cb3           \cf8 \strokec8 let\cf2 \strokec2  \cf4 \strokec4 targetY\cf2 \strokec2  \cf10 \strokec10 =\cf2 \strokec2  \cf4 \strokec4 unit\cf2 \strokec2 .\cf4 \strokec4 y\cf2 \strokec2  \cf10 \strokec10 +\cf2 \strokec2  \cf4 \strokec4 dy\cf2 \strokec2  \cf10 \strokec10 *\cf2 \strokec2  \cf4 \strokec4 i\cf2 \strokec2 ;\cb1 \
+\cb3           \cf8 \strokec8 if\cf2 \strokec2  (\cf4 \strokec4 targetX\cf2 \strokec2  \cf10 \strokec10 >=\cf2 \strokec2  \cf5 \strokec5 0\cf2 \strokec2  \cf10 \strokec10 &&\cf2 \strokec2  \cf4 \strokec4 targetX\cf2 \strokec2  \cf10 \strokec10 <\cf2 \strokec2  \cf5 \strokec5 10\cf2 \strokec2  \cf10 \strokec10 &&\cf2 \strokec2  \cf4 \strokec4 targetY\cf2 \strokec2  \cf10 \strokec10 >=\cf2 \strokec2  \cf5 \strokec5 0\cf2 \strokec2  \cf10 \strokec10 &&\cf2 \strokec2  \cf4 \strokec4 targetY\cf2 \strokec2  \cf10 \strokec10 <\cf2 \strokec2  \cf5 \strokec5 5\cf2 \strokec2 ) \{\cb1 \
+\cb3             \cf8 \strokec8 if\cf2 \strokec2  (\cf4 \strokec4 battlefield\cf2 \strokec2 [\cf4 \strokec4 targetY\cf2 \strokec2 ][\cf4 \strokec4 targetX\cf2 \strokec2 ] \cf10 \strokec10 ===\cf2 \strokec2  \cf6 \strokec6 '\uc0\u9608 '\cf2 \strokec2 ) \{\cb1 \
+\cb3               \cf4 \strokec4 wallHP\cf2 \strokec2  \cf8 \strokec8 -=\cf2 \strokec2  \cf4 \strokec4 unit\cf2 \strokec2 .\cf4 \strokec4 attack\cf2 \strokec2 ;\cb1 \
+\cb3               \cf7 \strokec7 logMessage\cf2 \strokec2 (`\cf8 \strokec8 $\{\cf4 \strokec4 unit\cf2 \strokec2 .\cf4 \strokec4 name\cf8 \strokec8 \}\cf6 \strokec6  attacks from range \cf8 \strokec8 $\{\cf4 \strokec4 i\cf8 \strokec8 \}\cf6 \strokec6 ! -\cf8 \strokec8 $\{\cf4 \strokec4 unit\cf2 \strokec2 .\cf4 \strokec4 attack\cf8 \strokec8 \}\cf6 \strokec6  Damage to the wall.\cf2 \strokec2 `);\cb1 \
+\cb3               \cf4 \strokec4 awaitingAttackDirection\cf2 \strokec2  \cf10 \strokec10 =\cf2 \strokec2  \cf5 \strokec5 false\cf2 \strokec2 ;\cb1 \
+\cb3               \cf8 \strokec8 if\cf2 \strokec2  (\cf4 \strokec4 wallHP\cf2 \strokec2  \cf10 \strokec10 <=\cf2 \strokec2  \cf5 \strokec5 0\cf2 \strokec2 ) \{\cb1 \
+\cb3                 \cf4 \strokec4 document\cf2 \strokec2 .\cf4 \strokec4 body\cf2 \strokec2 .\cf4 \strokec4 innerHTML\cf2 \strokec2  \cf10 \strokec10 =\cf2 \strokec2  \cf6 \strokec6 "<h2>The Wall Collapses! Victory!</h2>"\cf2 \strokec2 ;\cb1 \
+\cb3                 \cf8 \strokec8 return\cf2 \strokec2 ;\cb1 \
+\cb3               \}\cb1 \
+\cb3               \cf7 \strokec7 nextTurn\cf2 \strokec2 ();\cb1 \
+\cb3               \cf8 \strokec8 return\cf2 \strokec2 ;\cb1 \
+\cb3             \}\cb1 \
+\cb3           \}\cb1 \
+\cb3         \}\cb1 \
+\cb3         \cf7 \strokec7 logMessage\cf2 \strokec2 (`\cf8 \strokec8 $\{\cf4 \strokec4 unit\cf2 \strokec2 .\cf4 \strokec4 name\cf8 \strokec8 \}\cf6 \strokec6  attacks, but there's nothing in range.\cf2 \strokec2 `);\cb1 \
+\cb3         \cf4 \strokec4 awaitingAttackDirection\cf2 \strokec2  \cf10 \strokec10 =\cf2 \strokec2  \cf5 \strokec5 false\cf2 \strokec2 ;\cb1 \
+\cb3         \cf7 \strokec7 drawBattlefield\cf2 \strokec2 ();\cb1 \
+\cb3       \}\cb1 \
+\
+\cb3       \cf8 \strokec8 function\cf2 \strokec2  \cf7 \strokec7 nextTurn\cf2 \strokec2 () \{\cb1 \
+\cb3         \cf4 \strokec4 awaitingAttackDirection\cf2 \strokec2  \cf10 \strokec10 =\cf2 \strokec2  \cf5 \strokec5 false\cf2 \strokec2 ;\cb1 \
+\cb3         \cf4 \strokec4 currentUnit\cf2 \strokec2  \cf10 \strokec10 =\cf2 \strokec2  (\cf4 \strokec4 currentUnit\cf2 \strokec2  \cf10 \strokec10 +\cf2 \strokec2  \cf5 \strokec5 1\cf2 \strokec2 ) \cf10 \strokec10 %\cf2 \strokec2  \cf4 \strokec4 party\cf2 \strokec2 .\cf4 \strokec4 length\cf2 \strokec2 ;\cb1 \
+\cb3         \cf4 \strokec4 movePoints\cf2 \strokec2  \cf10 \strokec10 =\cf2 \strokec2  \cf4 \strokec4 party\cf2 \strokec2 [\cf4 \strokec4 currentUnit\cf2 \strokec2 ].\cf4 \strokec4 agility\cf2 \strokec2 ;\cb1 \
+\cb3         \cf7 \strokec7 logMessage\cf2 \strokec2 (`\cf6 \strokec6 Now it's \cf8 \strokec8 $\{\cf4 \strokec4 party\cf2 \strokec2 [\cf4 \strokec4 currentUnit\cf2 \strokec2 ].\cf4 \strokec4 name\cf8 \strokec8 \}\cf6 \strokec6 's turn.\cf2 \strokec2 `);\cb1 \
+\cb3         \cf7 \strokec7 drawBattlefield\cf2 \strokec2 ();\cb1 \
+\cb3       \}\cb1 \
+\
+\cb3       
+\f1\i \cf9 \strokec9 // Logging utility
+\f0\i0 \cf2 \cb1 \strokec2 \
+\cb3       \cf8 \strokec8 function\cf2 \strokec2  \cf7 \strokec7 logMessage\cf2 \strokec2 (
+\f1\i \cf12 \strokec12 message
+\f0\i0 \cf2 \strokec2 ) \{\cb1 \
+\cb3         \cf8 \strokec8 let\cf2 \strokec2  \cf4 \strokec4 logDiv\cf2 \strokec2  \cf10 \strokec10 =\cf2 \strokec2  \cf4 \strokec4 document\cf2 \strokec2 .\cf7 \strokec7 getElementById\cf2 \strokec2 (\cf6 \strokec6 "log"\cf2 \strokec2 );\cb1 \
+\cb3         \cf4 \strokec4 logDiv\cf2 \strokec2 .\cf4 \strokec4 innerHTML\cf2 \strokec2  \cf8 \strokec8 +=\cf2 \strokec2  `\cf6 \strokec6 <p>\cf8 \strokec8 $\{\cf4 \strokec4 message\cf8 \strokec8 \}\cf6 \strokec6 </p>\cf2 \strokec2 `;\cb1 \
+\cb3         \cf4 \strokec4 logDiv\cf2 \strokec2 .\cf4 \strokec4 scrollTop\cf2 \strokec2  \cf10 \strokec10 =\cf2 \strokec2  \cf4 \strokec4 logDiv\cf2 \strokec2 .\cf4 \strokec4 scrollHeight\cf2 \strokec2 ;\cb1 \
+\cb3       \}\cb1 \
+\cb3       \cf8 \strokec8 function\cf2 \strokec2  \cf7 \strokec7 logClear\cf2 \strokec2 () \{\cb1 \
+\cb3         \cf4 \strokec4 document\cf2 \strokec2 .\cf7 \strokec7 getElementById\cf2 \strokec2 (\cf6 \strokec6 "log"\cf2 \strokec2 ).\cf4 \strokec4 innerHTML\cf2 \strokec2  \cf10 \strokec10 =\cf2 \strokec2  \cf6 \strokec6 ""\cf2 \strokec2 ;\cb1 \
+\cb3       \}\cb1 \
+\
+\cb3       
+\f1\i \cf9 \strokec9 // Global Key Handling using Spacebar and Arrow Keys only.
+\f0\i0 \cf2 \cb1 \strokec2 \
+\cb3       \cf4 \strokec4 document\cf2 \strokec2 .\cf7 \strokec7 addEventListener\cf2 \strokec2 (\cf6 \strokec6 "keydown"\cf2 \strokec2 , \cf8 \strokec8 function\cf2 \strokec2 (
+\f1\i \cf12 \strokec12 event
+\f0\i0 \cf2 \strokec2 ) \{\cb1 \
+\cb3         
+\f1\i \cf9 \strokec9 // Prevent default scrolling for Space and Arrow keys.
+\f0\i0 \cf2 \cb1 \strokec2 \
+\cb3         \cf8 \strokec8 if\cf2 \strokec2  ([\cf6 \strokec6 "Space"\cf2 \strokec2 , \cf6 \strokec6 "ArrowUp"\cf2 \strokec2 , \cf6 \strokec6 "ArrowDown"\cf2 \strokec2 , \cf6 \strokec6 "ArrowLeft"\cf2 \strokec2 , \cf6 \strokec6 "ArrowRight"\cf2 \strokec2 ].\cf7 \strokec7 includes\cf2 \strokec2 (\cf4 \strokec4 event\cf2 \strokec2 .\cf4 \strokec4 code\cf2 \strokec2 )) \{\cb1 \
+\cb3           \cf4 \strokec4 event\cf2 \strokec2 .\cf7 \strokec7 preventDefault\cf2 \strokec2 ();\cb1 \
+\cb3         \}\cb1 \
+\cb3         
+\f1\i \cf9 \strokec9 // Title Screen: Use Spacebar to start
+\f0\i0 \cf2 \cb1 \strokec2 \
+\cb3         \cf8 \strokec8 if\cf2 \strokec2  (\cf4 \strokec4 currentScreen\cf2 \strokec2  \cf10 \strokec10 ===\cf2 \strokec2  \cf6 \strokec6 "title"\cf2 \strokec2 ) \{\cb1 \
+\cb3           \cf8 \strokec8 if\cf2 \strokec2  (\cf4 \strokec4 event\cf2 \strokec2 .\cf4 \strokec4 code\cf2 \strokec2  \cf10 \strokec10 ===\cf2 \strokec2  \cf6 \strokec6 "Space"\cf2 \strokec2 ) \{\cb1 \
+\cb3             \cf7 \strokec7 showScreen\cf2 \strokec2 (\cf6 \strokec6 "party"\cf2 \strokec2 );\cb1 \
+\cb3             \cf7 \strokec7 updateHeroDisplay\cf2 \strokec2 ();\cb1 \
+\cb3           \}\cb1 \
+\cb3           \cf8 \strokec8 return\cf2 \strokec2 ;\cb1 \
+\cb3         \}\cb1 \
+\cb3         
+\f1\i \cf9 \strokec9 // Party Selection Screen: Left/Right to navigate; Spacebar to select or confirm
+\f0\i0 \cf2 \cb1 \strokec2 \
+\cb3         \cf8 \strokec8 if\cf2 \strokec2  (\cf4 \strokec4 currentScreen\cf2 \strokec2  \cf10 \strokec10 ===\cf2 \strokec2  \cf6 \strokec6 "party"\cf2 \strokec2 ) \{\cb1 \
+\cb3           \cf8 \strokec8 if\cf2 \strokec2  (\cf4 \strokec4 event\cf2 \strokec2 .\cf4 \strokec4 code\cf2 \strokec2  \cf10 \strokec10 ===\cf2 \strokec2  \cf6 \strokec6 "ArrowLeft"\cf2 \strokec2 ) \{\cb1 \
+\cb3             \cf4 \strokec4 heroIndex\cf2 \strokec2  \cf10 \strokec10 =\cf2 \strokec2  (\cf4 \strokec4 heroIndex\cf2 \strokec2  \cf10 \strokec10 -\cf2 \strokec2  \cf5 \strokec5 1\cf2 \strokec2  \cf10 \strokec10 +\cf2 \strokec2  \cf4 \strokec4 allHeroes\cf2 \strokec2 .\cf4 \strokec4 length\cf2 \strokec2 ) \cf10 \strokec10 %\cf2 \strokec2  \cf4 \strokec4 allHeroes\cf2 \strokec2 .\cf4 \strokec4 length\cf2 \strokec2 ;\cb1 \
+\cb3             \cf7 \strokec7 updateHeroDisplay\cf2 \strokec2 ();\cb1 \
+\cb3           \} \cf8 \strokec8 else\cf2 \strokec2  \cf8 \strokec8 if\cf2 \strokec2  (\cf4 \strokec4 event\cf2 \strokec2 .\cf4 \strokec4 code\cf2 \strokec2  \cf10 \strokec10 ===\cf2 \strokec2  \cf6 \strokec6 "ArrowRight"\cf2 \strokec2 ) \{\cb1 \
+\cb3             \cf4 \strokec4 heroIndex\cf2 \strokec2  \cf10 \strokec10 =\cf2 \strokec2  (\cf4 \strokec4 heroIndex\cf2 \strokec2  \cf10 \strokec10 +\cf2 \strokec2  \cf5 \strokec5 1\cf2 \strokec2 ) \cf10 \strokec10 %\cf2 \strokec2  \cf4 \strokec4 allHeroes\cf2 \strokec2 .\cf4 \strokec4 length\cf2 \strokec2 ;\cb1 \
+\cb3             \cf7 \strokec7 updateHeroDisplay\cf2 \strokec2 ();\cb1 \
+\cb3           \} \cf8 \strokec8 else\cf2 \strokec2  \cf8 \strokec8 if\cf2 \strokec2  (\cf4 \strokec4 event\cf2 \strokec2 .\cf4 \strokec4 code\cf2 \strokec2  \cf10 \strokec10 ===\cf2 \strokec2  \cf6 \strokec6 "Space"\cf2 \strokec2 ) \{\cb1 \
+\cb3             
+\f1\i \cf9 \strokec9 // If less than 3 heroes are selected, toggle selection.
+\f0\i0 \cf2 \cb1 \strokec2 \
+\cb3             
+\f1\i \cf9 \strokec9 // Once 3 are selected, Spacebar confirms and starts the game.
+\f0\i0 \cf2 \cb1 \strokec2 \
+\cb3             \cf8 \strokec8 if\cf2 \strokec2  (\cf4 \strokec4 selectedHeroes\cf2 \strokec2 .\cf4 \strokec4 length\cf2 \strokec2  \cf10 \strokec10 <\cf2 \strokec2  \cf5 \strokec5 3\cf2 \strokec2  \cf10 \strokec10 ||\cf2 \strokec2  \cf10 \strokec10 !\cf4 \strokec4 selectedHeroes\cf2 \strokec2 .\cf7 \strokec7 includes\cf2 \strokec2 (\cf4 \strokec4 heroIndex\cf2 \strokec2 )) \{\cb1 \
+\cb3               \cf7 \strokec7 selectHero\cf2 \strokec2 ();\cb1 \
+\cb3             \} \cf8 \strokec8 else\cf2 \strokec2  \{\cb1 \
+\cb3               \cf7 \strokec7 startGame\cf2 \strokec2 ();\cb1 \
+\cb3             \}\cb1 \
+\cb3             \cf7 \strokec7 updateHeroDisplay\cf2 \strokec2 ();\cb1 \
+\cb3           \}\cb1 \
+\cb3           \cf8 \strokec8 return\cf2 \strokec2 ;\cb1 \
+\cb3         \}\cb1 \
+\cb3         
+\f1\i \cf9 \strokec9 // Battle Screen
+\f0\i0 \cf2 \cb1 \strokec2 \
+\cb3         \cf8 \strokec8 if\cf2 \strokec2  (\cf4 \strokec4 currentScreen\cf2 \strokec2  \cf10 \strokec10 ===\cf2 \strokec2  \cf6 \strokec6 "battle"\cf2 \strokec2 ) \{\cb1 \
+\cb3           
+\f1\i \cf9 \strokec9 // If in attack mode, use Arrow keys to choose attack direction.
+\f0\i0 \cf2 \cb1 \strokec2 \
+\cb3           \cf8 \strokec8 if\cf2 \strokec2  (\cf4 \strokec4 awaitingAttackDirection\cf2 \strokec2 ) \{\cb1 \
+\cb3             \cf8 \strokec8 if\cf2 \strokec2  (\cf4 \strokec4 event\cf2 \strokec2 .\cf4 \strokec4 code\cf2 \strokec2  \cf10 \strokec10 ===\cf2 \strokec2  \cf6 \strokec6 "ArrowUp"\cf2 \strokec2 ) \cf7 \strokec7 attackWall\cf2 \strokec2 (\cf5 \strokec5 0\cf2 \strokec2 , \cf10 \strokec10 -\cf5 \strokec5 1\cf2 \strokec2 );\cb1 \
+\cb3             \cf8 \strokec8 if\cf2 \strokec2  (\cf4 \strokec4 event\cf2 \strokec2 .\cf4 \strokec4 code\cf2 \strokec2  \cf10 \strokec10 ===\cf2 \strokec2  \cf6 \strokec6 "ArrowDown"\cf2 \strokec2 ) \cf7 \strokec7 attackWall\cf2 \strokec2 (\cf5 \strokec5 0\cf2 \strokec2 , \cf5 \strokec5 1\cf2 \strokec2 );\cb1 \
+\cb3             \cf8 \strokec8 if\cf2 \strokec2  (\cf4 \strokec4 event\cf2 \strokec2 .\cf4 \strokec4 code\cf2 \strokec2  \cf10 \strokec10 ===\cf2 \strokec2  \cf6 \strokec6 "ArrowLeft"\cf2 \strokec2 ) \cf7 \strokec7 attackWall\cf2 \strokec2 (\cf10 \strokec10 -\cf5 \strokec5 1\cf2 \strokec2 , \cf5 \strokec5 0\cf2 \strokec2 );\cb1 \
+\cb3             \cf8 \strokec8 if\cf2 \strokec2  (\cf4 \strokec4 event\cf2 \strokec2 .\cf4 \strokec4 code\cf2 \strokec2  \cf10 \strokec10 ===\cf2 \strokec2  \cf6 \strokec6 "ArrowRight"\cf2 \strokec2 ) \cf7 \strokec7 attackWall\cf2 \strokec2 (\cf5 \strokec5 1\cf2 \strokec2 , \cf5 \strokec5 0\cf2 \strokec2 );\cb1 \
+\cb3             \cf8 \strokec8 return\cf2 \strokec2 ;\cb1 \
+\cb3           \}\cb1 \
+\cb3           
+\f1\i \cf9 \strokec9 // If not in attack mode, Spacebar initiates attack mode.
+\f0\i0 \cf2 \cb1 \strokec2 \
+\cb3           \cf8 \strokec8 if\cf2 \strokec2  (\cf4 \strokec4 event\cf2 \strokec2 .\cf4 \strokec4 code\cf2 \strokec2  \cf10 \strokec10 ===\cf2 \strokec2  \cf6 \strokec6 "Space"\cf2 \strokec2 ) \{\cb1 \
+\cb3             \cf7 \strokec7 requestAttackDirection\cf2 \strokec2 ();\cb1 \
+\cb3             \cf8 \strokec8 return\cf2 \strokec2 ;\cb1 \
+\cb3           \}\cb1 \
+\cb3           
+\f1\i \cf9 \strokec9 // Otherwise, use Arrow keys for movement.
+\f0\i0 \cf2 \cb1 \strokec2 \
+\cb3           \cf8 \strokec8 if\cf2 \strokec2  (\cf4 \strokec4 event\cf2 \strokec2 .\cf4 \strokec4 code\cf2 \strokec2  \cf10 \strokec10 ===\cf2 \strokec2  \cf6 \strokec6 "ArrowUp"\cf2 \strokec2 ) \cf7 \strokec7 moveUnit\cf2 \strokec2 (\cf5 \strokec5 0\cf2 \strokec2 , \cf10 \strokec10 -\cf5 \strokec5 1\cf2 \strokec2 );\cb1 \
+\cb3           \cf8 \strokec8 if\cf2 \strokec2  (\cf4 \strokec4 event\cf2 \strokec2 .\cf4 \strokec4 code\cf2 \strokec2  \cf10 \strokec10 ===\cf2 \strokec2  \cf6 \strokec6 "ArrowDown"\cf2 \strokec2 ) \cf7 \strokec7 moveUnit\cf2 \strokec2 (\cf5 \strokec5 0\cf2 \strokec2 , \cf5 \strokec5 1\cf2 \strokec2 );\cb1 \
+\cb3           \cf8 \strokec8 if\cf2 \strokec2  (\cf4 \strokec4 event\cf2 \strokec2 .\cf4 \strokec4 code\cf2 \strokec2  \cf10 \strokec10 ===\cf2 \strokec2  \cf6 \strokec6 "ArrowLeft"\cf2 \strokec2 ) \cf7 \strokec7 moveUnit\cf2 \strokec2 (\cf10 \strokec10 -\cf5 \strokec5 1\cf2 \strokec2 , \cf5 \strokec5 0\cf2 \strokec2 );\cb1 \
+\cb3           \cf8 \strokec8 if\cf2 \strokec2  (\cf4 \strokec4 event\cf2 \strokec2 .\cf4 \strokec4 code\cf2 \strokec2  \cf10 \strokec10 ===\cf2 \strokec2  \cf6 \strokec6 "ArrowRight"\cf2 \strokec2 ) \cf7 \strokec7 moveUnit\cf2 \strokec2 (\cf5 \strokec5 1\cf2 \strokec2 , \cf5 \strokec5 0\cf2 \strokec2 );\cb1 \
+\cb3         \}\cb1 \
+\cb3       \});\cb1 \
+\
+\cb3       
+\f1\i \cf9 \strokec9 // Start with the Title Screen.
+\f0\i0 \cf2 \cb1 \strokec2 \
+\cb3       \cf7 \strokec7 showScreen\cf2 \strokec2 (\cf6 \strokec6 "title"\cf2 \strokec2 );\cb1 \
+\cb3     </\cf4 \strokec4 script\cf2 \strokec2 >\cb1 \
+\cb3   </\cf4 \strokec4 body\cf2 \strokec2 >\cb1 \
+\cb3 </\cf4 \strokec4 html\cf2 \strokec2 >\cb1 \
+}
