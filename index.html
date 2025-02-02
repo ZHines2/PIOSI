@@ -1,174 +1,345 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PIOSI - Click the Button Game</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      margin: 0;
-      padding: 0;
-      background-color: #f0f0f0;
-    }
-    h1 {
-      margin-top: 20px;
-    }
-    #game-button {
-      padding: 20px 40px;
-      font-size: 20px;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      transition: transform 0.2s ease;
-    }
-    #game-button:hover {
-      transform: scale(1.1);
-    }
-    #score {
-      margin-top: 20px;
-      font-size: 24px;
-      color: #333;
-    }
-    #timer {
-      margin-top: 10px;
-      font-size: 18px;
-      color: #555;
-    }
-    #title-screen {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.8);
-      color: white;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      z-index: 10;
-    }
-    #stats {
-      margin-top: 20px;
-      font-size: 16px;
-      color: #555;
-    }
-    #start-button {
-      padding: 15px 30px;
-      font-size: 20px;
-      background-color: #28a745;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    #start-button:hover {
-      background-color: #218838;
-    }
-  </style>
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PIOSI - Full Game</title>
+    <style>
+      body {
+        font-family: monospace;
+        text-align: center;
+        background-color: #222;
+        color: white;
+        margin: 0;
+        padding: 0;
+      }
+      #title-screen, #party-select, #game-container {
+        display: none;
+        padding: 20px;
+      }
+      #battlefield {
+        display: inline-block;
+        border: 2px solid white;
+        padding: 10px;
+        margin-bottom: 10px;
+      }
+      .row {
+        display: flex;
+        justify-content: center;
+      }
+      .cell {
+        width: 40px;
+        height: 40px;
+        text-align: center;
+        font-size: 24px;
+        border: 1px solid gray;
+        line-height: 40px;
+      }
+      .active {
+        background-color: darkblue;
+        color: white;
+      }
+      .attack-mode {
+        background-color: darkred;
+      }
+      .highlight {
+        border: 2px solid yellow;
+      }
+      button {
+        padding: 10px;
+        margin: 5px;
+        font-size: 18px;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Title Screen -->
+    <div id="title-screen">
+      <h1>PIOSI</h1>
+      <p>Press Spacebar to Start</p>
+    </div>
 
-  <!-- Title Screen -->
-  <div id="title-screen">
-    <h1>Welcome to PIOSI!</h1>
-    <p>Click the button as many times as you can in 10 seconds!</p>
-    <button id="start-button">Start Game</button>
-  </div>
+    <!-- Party Selection Screen -->
+    <div id="party-select">
+      <h2>
+        Select Your Party<br />(Left/Right to Navigate, Spacebar to
+        Select/deselect, Spacebar again to Confirm if 3 selected)
+      </h2>
+      <div id="hero-display"></div>
+      <p id="selection-info"></p>
+    </div>
 
-  <!-- Game UI -->
-  <h1>PIOSI - Click the Button Game</h1>
-  <button id="game-button" style="display: none;">Click Me!</button>
-  <div id="score">Score: 0</div>
-  <div id="timer">Time Left: 10s</div>
-  <div id="stats">
-    <p>Total Clicks: <span id="total-clicks">0</span></p>
-    <p>Average Score: <span id="average-score">0</span></p>
-    <p>Games Played: <span id="games-played">0</span></p>
-  </div>
+    <!-- Battle Screen -->
+    <div id="game-container">
+      <h1>Level 1: The Breaking Wall</h1>
+      <div id="battlefield"></div>
+      <p id="status">Wall HP: 20</p>
+      <div
+        id="log"
+        style="height:100px; overflow-y:auto; background-color:#111; padding:10px; border:1px solid white; text-align:left;"
+      ></div>
+      <p>
+        Use Arrow Keys to Move | Spacebar to Attack | Then use Arrow Keys to
+        choose attack direction
+      </p>
+    </div>
 
-  <script>
-    const button = document.getElementById('game-button');
-    const scoreDisplay = document.getElementById('score');
-    const timerDisplay = document.getElementById('timer');
-    const startButton = document.getElementById('start-button');
-    const titleScreen = document.getElementById('title-screen');
-    const totalClicksDisplay = document.getElementById('total-clicks');
-    const averageScoreDisplay = document.getElementById('average-score');
-    const gamesPlayedDisplay = document.getElementById('games-played');
+    <script>
+      // Global Variables and Data
+      let currentScreen = "title";
+      let selectedHeroes = [];
+      let heroIndex = 0;
+      let allHeroes = [
+        { name: "Knight", symbol: '♞', attack: 4, range: 1, agility: 5 },
+        { name: "Archer", symbol: '⚔', attack: 3, range: 4, agility: 3 },
+        { name: "Wizard", symbol: '✡', attack: 2, range: 6, agility: 2 },
+        { name: "Berserker", symbol: '⚒', attack: 5, range: 1, agility: 4 },
+        { name: "Rogue", symbol: '☠', attack: 4, range: 2, agility: 4 },
+        { name: "Jester", symbol: '♣', attack: 3, range: 2, agility: 5, joke: true },
+        { name: "Meatwalker", symbol: '₻', attack: 6, range: 1, agility: 3, meat: true }
+      ];
+      let party = [];
+      let battlefield = Array.from({ length: 5 }, () => Array(10).fill('.'));
+      let wallHP = 20;
+      let movePoints = 0;
+      let currentUnit = 0;
+      let awaitingAttackDirection = false;
 
-    let score = 0;
-    let timeLeft = 10;
-    let totalClicks = parseInt(localStorage.getItem('totalClicks')) || 0;
-    let totalScore = parseInt(localStorage.getItem('totalScore')) || 0;
-    let gamesPlayed = parseInt(localStorage.getItem('gamesPlayed')) || 0;
+      // Screen Management
+      function showScreen(screen) {
+        document.getElementById("title-screen").style.display = (screen === "title") ? "block" : "none";
+        document.getElementById("party-select").style.display = (screen === "party") ? "block" : "none";
+        document.getElementById("game-container").style.display = (screen === "battle") ? "block" : "none";
+        currentScreen = screen;
+      }
 
-    // Update stats display
-    function updateStats() {
-      totalClicksDisplay.textContent = totalClicks;
-      averageScoreDisplay.textContent = gamesPlayed > 0 ? (totalScore / gamesPlayed).toFixed(2) : 0;
-      gamesPlayedDisplay.textContent = gamesPlayed;
-    }
+      // Fetch a joke from the JokeAPI
+      async function fetchJoke() {
+        let response = await fetch(`https://v2.jokeapi.dev/joke/Programming?type=single`);
+        let data = await response.json();
+        return data.joke;
+      }
 
-    // Function to move the button to a random position
-    function moveButton() {
-      const width = window.innerWidth - button.offsetWidth;
-      const height = window.innerHeight - button.offsetHeight;
-      button.style.position = 'absolute';
-      button.style.left = Math.random() * width + 'px';
-      button.style.top = Math.random() * height + 'px';
-    }
+      // Fetch Bacon Ipsum text from the API
+      async function fetchBaconIpsum() {
+        let response = await fetch("https://baconipsum.com/api/?type=meat-and-filler&sentences=1");
+        let data = await response.json();
+        return data[0]; // Return the first sentence
+      }
 
-    // Start the game
-    function startGame() {
-      titleScreen.style.display = 'none';
-      button.style.display = 'block';
-      score = 0;
-      timeLeft = 10;
-      scoreDisplay.textContent = `Score: ${score}`;
-      timerDisplay.textContent = `Time Left: ${timeLeft}s`;
-      button.disabled = false;
-      button.textContent = "Click Me!";
-      moveButton();
+      // Party Selection Functions
+      async function updateHeroDisplay() {
+        let hero = allHeroes[heroIndex];
+        let display = `<p class="highlight">${hero.name} (${hero.symbol})</p>`;
 
-      const timerInterval = setInterval(() => {
-        timeLeft--;
-        timerDisplay.textContent = `Time Left: ${timeLeft}s`;
-        if (timeLeft <= 0) {
-          clearInterval(timerInterval);
-          button.disabled = true;
-          button.textContent = "Game Over!";
-          alert(`Game Over! Your score: ${score}`);
-          gamesPlayed++;
-          totalScore += score;
-          localStorage.setItem('totalScore', totalScore);
-          localStorage.setItem('gamesPlayed', gamesPlayed);
-          updateStats();
-          titleScreen.style.display = 'flex';
-          button.style.display = 'none';
+        if (hero.joke) {
+          let joke = await fetchJoke();
+          display += `<p>${joke}</p>`;
+        } else {
+          display += `<p>Attack: ${hero.attack} | Range: ${hero.range} | Agility: ${hero.agility}</p>`;
+          display += `<p>${selectedHeroes.includes(heroIndex) ? "SELECTED" : "Press Spacebar to Select"}</p>`;
         }
-      }, 1000);
-    }
 
-    // Event listener for button clicks
-    button.addEventListener('click', () => {
-      score++;
-      totalClicks++;
-      localStorage.setItem('totalClicks', totalClicks);
-      scoreDisplay.textContent = `Score: ${score}`;
-      moveButton();
-      updateStats();
-    });
+        document.getElementById("hero-display").innerHTML = display;
+        document.getElementById("selection-info").textContent = `Selected Heroes: ${selectedHeroes.length}/3`;
+      }
 
-    // Event listener for start button
-    startButton.addEventListener('click', startGame);
+      function selectHero() {
+        if (selectedHeroes.includes(heroIndex)) {
+          selectedHeroes = selectedHeroes.filter(i => i !== heroIndex);
+        } else if (selectedHeroes.length < 3) {
+          selectedHeroes.push(heroIndex);
+        }
+        updateHeroDisplay();
+      }
 
-    // Initial stats update
-    updateStats();
-  </script>
-</body>
+      function startGame() {
+        if (selectedHeroes.length === 3) {
+          party = selectedHeroes.map(i => allHeroes[i]);
+          // Sort party by agility (highest agility first)
+          party.sort((a, b) => b.agility - a.agility);
+          initializeBattle();
+          showScreen("battle");
+        } else {
+          alert("Select exactly 3 heroes!");
+        }
+      }
+
+      // Battle Functions
+      function initializeBattle() {
+        // Reset the battlefield: 5 rows x 10 columns
+        battlefield = Array.from({ length: 5 }, () => Array(10).fill('.'));
+        // Place each party member on row 0 starting from column 2
+        for (let i = 0; i < party.length; i++) {
+          party[i].x = 2 + i;
+          party[i].y = 0;
+          battlefield[0][2 + i] = party[i].symbol;
+        }
+        // Build the wall on the bottom row (row 4)
+        for (let i = 0; i < 10; i++) {
+          battlefield[4][i] = '█';
+        }
+        wallHP = 20;
+        currentUnit = 0;
+        movePoints = party[0].agility;
+        awaitingAttackDirection = false;
+        logClear();
+        drawBattlefield();
+      }
+
+      function drawBattlefield() {
+        let html = '';
+        for (let y = 0; y < battlefield.length; y++) {
+          html += '<div class="row">';
+          for (let x = 0; x < battlefield[y].length; x++) {
+            let cellClass = '';
+            if (party[currentUnit].x === x && party[currentUnit].y === y) {
+              cellClass = awaitingAttackDirection ? "attack-mode" : "active";
+            }
+            html += `<div class="cell ${cellClass}">${battlefield[y][x]}</div>`;
+          }
+          html += '</div>';
+        }
+        document.getElementById("battlefield").innerHTML = html;
+        document.getElementById("status").textContent =
+          `Wall HP: ${wallHP} | ${party[currentUnit].name}'s Turn (Moves Left: ${movePoints})`;
+      }
+
+      function moveUnit(dx, dy) {
+        if (awaitingAttackDirection || movePoints <= 0) return;
+        let unit = party[currentUnit];
+        let newX = unit.x + dx;
+        let newY = unit.y + dy;
+        // Check boundaries and prevent moving into the wall
+        if (newX < 0 || newX >= 10 || newY < 0 || newY >= 5) return;
+        if (battlefield[newY][newX] === '█') return;
+        // Clear old position, update unit position and battlefield grid
+        battlefield[unit.y][unit.x] = '.';
+        unit.x = newX;
+        unit.y = newY;
+        battlefield[unit.y][unit.x] = unit.symbol;
+        movePoints--;
+        drawBattlefield();
+        if (movePoints === 0) nextTurn();
+      }
+
+      async function requestAttackDirection() {
+        if (!awaitingAttackDirection) {
+          awaitingAttackDirection = true;
+          logMessage(`${party[currentUnit].name} is ready to attack! Choose a direction.`);
+          drawBattlefield();
+        }
+      }
+
+      async function attackWall(dx, dy) {
+        let unit = party[currentUnit];
+        if (unit.joke) {
+          let joke = await fetchJoke();
+          logMessage(`${unit.name} tells a joke: "${joke}"`);
+        } else if (unit.meat) {
+          let meatMessage = await fetchBaconIpsum();
+          logMessage(`${unit.name} says: "${meatMessage}"`);
+        }
+        // Check along the line in the chosen direction up to unit.range tiles
+        for (let i = 1; i <= unit.range; i++) {
+          let targetX = unit.x + dx * i;
+          let targetY = unit.y + dy * i;
+          if (targetX >= 0 && targetX < 10 && targetY >= 0 && targetY < 5) {
+            if (battlefield[targetY][targetX] === '█') {
+              wallHP -= unit.attack;
+              logMessage(`${unit.name} attacks from range ${i}! -${unit.attack} Damage to the wall.`);
+              awaitingAttackDirection = false;
+              if (wallHP <= 0) {
+                document.body.innerHTML = "<h2>The Wall Collapses! Victory!</h2>";
+                return;
+              }
+              nextTurn();
+              return;
+            }
+          }
+        }
+        logMessage(`${unit.name} attacks, but there's nothing in range.`);
+        awaitingAttackDirection = false;
+        drawBattlefield();
+      }
+
+      function nextTurn() {
+        awaitingAttackDirection = false;
+        currentUnit = (currentUnit + 1) % party.length;
+        movePoints = party[currentUnit].agility;
+        logMessage(`Now it's ${party[currentUnit].name}'s turn.`);
+        drawBattlefield();
+      }
+
+      // Logging utility
+      function logMessage(message) {
+        let logDiv = document.getElementById("log");
+        logDiv.innerHTML += `<p>${message}</p>`;
+        logDiv.scrollTop = logDiv.scrollHeight;
+      }
+      function logClear() {
+        document.getElementById("log").innerHTML = "";
+      }
+
+      // Global Key Handling using Spacebar and Arrow Keys only.
+      document.addEventListener("keydown", function(event) {
+        // Prevent default scrolling for Space and Arrow keys.
+        if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.code)) {
+          event.preventDefault();
+        }
+        // Title Screen: Use Spacebar to start
+        if (currentScreen === "title") {
+          if (event.code === "Space") {
+            showScreen("party");
+            updateHeroDisplay();
+          }
+          return;
+        }
+        // Party Selection Screen: Left/Right to navigate; Spacebar to select or confirm
+        if (currentScreen === "party") {
+          if (event.code === "ArrowLeft") {
+            heroIndex = (heroIndex - 1 + allHeroes.length) % allHeroes.length;
+            updateHeroDisplay();
+          } else if (event.code === "ArrowRight") {
+            heroIndex = (heroIndex + 1) % allHeroes.length;
+            updateHeroDisplay();
+          } else if (event.code === "Space") {
+            // If less than 3 heroes are selected, toggle selection.
+            // Once 3 are selected, Spacebar confirms and starts the game.
+            if (selectedHeroes.length < 3 || !selectedHeroes.includes(heroIndex)) {
+              selectHero();
+            } else {
+              startGame();
+            }
+            updateHeroDisplay();
+          }
+          return;
+        }
+        // Battle Screen
+        if (currentScreen === "battle") {
+          // If in attack mode, use Arrow keys to choose attack direction.
+          if (awaitingAttackDirection) {
+            if (event.code === "ArrowUp") attackWall(0, -1);
+            if (event.code === "ArrowDown") attackWall(0, 1);
+            if (event.code === "ArrowLeft") attackWall(-1, 0);
+            if (event.code === "ArrowRight") attackWall(1, 0);
+            return;
+          }
+          // If not in attack mode, Spacebar initiates attack mode.
+          if (event.code === "Space") {
+            requestAttackDirection();
+            return;
+          }
+          // Otherwise, use Arrow keys for movement.
+          if (event.code === "ArrowUp") moveUnit(0, -1);
+          if (event.code === "ArrowDown") moveUnit(0, 1);
+          if (event.code === "ArrowLeft") moveUnit(-1, 0);
+          if (event.code === "ArrowRight") moveUnit(1, 0);
+        }
+      });
+
+      // Start with the Title Screen.
+      showScreen("title");
+    </script>
+  </body>
 </html>
