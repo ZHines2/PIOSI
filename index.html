@@ -13,7 +13,9 @@
         margin: 0;
         padding: 0;
       }
-      #title-screen, #party-select, #game-container {
+      #title-screen,
+      #party-select,
+      #game-container {
         display: none;
         padding: 20px;
       }
@@ -43,7 +45,7 @@
       .attack-mode {
         background-color: darkred;
       }
-      /* New CSS class for enemies with a snappier visual effect */
+      /* Snappier visual style for enemies */
       .enemy {
         color: #ff5722;
         font-weight: bold;
@@ -92,217 +94,284 @@
     </div>
 
     <script>
-                                                            // Global Variables and Data
-                                                            let currentScreen = "title";
-                                                            let currentLevel = 1; // Tracks current level
-                                                            let selectedHeroes = [];
-                                                            let heroIndex = 0;
+      // Global cache settings for API safeguard.
+      // Each cache entry will store the API response and a timestamp.
+      const CACHE_TTL = 5 * 60 * 1000; // 5 minutes in milliseconds
+      const apiCache = {
+        joke: null,
+        bacon: null,
+        tarot: null,
+        nonseq: null
+      };
 
-                                                            // Define heroes with starting HP
-                                                            let allHeroes = [
-                                                              { name: "Knight", symbol: '♞', attack: 4, range: 1, agility: 5, hp: 15 },
-                                                              { name: "Archer", symbol: '⚔', attack: 3, range: 4, agility: 3, hp: 12 },
-                                                              { name: "Wizard", symbol: '✡', attack: 2, range: 6, agility: 2, hp: 10 },
-                                                              { name: "Berserker", symbol: '⚒', attack: 5, range: 1, agility: 4, hp: 18 },
-                                                              { name: "Rogue", symbol: '☠', attack: 4, range: 2, agility: 4, hp: 12 },
-                                                              { name: "Jester", symbol: '♣', attack: 3, range: 2, agility: 5, hp: 10, joke: true },
-                                                              { name: "Meatwalker", symbol: '₻', attack: 6, range: 1, agility: 3, hp: 20, meat: true }
-                                                            ];
-                                                            let party = [];
+      function getFromCache(key) {
+        const entry = apiCache[key];
+        if (entry && (Date.now() - entry.timestamp < CACHE_TTL)) {
+          return entry.value;
+        }
+        return null;
+      }
 
-                                                            // Enemies – will be created on level 2 with extra properties including agility
-                                                            let enemies = [];
+      function setCache(key, value) {
+        apiCache[key] = { value, timestamp: Date.now() };
+      }
 
-                                                            let battlefield = []; // 2D grid of the battlefield
-                                                            let wallHP = 20;
-                                                            let movePoints = 0;
-                                                            let currentUnit = 0;
-                                                            let awaitingAttackDirection = false;
+      // Global Variables and Data
+      let currentScreen = "title";
+      let currentLevel = 1; // Tracks current level
+      let selectedHeroes = [];
+      let heroIndex = 0;
 
-                                                            // Screen Management
-                                                            function showScreen(screen) {
-                                                              document.getElementById("title-screen").style.display = (screen === "title") ? "block" : "none";
-                                                              document.getElementById("party-select").style.display = (screen === "party") ? "block" : "none";
-                                                              document.getElementById("game-container").style.display = (screen === "battle") ? "block" : "none";
-                                                              currentScreen = screen;
-                                                            }
+      // Define heroes with starting attributes.
+      // Includes Soothscribe (tarot) and Nonsequiteur (nonseq) along with other heroes.
+      let allHeroes = [
+        { name: "Knight", symbol: "♞", attack: 4, range: 1, agility: 5, hp: 15 },
+        { name: "Archer", symbol: "⚔", attack: 3, range: 4, agility: 3, hp: 12 },
+        { name: "Wizard", symbol: "✡", attack: 2, range: 6, agility: 2, hp: 10 },
+        { name: "Berserker", symbol: "⚒", attack: 5, range: 1, agility: 4, hp: 18 },
+        { name: "Rogue", symbol: "☠", attack: 4, range: 2, agility: 4, hp: 12 },
+        { name: "Jester", symbol: "♣", attack: 3, range: 2, agility: 5, hp: 10, joke: true },
+        { name: "Meatwalker", symbol: "₻", attack: 6, range: 1, agility: 3, hp: 20, meat: true },
+        { name: "Soothscribe", symbol: "☄", attack: 2, range: 5, agility: 3, hp: 11, tarot: true },
+        { name: "Nonsequiteur", symbol: "∄", attack: 3, range: 3, agility: 3, hp: 10, nonseq: true }
+      ];
+      let party = [];
 
-                                                            // Fetch a joke for heroes with the joke property
-                                                            async function fetchJoke() {
-                                                              try {
-                                                                let response = await fetch(`https://v2.jokeapi.dev/joke/Programming?type=single`);
-                                                                let data = await response.json();
-                                                                return data.joke;
-                                                              } catch (error) {
-                                                                console.error('Error fetching joke:', error);
-                                                                return "No joke available at the moment.";
-                                                              }
-                                                            }
+      // Enemies will be generated per level.
+      let enemies = [];
+      let battlefield = []; // 2D grid representing the battlefield.
+      let wallHP = 20;
+      let movePoints = 0;
+      let currentUnit = 0;
+      let awaitingAttackDirection = false;
 
-                                                            // Fetch bacon ipsum for heroes with the meat property
-                                                            async function fetchBaconIpsum() {
-                                                              try {
-                                                                let response = await fetch("https://baconipsum.com/api/?type=meat-and-filler&sentences=1");
-                                                                let data = await response.json();
-                                                                return data[0];
-                                                              } catch (error) {
-                                                                console.error('Error fetching bacon ipsum:', error);
-                                                                return "No message available.";
-                                                              }
-                                                            }
+      // Screen display management.
+      function showScreen(screen) {
+        document.getElementById("title-screen").style.display =
+          screen === "title" ? "block" : "none";
+        document.getElementById("party-select").style.display =
+          screen === "party" ? "block" : "none";
+        document.getElementById("game-container").style.display =
+          screen === "battle" ? "block" : "none";
+        currentScreen = screen;
+      }
 
-                                                            // Party Selection Functions
-                                                            async function updateHeroDisplay() {
-                                                              let hero = allHeroes[heroIndex];
-                                                              let display = `<p class="highlight">${hero.name} (${hero.symbol})</p>`;
-                                                              if (hero.joke) {
-                                                                let joke = await fetchJoke();
-                                                                display += `<p>${joke}</p>`;
-                                                              } else {
-                                                                display += `<p>Attack: ${hero.attack} | Range: ${hero.range} | Agility: ${hero.agility} | HP: ${hero.hp}</p>`;
-                                                                display += `<p>${selectedHeroes.includes(heroIndex) ? "SELECTED" : "Press Spacebar to Select"}</p>`;
-                                                              }
-                                                              document.getElementById("hero-display").innerHTML = display;
-                                                              document.getElementById("selection-info").textContent = `Selected Heroes: ${selectedHeroes.length}/3`;
-                                                            }
+      // Utility Functions for Special Hero Actions with caching:
 
-                                                            function selectHero() {
-                                                              if (selectedHeroes.includes(heroIndex)) {
-                                                                selectedHeroes = selectedHeroes.filter(i => i !== heroIndex);
-                                                              } else if (selectedHeroes.length < 3) {
-                                                                selectedHeroes.push(heroIndex);
-                                                              }
-                                                              updateHeroDisplay();
-                                                            }
+      async function fetchJoke() {
+        let cached = getFromCache("joke");
+        if (cached) return cached;
+        try {
+          let response = await fetch("https://v2.jokeapi.dev/joke/Programming?type=single");
+          let data = await response.json();
+          setCache("joke", data.joke);
+          return data.joke;
+        } catch (error) {
+          console.error("Error fetching joke:", error);
+          return "No joke available at the moment.";
+        }
+      }
 
-                                                            function startGame() {
-                                                              if (selectedHeroes.length === 3) {
-                                                                party = selectedHeroes.map(i => Object.assign({}, allHeroes[i])); // Clone hero objects
-                                                                party.sort((a, b) => b.agility - a.agility);
-                                                                currentLevel = 1;
-                                                                initializeBattle();
-                                                                showScreen("battle");
-                                                              } else {
-                                                                alert("Select exactly 3 heroes!");
-                                                              }
-                                                            }
+      async function fetchBaconIpsum() {
+        let cached = getFromCache("bacon");
+        if (cached) return cached;
+        try {
+          let response = await fetch("https://baconipsum.com/api/?type=meat-and-filler&sentences=1");
+          let data = await response.json();
+          setCache("bacon", data[0]);
+          return data[0];
+        } catch (error) {
+          console.error("Error fetching bacon ipsum:", error);
+          return "No message available.";
+        }
+      }
 
-                                                            // Battle Functions
-                                                            function initializeBattle() {
-                          let rows, cols;
-                          enemies = [];
+      async function fetchTarotCard() {
+        let cached = getFromCache("tarot");
+        if (cached) return cached;
+        try {
+          let response = await fetch("https://tarotapi.dev/api/v1/cards/random");
+          let data = await response.json();
+          if (data.cards && data.cards.length > 0) {
+            let card = data.cards[0];
+            let result = `Card: ${card.name} - ${card.meaning_up}`;
+            setCache("tarot", result);
+            return result;
+          } else {
+            return "No tarot card data available.";
+          }
+        } catch (error) {
+          console.error("Error fetching tarot card:", error);
+          return "No tarot card available at the moment.";
+        }
+      }
 
-                          if (currentLevel === 1) {
-                            // Level 1: Standard horizontal layout
-                            rows = 5;
-                            cols = 10;
-                            wallHP = 20;
-                            document.getElementById("level-title").textContent = "Level 1: The Breaking Wall";
-                          } else if (currentLevel === 2) {
-                            // Level 2: Bigger battlefield with Brigands
-                            rows = 7;
-                            cols = 12;
-                            wallHP = 40;
-                            document.getElementById("level-title").textContent = "Level 2: The Reinforced Barricade";
-                            // Create two Brigand enemies
-                            enemies.push({ name: "Brigand", symbol: 'Җ', attack: 3, range: 1, hp: 12, agility: 2, x: cols - 3, y: Math.floor(rows / 2) });
-                            enemies.push({ name: "Brigand", symbol: 'Җ', attack: 3, range: 1, hp: 12, agility: 2, x: cols - 5, y: Math.floor(rows / 2) });
-                          } else if (currentLevel === 3) {
-                            // Level 3: Vertical Corridor (3 columns x 14 rows)
-                            rows = 14;
-                            cols = 3;
-                            wallHP = 60; // A stronger wall for this level
-                            document.getElementById("level-title").textContent = "Level 3: The Vertical Corridor";
-                            // Place a row of Bucklemen between the heroes and the wall.
-                            // They will be placed on row 7 (the middle of the corridor). One Buckleman per column.
-                            for (let col = 0; col < cols; col++) {
-                              enemies.push({ name: "Buckleman", symbol: '⛨', attack: 1, range: 1, hp: 20, agility: 1, x: col, y: 7 });
-                            }
-                          }
+      async function fetchNonseqFact() {
+        let cached = getFromCache("nonseq");
+        if (cached) return cached;
+        try {
+          let response = await fetch("https://uselessfacts.jsph.pl/random.json?language=en");
+          let data = await response.json();
+          setCache("nonseq", data.text);
+          return data.text;
+        } catch (error) {
+          console.error("Error fetching fact:", error);
+          return "No fact available at the moment.";
+        }
+      }
 
-                          // Build the battlefield grid
-                          battlefield = Array.from({ length: rows }, () => Array(cols).fill('.'));
+      // Party Selection Functions
+      async function updateHeroDisplay() {
+        let hero = allHeroes[heroIndex];
+        let display = `<p class="highlight">${hero.name} (${hero.symbol})</p>`;
+        if (hero.joke) {
+          let joke = await fetchJoke();
+          display += `<p>${joke}</p>`;
+        } else if (hero.meat) {
+          let meatMessage = await fetchBaconIpsum();
+          display += `<p>${meatMessage}</p>`;
+        } else if (hero.tarot) {
+          let tarotCard = await fetchTarotCard();
+          display += `<p>${tarotCard}</p>`;
+        } else if (hero.nonseq) {
+          let fact = await fetchNonseqFact();
+          display += `<p>${fact}</p>`;
+        } else {
+          display += `<p>Attack: ${hero.attack} | Range: ${hero.range} | Agility: ${hero.agility} | HP: ${hero.hp}</p>`;
+          display += `<p>${
+            selectedHeroes.includes(heroIndex) ? "SELECTED" : "Press Spacebar to Select"
+          }</p>`;
+        }
+        document.getElementById("hero-display").innerHTML = display;
+        document.getElementById("selection-info").textContent = `Selected Heroes: ${selectedHeroes.length}/3`;
+      }
 
-                          // Place party members on row 0.
-                          for (let i = 0; i < party.length; i++) {
-                            // For levels with very few columns (like level 3), ensure we do not exceed the available columns.
-                            party[i].x = Math.min(i, cols - 1);
-                            party[i].y = 0;
-                            battlefield[0][party[i].x] = party[i].symbol;
-                          }
+      function selectHero() {
+        if (selectedHeroes.includes(heroIndex)) {
+          selectedHeroes = selectedHeroes.filter(i => i !== heroIndex);
+        } else if (selectedHeroes.length < 3) {
+          selectedHeroes.push(heroIndex);
+        }
+        updateHeroDisplay();
+      }
 
-                          // Place enemies on the battlefield grid
-                          enemies.forEach(enemy => {
-                            battlefield[enemy.y][enemy.x] = enemy.symbol;
-                          });
+      function startGame() {
+        if (selectedHeroes.length === 3) {
+          // Clone the selected heroes into our party.
+          party = selectedHeroes.map(i => Object.assign({}, allHeroes[i]));
+          // Sort heroes by agility (highest first)
+          party.sort((a, b) => b.agility - a.agility);
+          currentLevel = 1;
+          initializeBattle();
+          showScreen("battle");
+        } else {
+          alert("Select exactly 3 heroes!");
+        }
+      }
 
-                          // Build the wall on the bottom row.
-                          for (let i = 0; i < cols; i++) {
-                            battlefield[rows - 1][i] = '█';
-                          }
+      // Battle Initialization (Level Setup)
+      function initializeBattle() {
+        let rows, cols;
+        enemies = [];
 
-                          // Reset turn-related variables.
-                          currentUnit = 0;
-                          movePoints = party[0].agility;
-                          awaitingAttackDirection = false;
+        if (currentLevel === 1) {
+          rows = 5;
+          cols = 10;
+          wallHP = 20;
+          document.getElementById("level-title").textContent = "Level 1: The Breaking Wall";
+        } else if (currentLevel === 2) {
+          rows = 7;
+          cols = 12;
+          wallHP = 40;
+          document.getElementById("level-title").textContent = "Level 2: The Reinforced Barricade";
+          // Create two Brigand enemies.
+          enemies.push({ name: "Brigand", symbol: "Җ", attack: 3, range: 1, hp: 12, agility: 2, x: cols - 3, y: Math.floor(rows / 2) });
+          enemies.push({ name: "Brigand", symbol: "Җ", attack: 3, range: 1, hp: 12, agility: 2, x: cols - 5, y: Math.floor(rows / 2) });
+        } else if (currentLevel === 3) {
+          rows = 14;
+          cols = 3;
+          wallHP = 60;
+          document.getElementById("level-title").textContent = "Level 3: The Vertical Corridor";
+          // Create a row of Bucklemen.
+          for (let col = 0; col < cols; col++) {
+            enemies.push({ name: "Buckleman", symbol: "⛨", attack: 1, range: 1, hp: 20, agility: 1, x: col, y: 7 });
+          }
+        }
 
-                          logClear();
-                          drawBattlefield();
-                        }
+        // Build the battlefield grid.
+        battlefield = Array.from({ length: rows }, () => Array(cols).fill("."));
 
-                                                            function drawBattlefield() {
-              let html = '';
-              for (let y = 0; y < battlefield.length; y++) {
-                html += '<div class="row">';
-                for (let x = 0; x < battlefield[y].length; x++) {
-                  let cellContent = battlefield[y][x];
-                  let cellClass = '';
+        // Place heroes on the first row.
+        for (let i = 0; i < party.length; i++) {
+          party[i].x = Math.min(i, cols - 1);
+          party[i].y = 0;
+          battlefield[0][party[i].x] = party[i].symbol;
+        }
 
-                  // Apply enemy class if the cell contains either a Brigand ("Җ") or a Buckleman ("⛨")
-                  if (cellContent === 'Җ' || cellContent === '⛨') {
-                    cellClass += " enemy";
-                  }
-                  // Highlight the active hero
-                  if (party[currentUnit].x === x && party[currentUnit].y === y) {
-                    cellClass += awaitingAttackDirection ? " attack-mode" : " active";
-                  }
-                  html += `<div class="cell ${cellClass}">${cellContent}</div>`;
-                }
-                html += '</div>';
-              }
-              document.getElementById("battlefield").innerHTML = html;
-              document.getElementById("status").textContent =
-                `Wall HP: ${wallHP} | ${party[currentUnit].name}'s Turn (Moves Left: ${movePoints})`;
+        // Place enemies on the battlefield.
+        enemies.forEach(enemy => {
+          battlefield[enemy.y][enemy.x] = enemy.symbol;
+        });
+
+        // Build the wall on the bottom row.
+        for (let i = 0; i < cols; i++) {
+          battlefield[rows - 1][i] = "█";
+        }
+
+        // Reset turn variables.
+        currentUnit = 0;
+        movePoints = party[0].agility;
+        awaitingAttackDirection = false;
+
+        logClear();
+        drawBattlefield();
+      }
+
+      function drawBattlefield() {
+        let html = "";
+        for (let y = 0; y < battlefield.length; y++) {
+          html += '<div class="row">';
+          for (let x = 0; x < battlefield[y].length; x++) {
+            let cellContent = battlefield[y][x];
+            let cellClass = "";
+            // Style enemy cells.
+            if (cellContent === "Җ" || cellContent === "⛨") {
+              cellClass += " enemy";
             }
+            // Highlight the active hero.
+            if (party[currentUnit].x === x && party[currentUnit].y === y) {
+              cellClass += awaitingAttackDirection ? " attack-mode" : " active";
+            }
+            html += `<div class="cell ${cellClass}">${cellContent}</div>`;
+          }
+          html += "</div>";
+        }
+        document.getElementById("battlefield").innerHTML = html;
+        document.getElementById("status").textContent = `Wall HP: ${wallHP} | ${party[currentUnit].name}'s Turn (Moves Left: ${movePoints})`;
+      }
 
-                                                            function moveUnit(dx, dy) {
-                                      if (awaitingAttackDirection || movePoints <= 0) return;
-                                      let unit = party[currentUnit];
-                                      let newX = unit.x + dx;
-                                      let newY = unit.y + dy;
-                                      // Check boundaries and that the target cell is empty (preventing collisions with wall, heroes, and enemies)
-                                      if (
-                                        newX < 0 ||
-                                        newX >= battlefield[0].length ||
-                                        newY < 0 ||
-                                        newY >= battlefield.length ||
-                                        battlefield[newY][newX] !== '.'
-                                      ) {
-                                        return; // Abort move if the cell is occupied
-                                      }
-                                      // Clear the previous position and update to the new position
-                                      battlefield[unit.y][unit.x] = '.';
-                                      unit.x = newX;
-                                      unit.y = newY;
-                                      battlefield[newY][newX] = unit.symbol;
-                                      movePoints--;
-                                      drawBattlefield();
-                                      if (movePoints === 0) nextTurn();
-                                    }
+      // Movement function for active hero.
+      function moveUnit(dx, dy) {
+        if (awaitingAttackDirection || movePoints <= 0) return;
+        let unit = party[currentUnit];
+        let newX = unit.x + dx;
+        let newY = unit.y + dy;
+        if (newX < 0 || newX >= battlefield[0].length || newY < 0 || newY >= battlefield.length || battlefield[newY][newX] !== ".") {
+          return; // Invalid move.
+        }
+        battlefield[unit.y][unit.x] = ".";
+        unit.x = newX;
+        unit.y = newY;
+        battlefield[newY][newX] = unit.symbol;
+        movePoints--;
+        drawBattlefield();
+        if (movePoints === 0) nextTurn();
+      }
 
-                                                           // Global flag to ensure level transition logic runs only once per wall collapse.
+      // Global flag to ensure one level transition per wall collapse.
       let transitioningLevel = false;
 
+      // Attack Function – handles both regular and special hero actions.
       async function attackInDirection(dx, dy) {
         let unit = party[currentUnit];
         if (unit.joke) {
@@ -311,13 +380,18 @@
         } else if (unit.meat) {
           let meatMessage = await fetchBaconIpsum();
           logMessage(`${unit.name} says: "${meatMessage}"`);
+        } else if (unit.tarot) {
+          let tarotCard = await fetchTarotCard();
+          logMessage(`${unit.name} reveals a tarot card: "${tarotCard}"`);
+        } else if (unit.nonseq) {
+          let fact = await fetchNonseqFact();
+          logMessage(`${unit.name} shares a fact: "${fact}"`);
         }
         for (let i = 1; i <= unit.range; i++) {
           let targetX = unit.x + dx * i;
           let targetY = unit.y + dy * i;
           if (targetX < 0 || targetX >= battlefield[0].length || targetY < 0 || targetY >= battlefield.length)
             break;
-          // Check if there is an enemy at the target position.
           let enemy = enemies.find(e => e.x === targetX && e.y === targetY);
           if (enemy) {
             enemy.hp -= unit.attack;
@@ -331,19 +405,17 @@
             nextTurn();
             return;
           }
-          // Check for a wall at the target position.
           if (battlefield[targetY][targetX] === '█') {
             wallHP -= unit.attack;
             logMessage(`${unit.name} attacks the wall from range ${i} for ${unit.attack} damage!`);
             awaitingAttackDirection = false;
-            // Run the level transition logic only once when the wall is destroyed.
             if (wallHP <= 0 && !transitioningLevel) {
               transitioningLevel = true;
-              if (currentLevel < 3) {  // Adjust this check if you add more levels.
+              if (currentLevel < 3) {
                 logMessage(`The Wall Collapses! Level Completed, moving to Level ${currentLevel + 1}!`);
                 currentLevel++;
                 setTimeout(() => {
-                  transitioningLevel = false; // Reset flag for the next level transition.
+                  transitioningLevel = false;
                   enemyTurn();
                   initializeBattle();
                 }, 2000);
@@ -362,171 +434,157 @@
         drawBattlefield();
       }
 
-                                                            function requestAttackDirection() {
-                                                              if (!awaitingAttackDirection) {
-                                                                awaitingAttackDirection = true;
-                                                                logMessage(`${party[currentUnit].name} is ready to attack! Choose a direction.`);
-                                                                drawBattlefield();
-                                                              }
-                                                            }
+      function requestAttackDirection() {
+        if (!awaitingAttackDirection) {
+          awaitingAttackDirection = true;
+          logMessage(`${party[currentUnit].name} is ready to attack! Choose a direction.`);
+          drawBattlefield();
+        }
+      }
 
-                                                            // Simple enemy pathing and turn execution
-                                                           function enemyTurn() {
-                                          // For each enemy, perform moves based on their agility
-                                          enemies.forEach(enemy => {
-                                            for (let moves = 0; moves < enemy.agility; moves++) {
-                                              moveEnemy(enemy);
-                                            }
-                                            // After moving, let the enemy attack if possible
-                                            enemyAttack(enemy);
-                                          });
-                                          logMessage("Enemy turn completed.");
-                                          drawBattlefield();
-                                        }
+      // Execute enemy turn with simple AI.
+      function enemyTurn() {
+        enemies.forEach(enemy => {
+          for (let moves = 0; moves < enemy.agility; moves++) {
+            moveEnemy(enemy);
+          }
+          enemyAttack(enemy);
+        });
+        logMessage("Enemy turn completed.");
+        drawBattlefield();
+      }
 
-                                                            // Basic enemy movement: enemy moves toward the closest hero horizontally
-                                                            function moveEnemy(enemy) {
-                                                              // Using a simple pathing strategy: move enemy one tile toward the nearest hero along x axis.
-                                                              let targetHero = party.reduce((closest, hero) => {
-                                                                let dHero = Math.abs(hero.x - enemy.x);
-                                                                let dClosest = Math.abs(closest.x - enemy.x);
-                                                                return dHero < dClosest ? hero : closest;
-                                                              }, party[0]);
-                                                              let dx = 0, dy = 0;
-                                                              if (enemy.x > targetHero.x) dx = -1;
-                                                              else if (enemy.x < targetHero.x) dx = 1;
-                                                              // For vertical movement, can add similar logic if you want enemies to approach from above/below
-                                                              if (enemy.y < targetHero.y) dy = 1;
-                                                              else if (enemy.y > targetHero.y) dy = -1;
+      // Basic enemy movement: move enemy toward the nearest hero.
+      function moveEnemy(enemy) {
+        let targetHero = party.reduce((closest, hero) => {
+          return Math.abs(hero.x - enemy.x) < Math.abs(closest.x - enemy.x) ? hero : closest;
+        }, party[0]);
+        let dx = 0, dy = 0;
+        if (enemy.x > targetHero.x) dx = -1;
+        else if (enemy.x < targetHero.x) dx = 1;
+        if (enemy.y < targetHero.y) dy = 1;
+        else if (enemy.y > targetHero.y) dy = -1;
+        let newX = enemy.x + dx;
+        let newY = enemy.y + dy;
+        if (newX >= 0 && newX < battlefield[0].length && newY >= 0 && newY < battlefield.length && battlefield[newY][newX] === ".") {
+          battlefield[enemy.y][enemy.x] = ".";
+          enemy.x = newX;
+          enemy.y = newY;
+          battlefield[newY][newX] = enemy.symbol;
+        }
+      }
 
-                                                              let newX = enemy.x + dx;
-                                                              let newY = enemy.y + dy;
-                                                              // Ensure new coordinate is within bounds and not occupied by wall or other entities
-                                                              if (newX >= 0 && newX < battlefield[0].length && newY >= 0 && newY < battlefield.length && battlefield[newY][newX] === '.') {
-                                                                // Clear old position
-                                                                battlefield[enemy.y][enemy.x] = '.';
-                                                                enemy.x = newX;
-                                                                enemy.y = newY;
-                                                                battlefield[newY][newX] = enemy.symbol;
-                                                              }
-                                                            }
+      // Simple enemy attack: check adjacent cells for heroes.
+      function enemyAttack(enemy) {
+        const directions = [
+          [0, -1],
+          [0, 1],
+          [-1, 0],
+          [1, 0]
+        ];
+        directions.forEach(([dx, dy]) => {
+          const targetX = enemy.x + dx;
+          const targetY = enemy.y + dy;
+          const targetHero = party.find(hero => hero.x === targetX && hero.y === targetY);
+          if (targetHero) {
+            targetHero.hp -= enemy.attack;
+            logMessage(`${enemy.name} attacks ${targetHero.name} for ${enemy.attack} damage! (Hero HP: ${targetHero.hp})`);
+            if (targetHero.hp <= 0) {
+              logMessage(`${targetHero.name} is defeated!`);
+              battlefield[targetHero.y][targetHero.x] = ".";
+              party = party.filter(hero => hero !== targetHero);
+              if (currentUnit >= party.length) currentUnit = 0;
+              if (party.length === 0) {
+                logMessage("All heroes have been defeated. Game Over.");
+                document.body.innerHTML = "<h2>Game Over! All heroes are lost.</h2>";
+              }
+            }
+          }
+        });
+      }
 
-                                              function enemyAttack(enemy) {
-                                // Check adjacent cells for heroes and attack if a hero is found
-                                const directions = [
-                                  [0, -1], // Up
-                                  [0, 1],  // Down
-                                  [-1, 0], // Left
-                                  [1, 0]   // Right
-                                ];
-                                directions.forEach(([dx, dy]) => {
-                                  const targetX = enemy.x + dx;
-                                  const targetY = enemy.y + dy;
-                                  // Find a hero at the target cell
-                                  const targetHero = party.find(hero => hero.x === targetX && hero.y === targetY);
-                                  if (targetHero) {
-                                    targetHero.hp -= enemy.attack;
-                                    logMessage(`${enemy.name} attacks ${targetHero.name} for ${enemy.attack} damage! (Hero HP: ${targetHero.hp})`);
-                                    if (targetHero.hp <= 0) {
-                                      logMessage(`${targetHero.name} is defeated!`);
-                                      // Clear the hero's sprite from the battlefield
-                                      battlefield[targetHero.y][targetHero.x] = '.';
-                                      // Remove the hero from the party
-                                      party = party.filter(hero => hero !== targetHero);
-                                      // Adjust currentUnit if necessary
-                                      if (currentUnit >= party.length) {
-                                        currentUnit = 0;
-                                      }
-                                      // Check if all heroes are dead to end the game
-                                      if (party.length === 0) {
-                                        logMessage("All heroes have been defeated. Game Over.");
-                                        document.body.innerHTML = "<h2>Game Over! All heroes are lost.</h2>";
-                                      }
-                                    }
-                                  }
-                                });
-                              }
+      // End current turn and proceed to next.
+      function nextTurn() {
+        awaitingAttackDirection = false;
+        currentUnit = (currentUnit + 1) % party.length;
+        if (currentUnit === 0) enemyTurn();
+        movePoints = party[currentUnit].agility;
+        logMessage(`Now it's ${party[currentUnit].name}'s turn.`);
+        drawBattlefield();
+      }
 
-                                                            function nextTurn() {
-                                                      awaitingAttackDirection = false;
-                                                      currentUnit = (currentUnit + 1) % party.length;
-                                                      // If currentUnit resets to 0, that means all heroes have taken a turn
-                                                      if (currentUnit === 0) {
-                                                        enemyTurn();
-                                                      }
-                                                      movePoints = party[currentUnit].agility;
-                                                      logMessage(`Now it's ${party[currentUnit].name}'s turn.`);
-                                                      drawBattlefield();
-                                                    }
+      // Logging utilities.
+      function logMessage(message) {
+        let logDiv = document.getElementById("log");
+        logDiv.innerHTML += `<p>${message}</p>`;
+        logDiv.scrollTop = logDiv.scrollHeight;
+      }
+      function logClear() {
+        document.getElementById("log").innerHTML = "";
+      }
 
-                                                            // Logging utilities
-                                                            function logMessage(message) {
-                                                              let logDiv = document.getElementById("log");
-                                                              logDiv.innerHTML += `<p>${message}</p>`;
-                                                              logDiv.scrollTop = logDiv.scrollHeight;
-                                                            }
-                                                            function logClear() {
-                                                              document.getElementById("log").innerHTML = "";
-                                                            }
+      // Restart the game on demand.
+      function restartGame() {
+        window.location.reload();
+      }
 
-                                                            // Key mapping for input on each screen
-                                                            const keyActions = {
-                                                              title: {
-                                                                Space: () => {
-                                                                  showScreen("party");
-                                                                  updateHeroDisplay();
-                                                                }
-                                                              },
-                                                              party: {
-                                                                ArrowLeft: () => {
-                                                                  heroIndex = (heroIndex - 1 + allHeroes.length) % allHeroes.length;
-                                                                  updateHeroDisplay();
-                                                                },
-                                                                ArrowRight: () => {
-                                                                  heroIndex = (heroIndex + 1) % allHeroes.length;
-                                                                  updateHeroDisplay();
-                                                                },
-                                                                Space: () => {
-                                                                  if (selectedHeroes.length < 3 || !selectedHeroes.includes(heroIndex)) {
-                                                                    selectHero();
-                                                                  } else {
-                                                                    startGame();
-                                                                  }
-                                                                  updateHeroDisplay();
-                                                                }
-                                                              },
-                                                              battle: {
-                                                                Space: () => {
-                                                                  requestAttackDirection();
-                                                                },
-                                                                ArrowUp: () => {
-                                                                  awaitingAttackDirection ? attackInDirection(0, -1) : moveUnit(0, -1);
-                                                                },
-                                                                ArrowDown: () => {
-                                                                  awaitingAttackDirection ? attackInDirection(0, 1) : moveUnit(0, 1);
-                                                                },
-                                                                ArrowLeft: () => {
-                                                                  awaitingAttackDirection ? attackInDirection(-1, 0) : moveUnit(-1, 0);
-                                                                },
-                                                                ArrowRight: () => {
-                                                                  awaitingAttackDirection ? attackInDirection(1, 0) : moveUnit(1, 0);
-                                                                }
-                                                              }
-                                                            };
+      // Keyboard controls mapped by screen.
+      const keyActions = {
+        title: {
+          Space: () => {
+            showScreen("party");
+            updateHeroDisplay();
+          }
+        },
+        party: {
+          ArrowLeft: () => {
+            heroIndex = (heroIndex - 1 + allHeroes.length) % allHeroes.length;
+            updateHeroDisplay();
+          },
+          ArrowRight: () => {
+            heroIndex = (heroIndex + 1) % allHeroes.length;
+            updateHeroDisplay();
+          },
+          Space: () => {
+            if (selectedHeroes.length < 3 || !selectedHeroes.includes(heroIndex)) selectHero();
+            else startGame();
+            updateHeroDisplay();
+          }
+        },
+        battle: {
+          Space: () => requestAttackDirection(),
+          ArrowUp: () => {
+            awaitingAttackDirection ? attackInDirection(0, -1) : moveUnit(0, -1);
+          },
+          ArrowDown: () => {
+            awaitingAttackDirection ? attackInDirection(0, 1) : moveUnit(0, 1);
+          },
+          ArrowLeft: () => {
+            awaitingAttackDirection ? attackInDirection(-1, 0) : moveUnit(-1, 0);
+          },
+          ArrowRight: () => {
+            awaitingAttackDirection ? attackInDirection(1, 0) : moveUnit(1, 0);
+          }
+        }
+      };
 
-                                                            // Global keydown event listener
-                                                            document.addEventListener("keydown", (event) => {
-                                                              if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.code)) {
-                                                                event.preventDefault();
-                                                              }
-                                                              const actions = keyActions[currentScreen];
-                                                              if (actions && actions[event.code]) {
-                                                                actions[event.code]();
-                                                              }
-                                                            });
+      // Global keydown event listener.
+      document.addEventListener("keydown", (event) => {
+        // Allow restart on Spacebar if game is over (Victory or Game Over)
+        if ((document.body.innerText.includes("Game Over") || document.body.innerText.includes("Victory")) && event.code === "Space") {
+          restartGame();
+          return;
+        }
 
-                                                            // Start with the Title Screen.
-                                                            showScreen("title");
+        if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.code)) {
+          event.preventDefault();
+        }
+        const actions = keyActions[currentScreen];
+        if (actions && actions[event.code]) actions[event.code]();
+      });
+
+      // Start the game at the Title Screen.
+      showScreen("title");
     </script>
   </body>
 </html>
