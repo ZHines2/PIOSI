@@ -243,9 +243,27 @@
         logDiv.scrollTop = logDiv.scrollHeight;
       }
       
-      // Record an attack interaction (for narrative purposes).
-      function recordAttack(message) {
+      // Record an attack interaction and have special characters say their cool shit during battle.
+      async function recordAttack(message) {
         recordInteraction(message);
+        // Fetch and log additional narrative if the hero has a special property.
+        const hero = party[battleEngine.currentUnit];
+        if (hero.joke) {
+          const joke = await fetchJoke();
+          logMessage(joke);
+        } else if (hero.meat) {
+          const meatMsg = await fetchBaconIpsum();
+          logMessage(meatMsg);
+        } else if (hero.tarot) {
+          const tarot = await fetchTarotCard();
+          logMessage(tarot);
+        } else if (hero.nonseq) {
+          const fact = await fetchNonseqFact();
+          logMessage(fact);
+        } else if (hero.reactsToHistory) {
+          const reaction = await getGriotReaction();
+          logMessage(reaction);
+        }
       }
       
       // Handle key events for each screen.
