@@ -96,6 +96,8 @@
       <p>Press Spacebar to Restart</p>
     </div>
     
+    <audio id="background-music" src="DarkAnoid.mp3" loop></audio>
+    
     <script type="module">
       import {
         fetchJoke,
@@ -179,6 +181,8 @@
           alert("Select exactly 3 heroes!");
           return;
         }
+        const backgroundMusic = document.getElementById("background-music");
+        backgroundMusic.play();
         party = selectedHeroes.map(i => Object.assign({}, allHeroes[i]));
         // Sort party by agility.
         party.sort((a, b) => b.agility - a.agility);
@@ -244,9 +248,9 @@
       }
       
       // Record an attack interaction and have special characters say their cool shit during battle.
+      // This async function returns a promise so that the battle engine can await it.
       async function recordAttack(message) {
         recordInteraction(message);
-        // Fetch and log additional narrative if the hero has a special property.
         const hero = party[battleEngine.currentUnit];
         if (hero.joke) {
           const joke = await fetchJoke();
@@ -299,33 +303,33 @@
             logMessage(`${party[battleEngine.currentUnit].name} is ready to attack! Choose a direction.`);
             renderBattlefield();
           },
-          ArrowUp: () => {
+          ArrowUp: async () => {
             if (battleEngine.awaitingAttackDirection) {
-              battleEngine.attackInDirection(0, -1, party[battleEngine.currentUnit], recordAttack);
+              await battleEngine.attackInDirection(0, -1, party[battleEngine.currentUnit], recordAttack);
             } else {
               battleEngine.moveUnit(0, -1);
             }
             renderBattlefield();
           },
-          ArrowDown: () => {
+          ArrowDown: async () => {
             if (battleEngine.awaitingAttackDirection) {
-              battleEngine.attackInDirection(0, 1, party[battleEngine.currentUnit], recordAttack);
+              await battleEngine.attackInDirection(0, 1, party[battleEngine.currentUnit], recordAttack);
             } else {
               battleEngine.moveUnit(0, 1);
             }
             renderBattlefield();
           },
-          ArrowLeft: () => {
+          ArrowLeft: async () => {
             if (battleEngine.awaitingAttackDirection) {
-              battleEngine.attackInDirection(-1, 0, party[battleEngine.currentUnit], recordAttack);
+              await battleEngine.attackInDirection(-1, 0, party[battleEngine.currentUnit], recordAttack);
             } else {
               battleEngine.moveUnit(-1, 0);
             }
             renderBattlefield();
           },
-          ArrowRight: () => {
+          ArrowRight: async () => {
             if (battleEngine.awaitingAttackDirection) {
-              battleEngine.attackInDirection(1, 0, party[battleEngine.currentUnit], recordAttack);
+              await battleEngine.attackInDirection(1, 0, party[battleEngine.currentUnit], recordAttack);
             } else {
               battleEngine.moveUnit(1, 0);
             }
@@ -341,12 +345,12 @@
         window.location.reload();
       }
       
-      document.addEventListener("keydown", (event) => {
+      document.addEventListener("keydown", async (event) => {
         const actions = keyActions[currentScreen];
         const action = actions && (actions[event.code] || actions[event.key]);
         if (action) {
           event.preventDefault();
-          action();
+          await action();
         }
       });
       
