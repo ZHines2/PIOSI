@@ -79,10 +79,14 @@ export class BattleEngine {
   }
   
   // Processes the attack in a given direction.
-  attackInDirection(dx, dy, unit, recordAttackCallback) {
+  // This async function awaits the narrative callback so that special character dialogue is fully logged
+  // before the turn advances.
+  async attackInDirection(dx, dy, unit, recordAttackCallback) {
     if (this.transitioningLevel) return;
-    // Record the attack for narrative purposes.
-    recordAttackCallback(`${unit.name} attacked in direction (${dx}, ${dy}).`);
+    // Await the narrative output before processing the attack.
+    await recordAttackCallback(`${unit.name} attacked in direction (${dx}, ${dy}).`);
+    
+    // Process the attack along the chosen direction.
     for (let i = 1; i <= unit.range; i++) {
       const targetX = unit.x + dx * i;
       const targetY = unit.y + dy * i;
@@ -97,11 +101,13 @@ export class BattleEngine {
           this.enemies = this.enemies.filter(e => e !== enemy);
         }
         this.awaitingAttackDirection = false;
+        // Slight delay for diegetic effect.
+        await new Promise(resolve => setTimeout(resolve, 300));
         this.nextTurn();
         return;
       }
       if (this.battlefield[targetY][targetX] === "ᚙ") {
-        // Stop further processing once wall is already collapsing.
+        // Stop processing once the wall is reached.
         if (this.transitioningLevel) return;
         this.wallHP -= unit.attack;
         this.logCallback(`${unit.name} attacks the wall from range ${i} for ${unit.attack} damage!`);
@@ -109,16 +115,18 @@ export class BattleEngine {
         if (this.wallHP <= 0 && !this.transitioningLevel) {
           this.logCallback("The Wall Collapses!");
           this.transitioningLevel = true;
-          // Delay the level transition to show the collapse message.
           setTimeout(() => this.onLevelComplete(), 1500);
           return;
         }
+        await new Promise(resolve => setTimeout(resolve, 300));
         this.nextTurn();
         return;
       }
     }
     this.logCallback(`${unit.name} attacks, but there's nothing in range.`);
     this.awaitingAttackDirection = false;
+    await new Promise(resolve => setTimeout(resolve, 300));
+    this.nextTurn();
   }
   
   // Basic enemy AI: move and then attack adjacent heroes.
