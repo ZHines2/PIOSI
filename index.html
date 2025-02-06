@@ -4,9 +4,18 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>PIOSI - Modular Game with Accurate Enemy Pathing</title>
+    <!-- Load the extra light (200) version of the Sono font from Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Sono:wght@200&display=swap" rel="stylesheet">
     <style>
+      /* Optionally set a base font size on the html element */
+      html {
+        font-size: 14px;
+      }
       body {
-        font-family: monospace;
+        /* Use the Sono extra light font with a fallback to monospace */
+        font-family: 'Sono', monospace;
+        /* Base font size can also be set here, e.g., 14px or 0.875rem */
+        font-size: 1rem;
         text-align: center;
         background-color: #222;
         color: white;
@@ -35,7 +44,8 @@
         width: 40px;
         height: 40px;
         text-align: center;
-        font-size: 24px;
+        /* Reduced font size for cells from 24px to 18px */
+        font-size: 18px;
         border: 1px solid gray;
         line-height: 40px;
         transition: all 0.2s ease-in-out;
@@ -384,13 +394,12 @@
         victory: {
           Space: () => restartGame()
         },
-        "game-over": {  // When game over overlay is displayed.
+        "game-over": {
           Space: () => restartGame()
         }
       };
       
       document.addEventListener("keydown", async (event) => {
-        // If the game over overlay is visible, use its key actions.
         if (document.getElementById("game-over").style.display === "flex") {
           const action = keyActions["game-over"][event.code] || keyActions["game-over"][event.key];
           if (action) {
