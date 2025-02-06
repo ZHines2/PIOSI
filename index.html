@@ -16,7 +16,8 @@
       #title-screen,
       #party-select,
       #game-container,
-      #victory {
+      #victory,
+      #game-over {
         display: none;
         padding: 20px;
       }
@@ -59,6 +60,27 @@
         margin: 5px;
         font-size: 18px;
       }
+      /* Game Over overlay styles. Initially hidden via display: none */
+      #game-over {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.90);
+        z-index: 999;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+      #game-over h1 {
+        font-size: 3em;
+        margin-bottom: 20px;
+      }
+      #game-over p {
+        font-size: 1.5em;
+      }
     </style>
   </head>
   <body>
@@ -94,6 +116,12 @@
       <h1>Victory!</h1>
       <p>Congratulations! All levels have been completed!</p>
       <p>Press Spacebar to Restart</p>
+    </div>
+    
+    <!-- Game Over Screen -->
+    <div id="game-over">
+      <h1>Game Over</h1>
+      <p>All your heroes have been defeated.<br>Press Spacebar to Restart.</p>
     </div>
     
     <audio id="background-music" src="DarkAnoid.mp3" loop></audio>
@@ -137,6 +165,7 @@
         document.getElementById("party-select").style.display = (screen === "party") ? "block" : "none";
         document.getElementById("game-container").style.display = (screen === "battle") ? "block" : "none";
         document.getElementById("victory").style.display = (screen === "victory") ? "block" : "none";
+        // Game over overlay is managed separately.
         currentScreen = screen;
       }
       
@@ -209,7 +238,7 @@
             enemies.push({ name: "Buckleman", symbol: "⛨", attack: 1, range: 1, hp: 20, agility: 1, x: col, y: 7 });
           }
         }
-        // Create a new BattleEngine instance and pass the onLevelComplete callback.
+        // Create a new BattleEngine instance and pass the log, level complete, and onGameOver callbacks.
         battleEngine = new BattleEngine(
           party,
           enemies,
@@ -217,7 +246,8 @@
           cols,
           wallHP,
           logMessage,
-          onLevelComplete
+          onLevelComplete,
+          onGameOver
         );
         renderBattlefield();
       }
@@ -234,6 +264,11 @@
         }
       }
       
+      // Handle game over by displaying the game-over overlay.
+      function onGameOver() {
+        document.getElementById("game-over").style.display = "flex";
+      }
+      
       // Refresh the battlefield display and update status text.
       function renderBattlefield() {
         document.getElementById("battlefield").innerHTML = battleEngine.drawBattlefield();
@@ -247,8 +282,7 @@
         logDiv.scrollTop = logDiv.scrollHeight;
       }
       
-      // Record an attack interaction and have special characters say their cool shit during battle.
-      // This async function returns a promise so that the battle engine can await it.
+      // Record an attack interaction and have special characters say their cool lines during battle.
       async function recordAttack(message) {
         recordInteraction(message);
         const hero = party[battleEngine.currentUnit];
@@ -270,7 +304,19 @@
         }
       }
       
-      // Handle key events for each screen.
+      // Restart the game without reloading the page.
+      function restartGame() {
+        // Reset state variables.
+        level = 1;
+        selectedHeroes = [];
+        party = [];
+        heroIndex = 0;
+        document.getElementById("log").innerHTML = "";
+        document.getElementById("game-over").style.display = "none";
+        showScreen("title");
+      }
+      
+      // Key actions for each screen.
       const keyActions = {
         title: {
           Space: () => {
@@ -288,7 +334,6 @@
             updateHeroDisplay();
           },
           Space: () => {
-            // Allow selection or proceed to start the game.
             if (selectedHeroes.length < 3 || !selectedHeroes.includes(heroIndex)) {
               selectHero();
             } else {
@@ -338,14 +383,23 @@
         },
         victory: {
           Space: () => restartGame()
+        },
+        "game-over": {  // When game over overlay is displayed.
+          Space: () => restartGame()
         }
       };
       
-      function restartGame() {
-        window.location.reload();
-      }
-      
       document.addEventListener("keydown", async (event) => {
+        // If the game over overlay is visible, use its key actions.
+        if (document.getElementById("game-over").style.display === "flex") {
+          const action = keyActions["game-over"][event.code] || keyActions["game-over"][event.key];
+          if (action) {
+            event.preventDefault();
+            await action();
+          }
+          return;
+        }
+        
         const actions = keyActions[currentScreen];
         const action = actions && (actions[event.code] || actions[event.key]);
         if (action) {
