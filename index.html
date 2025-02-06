@@ -30,6 +30,18 @@
         display: none;
         padding: 20px;
       }
+      #title-screen {
+        position: relative;
+        background: url('IMG_0905.JPG') no-repeat center center;
+        background-size: cover;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        color: white;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+      }
       #battlefield {
         display: inline-block;
         border: 2px solid white;
@@ -96,8 +108,8 @@
   <body>
     <!-- Title Screen -->
     <div id="title-screen">
-      <h1>PIOSI</h1>
-      <p>Press Spacebar to Start</p>
+      <h1></h1>
+      <p>PRESS SPACE</p>
     </div>
     
     <!-- Party Selection Screen -->
@@ -171,7 +183,7 @@
       
       // Screen management.
       function showScreen(screen) {
-        document.getElementById("title-screen").style.display = (screen === "title") ? "block" : "none";
+        document.getElementById("title-screen").style.display = (screen === "title") ? "flex" : "none";
         document.getElementById("party-select").style.display = (screen === "party") ? "block" : "none";
         document.getElementById("game-container").style.display = (screen === "battle") ? "block" : "none";
         document.getElementById("victory").style.display = (screen === "victory") ? "block" : "none";
