@@ -24,8 +24,6 @@
       }
       #title-screen {
         position: relative;
-        background: url('IMG_0905.JPG') no-repeat center center;
-        background-size: contain;
         height: 100vh;
         display: flex;
         align-items: center;
@@ -33,7 +31,55 @@
         flex-direction: column;
         color: white;
         text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+        overflow: hidden; /* Hide any potential overflow */
       }
+      
+      /* Blurred background */
+      #title-screen::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: url('IMG_0905.JPG') no-repeat center center;
+        background-size: cover;
+        filter: blur(20px); /* Adjust blur amount as needed */
+        opacity: 0.7; /* Adjust opacity as needed */
+        z-index: -1; /* Place behind the content */
+      }
+      
+      /* Image container to hold the original image */
+      .image-container {
+        width: 80%; /* Adjust as needed */
+        height: 80%; /* Adjust as needed */
+        max-width: 80vh; /* Ensure it doesn't exceed viewport height */
+        max-height: 80vw; /* Ensure it doesn't exceed viewport width */
+        background: url('IMG_0905.JPG') no-repeat center center;
+        background-size: contain;
+        z-index: 1; /* Ensure it's above the blurred background */
+      }
+      
+      /* Add a pseudo-element for the static effect */
+      .image-container::before {
+        content: '';
+        position: absolute;
+        top: -20%;
+        left: -20%;
+        width: 140%;
+        height: 140%;
+        background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAAAAAsNcNlwAAAAkUlEQVR42mNkgIH/j4wMDAwMDAY0wAGGfgYWFgYGBgYGNpgIMEAoggMDwMDAwMDAwMAAALsc9j1vXLaAAAAAAElFTkSuQmCC') repeat;
+        opacity: 0.1; /* Adjust for desired dimness */
+        animation: static-noise 10s linear infinite;
+        z-index: 2; /* Ensure it's above the background image but below the text */
+      }
+      
+      /* Keyframes for the static noise animation */
+      @keyframes static-noise {
+        0% { transform: translate(0, 0); }
+        100% { transform: translate(-5%, -5%); }
+      }
+      
       #title-screen,
       #party-select,
       #game-container,
@@ -108,8 +154,11 @@
   <body>
     <!-- Title Screen -->
     <div id="title-screen">
-      <h1></h1>
-      <p>PRESS START</p>
+      <div class="image-container">
+          <div class="static-noise"></div>
+      </div>
+      
+      <p>PRESS SPACE</p>
     </div>
     
     <!-- Party Selection Screen -->
