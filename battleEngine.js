@@ -1,18 +1,23 @@
 // battleEngine.js
 // The BattleEngine class handles battlefield initialization, drawing the grid,
-// unit movement, attack logic, enemy AI, and turn transitions. When the wall
-// collapses, the onLevelComplete callback is triggered for a level transition.
+// unit movement, attack logic, enemy AI, and turn transitions.
+// When the wall collapses or all heroes are defeated, callbacks can be used to
+// trigger level transitions or game over behavior.
 export class BattleEngine {
-  constructor(party, enemies, fieldRows, fieldCols, wallHP, logCallback, onLevelComplete) {
-    this.party = party;
+  constructor(party, enemies, fieldRows, fieldCols, wallHP, logCallback, onLevelComplete, onGameOver) {
+    // Filter out any heroes with 0 HP up front.
+    this.party = party.filter(hero => hero.hp > 0);
     this.enemies = enemies;
     this.rows = fieldRows;
     this.cols = fieldCols;
     this.wallHP = wallHP;
     this.logCallback = logCallback;
-    this.onLevelComplete = onLevelComplete; // callback when level is complete
+    // Callback for level transition (e.g., wall collapse)
+    this.onLevelComplete = onLevelComplete;
+    // Callback for game over (total player elimination)
+    this.onGameOver = onGameOver;
     this.currentUnit = 0;
-    this.movePoints = party.length ? party[0].agility : 0;
+    this.movePoints = this.party.length ? this.party[0].agility : 0;
     this.awaitingAttackDirection = false;
     this.transitioningLevel = false;
     this.battlefield = this.initializeBattlefield();
@@ -49,7 +54,8 @@ export class BattleEngine {
         if (cellContent === "Җ" || cellContent === "⛨") {
           cellClass += " enemy";
         }
-        if (this.party[this.currentUnit].x === x && this.party[this.currentUnit].y === y) {
+        // Only mark the active cell if there is an active hero.
+        if (this.party[this.currentUnit] && this.party[this.currentUnit].x === x && this.party[this.currentUnit].y === y) {
           cellClass += this.awaitingAttackDirection ? " attack-mode" : " active";
         }
         html += `<div class="cell ${cellClass}">${cellContent}</div>`;
@@ -79,11 +85,9 @@ export class BattleEngine {
   }
   
   // Processes the attack in a given direction.
-  // This async function awaits the narrative callback so that special character dialogue is fully logged
-  // before the turn advances.
+  // Awaits the narrative callback so that special character dialogue is fully logged before the turn advances.
   async attackInDirection(dx, dy, unit, recordAttackCallback) {
     if (this.transitioningLevel) return;
-    // Await the narrative output before processing the attack.
     await recordAttackCallback(`${unit.name} attacked in direction (${dx}, ${dy}).`);
     
     // Process the attack along the chosen direction.
@@ -101,13 +105,11 @@ export class BattleEngine {
           this.enemies = this.enemies.filter(e => e !== enemy);
         }
         this.awaitingAttackDirection = false;
-        // Slight delay for diegetic effect.
         await new Promise(resolve => setTimeout(resolve, 300));
         this.nextTurn();
         return;
       }
       if (this.battlefield[targetY][targetX] === "ᚙ") {
-        // Stop processing once the wall is reached.
         if (this.transitioningLevel) return;
         this.wallHP -= unit.attack;
         this.logCallback(`${unit.name} attacks the wall from range ${i} for ${unit.attack} damage!`);
@@ -143,10 +145,11 @@ export class BattleEngine {
   
   // Move enemy toward the closest hero using simple pathing.
   moveEnemy(enemy) {
+    // Find the closest hero.
     let targetHero = this.party.reduce((closest, hero) => {
-      const distCurrent = Math.abs(closest.x - enemy.x) + Math.abs(closest.y - enemy.y);
-      const distHero = Math.abs(hero.x - enemy.x) + Math.abs(hero.y - enemy.y);
-      return distHero < distCurrent ? hero : closest;
+      const currentDistance = Math.abs(closest.x - enemy.x) + Math.abs(closest.y - enemy.y);
+      const heroDistance = Math.abs(hero.x - enemy.x) + Math.abs(hero.y - enemy.y);
+      return heroDistance < currentDistance ? hero : closest;
     }, this.party[0]);
     
     const dx = targetHero.x - enemy.x;
@@ -182,7 +185,13 @@ export class BattleEngine {
   }
   
   canMoveTo(x, y) {
-    return x >= 0 && x < this.cols && y >= 0 && y < this.rows && this.battlefield[y][x] === ".";
+    return (
+      x >= 0 &&
+      x < this.cols &&
+      y >= 0 &&
+      y < this.rows &&
+      this.battlefield[y][x] === "."
+    );
   }
   
   // Enemies attack adjacent heroes.
@@ -203,27 +212,51 @@ export class BattleEngine {
         if (targetHero.hp <= 0) {
           this.logCallback(`${targetHero.name} is defeated!`);
           this.battlefield[targetHero.y][targetHero.x] = ".";
+          // Remove defeated hero.
           this.party = this.party.filter(hero => hero !== targetHero);
+          // Adjust currentUnit.
+          if (this.currentUnit >= this.party.length) {
+            this.currentUnit = 0;
+          }
         }
       }
     });
   }
   
   // Advance the turn.
-  // When all heroes have taken their turn, trigger the enemy turn.
+  // If all heroes have taken their turn, trigger the enemy turn.
   nextTurn() {
     if (this.transitioningLevel) return;
+    
+    // Confirm that at least one hero remains.
+    if (this.party.length === 0) {
+      this.logCallback("All heroes have been defeated! Game Over.");
+      if (typeof this.onGameOver === "function") {
+        this.onGameOver();
+      }
+      return;
+    }
+    
     this.awaitingAttackDirection = false;
     this.currentUnit++;
+    
+    // Wrap around to start of hero turns.
     if (this.currentUnit >= this.party.length) {
       this.currentUnit = 0;
       this.logCallback("Enemy turn begins.");
       this.enemyTurn();
+      
+      // Check again after enemy turn if heroes remain.
+      if (this.party.length === 0) {
+        this.logCallback("All heroes have been defeated! Game Over.");
+        if (typeof this.onGameOver === "function") {
+          this.onGameOver();
+        }
+        return;
+      }
     }
-    // If some heroes have been defeated, ensure there is still a valid hero.
-    if (this.party.length > 0) {
-      this.movePoints = this.party[this.currentUnit].agility;
-      this.logCallback(`Now it's ${this.party[this.currentUnit].name}'s turn.`);
-    }
+    
+    this.movePoints = this.party[this.currentUnit].agility;
+    this.logCallback(`Now it's ${this.party[this.currentUnit].name}'s turn.`);
   }
 }
