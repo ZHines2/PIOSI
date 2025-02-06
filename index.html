@@ -5,7 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>PIOSI - Modular Game with Accurate Enemy Pathing</title>
     <!-- Load the extra light (200) version of the Sono font from Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Sono:wght@200&display=swap" rel="stylesheet">
+    <link
+      href="https://fonts.googleapis.com/css2?family=Sono:wght@200&display=swap"
+      rel="stylesheet"
+    />
     <style>
       /* Optionally set a base font size on the html element */
       html {
@@ -33,7 +36,7 @@
         text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
         overflow: hidden; /* Hide any potential overflow */
       }
-      
+
       /* Blurred background */
       #title-screen::before {
         content: '';
@@ -48,7 +51,7 @@
         opacity: 0.7; /* Adjust opacity as needed */
         z-index: -1; /* Place behind the content */
       }
-      
+
       /* Image container to hold the original image */
       .image-container {
         width: 80%; /* Adjust as needed */
@@ -59,7 +62,7 @@
         background-size: contain;
         z-index: 1; /* Ensure it's above the blurred background */
       }
-      
+
       /* Add a pseudo-element for the static effect */
       .image-container::before {
         content: '';
@@ -73,13 +76,13 @@
         animation: static-noise 10s linear infinite;
         z-index: 2; /* Ensure it's above the background image but below the text */
       }
-      
+
       /* Keyframes for the static noise animation */
       @keyframes static-noise {
         0% { transform: translate(0, 0); }
         100% { transform: translate(-5%, -5%); }
       }
-      
+
       #title-screen,
       #party-select,
       #game-container,
@@ -155,333 +158,348 @@
     <!-- Title Screen -->
     <div id="title-screen">
       <div class="image-container">
-          <div class="static-noise"></div>
+        <div class="static-noise"></div>
       </div>
-      
+
       <p>PRESS SPACE</p>
     </div>
-    
+
     <!-- Party Selection Screen -->
     <div id="party-select">
       <h2>
-        Select Your Party<br>
-        (Use Left/Right Arrow keys to navigate and Spacebar to select/deselect. Choose exactly 3 heroes.)
+        Select Your Party<br />
+        (Use Left/Right Arrow keys to navigate and Spacebar to select/deselect.
+        Choose exactly 3 heroes.)
       </h2>
       <div id="hero-display"></div>
       <p id="selection-info"></p>
     </div>
-    
+
     <!-- Battle Screen -->
     <div id="game-container">
       <h1 id="level-title">Level 1: The Breaking Wall</h1>
       <div id="battlefield"></div>
       <p id="status">Wall HP: 20</p>
-      <div id="log" style="height:100px; overflow-y:auto; background-color:#111; padding:10px; border:1px solid white; text-align:left;"></div>
+      <div
+        id="log"
+        style="height:100px; overflow-y:auto; background-color:#111; padding:10px; border:1px solid white; text-align:left;"
+      ></div>
       <p>
-        Use Arrow Keys to Move | Press Spacebar to Attack, then choose attack direction.
+        Use Arrow Keys to Move | Press Spacebar to Attack, then choose attack
+        direction.
       </p>
     </div>
-    
+
     <!-- Victory Screen -->
     <div id="victory">
       <h1>Victory!</h1>
       <p>Congratulations! All levels have been completed!</p>
       <p>Press Spacebar to Restart</p>
     </div>
-    
+
     <!-- Game Over Screen -->
     <div id="game-over">
       <h1>Game Over</h1>
-      <p>All your heroes have been defeated.<br>Press Spacebar to Restart.</p>
+      <p>All your heroes have been defeated.<br />Press Spacebar to Restart.</p>
     </div>
-    
+
     <audio id="background-music" src="DarkAnoid.mp3" loop></audio>
-    
+
     <script type="module">
-      import {
-        fetchJoke,
-        fetchBaconIpsum,
-        fetchTarotCard,
-        fetchNonseqFact,
-        getGriotReaction,
-        initializeGriot,
-        recordInteraction
-      } from "./griot.js";
-      import { BattleEngine } from "./battleEngine.js";
-      
-      let currentScreen = "title";
-      let selectedHeroes = [];
-      let heroIndex = 0;
-      let party = [];
-      let level = 1;
-      let enemies = [];
-      let battleEngine = null;
-      
-      const allHeroes = [
-        { name: "Knight", symbol: "♞", attack: 4, range: 1, agility: 5, hp: 15 },
-        { name: "Archer", symbol: "⚔", attack: 3, range: 4, agility: 3, hp: 12 },
-        { name: "Wizard", symbol: "✡", attack: 2, range: 6, agility: 2, hp: 10 },
-        { name: "Berserker", symbol: "⚒", attack: 5, range: 1, agility: 4, hp: 18 },
-        { name: "Rogue", symbol: "☠", attack: 4, range: 2, agility: 4, hp: 12 },
-        { name: "Jester", symbol: "♣", attack: 3, range: 2, agility: 5, hp: 10, joke: true },
-        { name: "Meatwalker", symbol: "₻", attack: 6, range: 1, agility: 3, hp: 20, meat: true },
-        { name: "Soothscribe", symbol: "☄", attack: 2, range: 5, agility: 3, hp: 11, tarot: true },
-        { name: "Nonsequiteur", symbol: "∄", attack: 3, range: 3, agility: 3, hp: 10, nonseq: true },
-        { name: "Griot", symbol: "℣", attack: 1, range: 1, agility: 1, hp: 10, reactsToHistory: true }
-      ];
-      
-      // Screen management.
-      function showScreen(screen) {
-        document.getElementById("title-screen").style.display = (screen === "title") ? "flex" : "none";
-        document.getElementById("party-select").style.display = (screen === "party") ? "block" : "none";
-        document.getElementById("game-container").style.display = (screen === "battle") ? "block" : "none";
-        document.getElementById("victory").style.display = (screen === "victory") ? "block" : "none";
-        // Game over overlay is managed separately.
-        currentScreen = screen;
-      }
-      
-      // Update hero display during party selection.
-      async function updateHeroDisplay() {
-        const hero = allHeroes[heroIndex];
-        let display = `<p class="highlight">${hero.name} (${hero.symbol})</p>`;
-        if (hero.joke) {
-          const joke = await fetchJoke();
-          display += `<p>${joke}</p>`;
-        } else if (hero.meat) {
-          const meatMsg = await fetchBaconIpsum();
-          display += `<p>${meatMsg}</p>`;
-        } else if (hero.tarot) {
-          const tarot = await fetchTarotCard();
-          display += `<p>${tarot}</p>`;
-        } else if (hero.nonseq) {
-          const fact = await fetchNonseqFact();
-          display += `<p>${fact}</p>`;
-        } else if (hero.reactsToHistory) {
-          const reaction = await getGriotReaction();
-          display += `<p>${reaction}</p>`;
-        } else {
-          display += `<p>Attack: ${hero.attack} | Range: ${hero.range} | Agility: ${hero.agility} | HP: ${hero.hp}</p>`;
-          display += `<p>${selectedHeroes.includes(heroIndex) ? "SELECTED" : "Press Spacebar to Select"}</p>`;
-        }
-        document.getElementById("hero-display").innerHTML = display;
-        document.getElementById("selection-info").textContent = `Selected Heroes: ${selectedHeroes.length}/3`;
-      }
-      
-      function selectHero() {
-        if (selectedHeroes.includes(heroIndex)) {
-          selectedHeroes = selectedHeroes.filter(i => i !== heroIndex);
-        } else if (selectedHeroes.length < 3) {
-          selectedHeroes.push(heroIndex);
-        }
-        updateHeroDisplay();
-      }
-      
-      function startGame() {
-        if (selectedHeroes.length !== 3) {
-          alert("Select exactly 3 heroes!");
-          return;
-        }
-        const backgroundMusic = document.getElementById("background-music");
-        backgroundMusic.play();
-        party = selectedHeroes.map(i => Object.assign({}, allHeroes[i]));
-        // Sort party by agility.
-        party.sort((a, b) => b.agility - a.agility);
-        initializeBattle();
-        showScreen("battle");
-      }
-      
-      // Initialize battle parameters based on the current level.
-      function initializeBattle() {
-        let rows, cols, wallHP;
+            import {
+              fetchJoke,
+              fetchBaconIpsum,
+              fetchTarotCard,
+              fetchNonseqFact,
+              getGriotReaction,
+              initializeGriot,
+              recordInteraction
+            } from "./griot.js";
+            import { BattleEngine } from "./battleEngine.js";
+
+            let currentScreen = "title";
+            let selectedHeroes = [];
+            let heroIndex = 0;
+            let party = [];
+            let level = 1;
+            let enemies = [];
+            let battleEngine = null;
+
+            const allHeroes = [
+              { name: "Knight", symbol: "♞", attack: 4, range: 1, agility: 5, hp: 15 },
+              { name: "Archer", symbol: "⚔", attack: 3, range: 4, agility: 3, hp: 12 },
+              { name: "Wizard", symbol: "✡", attack: 2, range: 6, agility: 2, hp: 10 },
+              { name: "Berserker", symbol: "⚒", attack: 5, range: 1, agility: 4, hp: 18 },
+              { name: "Rogue", symbol: "☠", attack: 4, range: 2, agility: 4, hp: 12 },
+              { name: "Jester", symbol: "♣", attack: 3, range: 2, agility: 5, hp: 10, joke: true },
+              { name: "Meatwalker", symbol: "₻", attack: 6, range: 1, agility: 3, hp: 20, meat: true },
+              { name: "Soothscribe", symbol: "☄", attack: 2, range: 5, agility: 3, hp: 11, tarot: true },
+              { name: "Nonsequiteur", symbol: "∄", attack: 3, range: 3, agility: 3, hp: 10, nonseq: true },
+              { name: "Griot", symbol: "℣", attack: 1, range: 1, agility: 1, hp: 10, reactsToHistory: true }
+            ];
+
+            // Screen management.
+            function showScreen(screen) {
+              document.getElementById("title-screen").style.display = (screen === "title") ? "flex" : "none";
+              document.getElementById("party-select").style.display = (screen === "party") ? "block" : "none";
+              document.getElementById("game-container").style.display = (screen === "battle") ? "block" : "none";
+              document.getElementById("victory").style.display = (screen === "victory") ? "block" : "none";
+              // Game over overlay is managed separately.
+              currentScreen = screen;
+            }
+
+            // Update hero display during party selection.
+            async function updateHeroDisplay() {
+              const hero = allHeroes[heroIndex];
+              let display = `<p class="highlight">${hero.name} (${hero.symbol})</p>`;
+              if (hero.joke) {
+                const joke = await fetchJoke();
+                display += `<p>${joke}</p>`;
+              } else if (hero.meat) {
+                const meatMsg = await fetchBaconIpsum();
+                display += `<p>${meatMsg}</p>`;
+              } else if (hero.tarot) {
+                const tarot = await fetchTarotCard();
+                display += `<p>${tarot}</p>`;
+              } else if (hero.nonseq) {
+                const fact = await fetchNonseqFact();
+                display += `<p>${fact}</p>`;
+              } else if (hero.reactsToHistory) {
+                const reaction = await getGriotReaction();
+                display += `<p>${reaction}</p>`;
+              } else {
+                display += `<p>Attack: ${hero.attack} | Range: ${hero.range} | Agility: ${hero.agility} | HP: ${hero.hp}</p>`;
+                display += `<p>${selectedHeroes.includes(heroIndex) ? "SELECTED" : "Press Spacebar to Select"}</p>`;
+              }
+              document.getElementById("hero-display").innerHTML = display;
+              document.getElementById("selection-info").textContent = `Selected Heroes: ${selectedHeroes.length}/3`;
+            }
+
+            function selectHero() {
+              if (selectedHeroes.includes(heroIndex)) {
+                selectedHeroes = selectedHeroes.filter(i => i !== heroIndex);
+              } else if (selectedHeroes.length < 3) {
+                selectedHeroes.push(heroIndex);
+              }
+              updateHeroDisplay();
+            }
+
+            function startGame() {
+              if (selectedHeroes.length !== 3) {
+                alert("Select exactly 3 heroes!");
+                return;
+              }
+              const backgroundMusic = document.getElementById("background-music");
+              backgroundMusic.play();
+              party = selectedHeroes.map(i => Object.assign({}, allHeroes[i]));
+              // Sort party by agility.
+              party.sort((a, b) => b.agility - a.agility);
+              initializeBattle();
+              showScreen("battle");
+            }
+
+            // Initialize battle parameters based on the current level.
+            function initializeBattle() {
+              let rows, cols, wallHP;
+              enemies = [];
+              if (level === 1) {
+                rows = 5; cols = 10; wallHP = 20;
+                document.getElementById("level-title").textContent = "Level 1: The Breaking Wall";
+              } else if (level === 2) {
+                rows = 7; cols = 12; wallHP = 40;
+                document.getElementById("level-title").textContent = "Level 2: The Reinforced Barricade";
+                enemies.push({ name: "Brigand", symbol: "Җ", attack: 3, range: 1, hp: 12, agility: 2, x: cols - 3, y: Math.floor(rows / 2) });
+                enemies.push({ name: "Brigand", symbol: "Җ", attack: 3, range: 1, hp: 12, agility: 2, x: cols - 5, y: Math.floor(rows / 2) });
+              } else if (level === 3) {
+                rows = 14; cols = 3; wallHP = 60;
+                document.getElementById("level-title").textContent = "Level 3: The Vertical Corridor";
+                for (let col = 0; col < cols; col++) {
+                  enemies.push({ name: "Buckleman", symbol: "⛨", attack: 1, range: 1, hp: 20, agility: 1, x: col, y: 7 });
+                }
+              }
+              else if (level === 4) {
+        rows = 3; cols = 15; wallHP = 70;
+        document.getElementById("level-title").textContent = "Level 4: Outside the Gratt";
+
         enemies = [];
-        if (level === 1) {
-          rows = 5; cols = 10; wallHP = 20;
-          document.getElementById("level-title").textContent = "Level 1: The Breaking Wall";
-        } else if (level === 2) {
-          rows = 7; cols = 12; wallHP = 40;
-          document.getElementById("level-title").textContent = "Level 2: The Reinforced Barricade";
-          enemies.push({ name: "Brigand", symbol: "Җ", attack: 3, range: 1, hp: 12, agility: 2, x: cols - 3, y: Math.floor(rows / 2) });
-          enemies.push({ name: "Brigand", symbol: "Җ", attack: 3, range: 1, hp: 12, agility: 2, x: cols - 5, y: Math.floor(rows / 2) });
-        } else if (level === 3) {
-          rows = 14; cols = 3; wallHP = 60;
-          document.getElementById("level-title").textContent = "Level 3: The Vertical Corridor";
-          for (let col = 0; col < cols; col++) {
-            enemies.push({ name: "Buckleman", symbol: "⛨", attack: 1, range: 1, hp: 20, agility: 1, x: col, y: 7 });
-          }
-        }
-        // Create a new BattleEngine instance and pass the log, level complete, and onGameOver callbacks.
-        battleEngine = new BattleEngine(
-          party,
-          enemies,
-          rows,
-          cols,
-          wallHP,
-          logMessage,
-          onLevelComplete,
-          onGameOver
-        );
-        renderBattlefield();
+        enemies.push({ name: "Brigand", symbol: "Җ", attack: 3, range: 1, hp: 12, agility: 2, x: 12, y: 0 });
+        enemies.push({ name: "Brigand", symbol: "Җ", attack: 3, range: 1, hp: 12, agility: 2, x: 11, y: 1 });
+        enemies.push({ name: "Buckleman", symbol: "⛨", attack: 1, range: 1, hp: 20, agility: 1, x: 8, y: 2 });
+        enemies.push({ name: "Brigand", symbol: "Җ", attack: 3, range: 1, hp: 12, agility: 2, x: 12, y: 2 });
       }
-      
-      // Handle level transition.
-      function onLevelComplete() {
-        if (level < 3) {
-          level++;
-          logMessage(`Transitioning to Level ${level}...`);
-          setTimeout(initializeBattle, 2000);
-        } else {
-          logMessage("All levels completed! You win!");
-          showScreen("victory");
-        }
-      }
-      
-      // Handle game over by displaying the game-over overlay.
-      function onGameOver() {
-        document.getElementById("game-over").style.display = "flex";
-      }
-      
-      // Refresh the battlefield display and update status text.
-      function renderBattlefield() {
-        document.getElementById("battlefield").innerHTML = battleEngine.drawBattlefield();
-        document.getElementById("status").textContent = `Wall HP: ${battleEngine.wallHP} | ${party[battleEngine.currentUnit].name}'s Turn (Moves Left: ${battleEngine.movePoints})`;
-      }
-      
-      // Log messages to the log pane.
-      function logMessage(message) {
-        const logDiv = document.getElementById("log");
-        logDiv.innerHTML += `<p>${message}</p>`;
-        logDiv.scrollTop = logDiv.scrollHeight;
-      }
-      
-      // Record an attack interaction and have special characters say their cool lines during battle.
-      async function recordAttack(message) {
-        recordInteraction(message);
-        const hero = party[battleEngine.currentUnit];
-        if (hero.joke) {
-          const joke = await fetchJoke();
-          logMessage(joke);
-        } else if (hero.meat) {
-          const meatMsg = await fetchBaconIpsum();
-          logMessage(meatMsg);
-        } else if (hero.tarot) {
-          const tarot = await fetchTarotCard();
-          logMessage(tarot);
-        } else if (hero.nonseq) {
-          const fact = await fetchNonseqFact();
-          logMessage(fact);
-        } else if (hero.reactsToHistory) {
-          const reaction = await getGriotReaction();
-          logMessage(reaction);
-        }
-      }
-      
-      // Restart the game without reloading the page.
-      function restartGame() {
-        // Reset state variables.
-        level = 1;
-        selectedHeroes = [];
-        party = [];
-        heroIndex = 0;
-        document.getElementById("log").innerHTML = "";
-        document.getElementById("game-over").style.display = "none";
-        showScreen("title");
-      }
-      
-      // Key actions for each screen.
-      const keyActions = {
-        title: {
-          Space: () => {
-            showScreen("party");
-            updateHeroDisplay();
-          }
-        },
-        party: {
-          ArrowLeft: () => {
-            heroIndex = (heroIndex - 1 + allHeroes.length) % allHeroes.length;
-            updateHeroDisplay();
-          },
-          ArrowRight: () => {
-            heroIndex = (heroIndex + 1) % allHeroes.length;
-            updateHeroDisplay();
-          },
-          Space: () => {
-            if (selectedHeroes.length < 3 || !selectedHeroes.includes(heroIndex)) {
-              selectHero();
-            } else {
-              startGame();
+              // Create a new BattleEngine instance and pass the log, level complete, and onGameOver callbacks.
+              battleEngine = new BattleEngine(
+                party,
+                enemies,
+                rows,
+                cols,
+                wallHP,
+                logMessage,
+                onLevelComplete,
+                onGameOver
+              );
+              renderBattlefield();
             }
-            updateHeroDisplay();
-          }
-        },
-        battle: {
-          Space: () => {
-            battleEngine.awaitingAttackDirection = true;
-            logMessage(`${party[battleEngine.currentUnit].name} is ready to attack! Choose a direction.`);
-            renderBattlefield();
-          },
-          ArrowUp: async () => {
-            if (battleEngine.awaitingAttackDirection) {
-              await battleEngine.attackInDirection(0, -1, party[battleEngine.currentUnit], recordAttack);
-            } else {
-              battleEngine.moveUnit(0, -1);
+
+            // Handle level transition.
+            function onLevelComplete() {
+              if (level < 4) {
+                level++;
+                logMessage(`Transitioning to Level ${level}...`);
+                setTimeout(initializeBattle, 2000);
+              } else {
+                logMessage("All levels completed! You win!");
+                showScreen("victory");
+              }
             }
-            renderBattlefield();
-          },
-          ArrowDown: async () => {
-            if (battleEngine.awaitingAttackDirection) {
-              await battleEngine.attackInDirection(0, 1, party[battleEngine.currentUnit], recordAttack);
-            } else {
-              battleEngine.moveUnit(0, 1);
+
+            // Handle game over by displaying the game-over overlay.
+            function onGameOver() {
+              document.getElementById("game-over").style.display = "flex";
             }
-            renderBattlefield();
-          },
-          ArrowLeft: async () => {
-            if (battleEngine.awaitingAttackDirection) {
-              await battleEngine.attackInDirection(-1, 0, party[battleEngine.currentUnit], recordAttack);
-            } else {
-              battleEngine.moveUnit(-1, 0);
+
+            // Refresh the battlefield display and update status text.
+            function renderBattlefield() {
+              document.getElementById("battlefield").innerHTML = battleEngine.drawBattlefield();
+              document.getElementById("status").textContent = `Wall HP: ${battleEngine.wallHP} | ${party[battleEngine.currentUnit].name}'s Turn (Moves Left: ${battleEngine.movePoints})`;
             }
-            renderBattlefield();
-          },
-          ArrowRight: async () => {
-            if (battleEngine.awaitingAttackDirection) {
-              await battleEngine.attackInDirection(1, 0, party[battleEngine.currentUnit], recordAttack);
-            } else {
-              battleEngine.moveUnit(1, 0);
+
+            // Log messages to the log pane.
+            function logMessage(message) {
+              const logDiv = document.getElementById("log");
+              logDiv.innerHTML += `<p>${message}</p>`;
+              logDiv.scrollTop = logDiv.scrollHeight;
             }
-            renderBattlefield();
-          }
-        },
-        victory: {
-          Space: () => restartGame()
-        },
-        "game-over": {
-          Space: () => restartGame()
-        }
-      };
-      
-      document.addEventListener("keydown", async (event) => {
-        if (document.getElementById("game-over").style.display === "flex") {
-          const action = keyActions["game-over"][event.code] || keyActions["game-over"][event.key];
-          if (action) {
-            event.preventDefault();
-            await action();
-          }
-          return;
-        }
-        
-        const actions = keyActions[currentScreen];
-        const action = actions && (actions[event.code] || actions[event.key]);
-        if (action) {
-          event.preventDefault();
-          await action();
-        }
-      });
-      
-      // Initialize game: load the griot training corpus then show the title screen.
-      initializeGriot("fantasy_narrative.txt").then(() => {
-        showScreen("title");
-      });
+
+            // Record an attack interaction and have special characters say their cool lines during battle.
+            async function recordAttack(message) {
+              recordInteraction(message);
+              const hero = party[battleEngine.currentUnit];
+              if (hero.joke) {
+                const joke = await fetchJoke();
+                logMessage(joke);
+              } else if (hero.meat) {
+                const meatMsg = await fetchBaconIpsum();
+                logMessage(meatMsg);
+              } else if (hero.tarot) {
+                const tarot = await fetchTarotCard();
+                logMessage(tarot);
+              } else if (hero.nonseq) {
+                const fact = await fetchNonseqFact();
+                logMessage(fact);
+              } else if (hero.reactsToHistory) {
+                const reaction = await getGriotReaction();
+                logMessage(reaction);
+              }
+            }
+
+            // Restart the game without reloading the page.
+            function restartGame() {
+              // Reset state variables.
+              level = 1;
+              selectedHeroes = [];
+              party = [];
+              heroIndex = 0;
+              document.getElementById("log").innerHTML = "";
+              document.getElementById("game-over").style.display = "none";
+              showScreen("title");
+            }
+
+            // Key actions for each screen.
+            const keyActions = {
+              title: {
+                Space: () => {
+                  showScreen("party");
+                  updateHeroDisplay();
+                }
+              },
+              party: {
+                ArrowLeft: () => {
+                  heroIndex = (heroIndex - 1 + allHeroes.length) % allHeroes.length;
+                  updateHeroDisplay();
+                },
+                ArrowRight: () => {
+                  heroIndex = (heroIndex + 1) % allHeroes.length;
+                  updateHeroDisplay();
+                },
+                Space: () => {
+                  if (selectedHeroes.length < 3 || !selectedHeroes.includes(heroIndex)) {
+                    selectHero();
+                  } else {
+                    startGame();
+                  }
+                  updateHeroDisplay();
+                }
+              },
+              battle: {
+                Space: () => {
+                  battleEngine.awaitingAttackDirection = true;
+                  logMessage(`${party[battleEngine.currentUnit].name} is ready to attack! Choose a direction.`);
+                  renderBattlefield();
+                },
+                ArrowUp: async () => {
+                  if (battleEngine.awaitingAttackDirection) {
+                    await battleEngine.attackInDirection(0, -1, party[battleEngine.currentUnit], recordAttack);
+                  } else {
+                    battleEngine.moveUnit(0, -1);
+                  }
+                  renderBattlefield();
+                },
+                ArrowDown: async () => {
+                  if (battleEngine.awaitingAttackDirection) {
+                    await battleEngine.attackInDirection(0, 1, party[battleEngine.currentUnit], recordAttack);
+                  } else {
+                    battleEngine.moveUnit(0, 1);
+                  }
+                  renderBattlefield();
+                },
+                ArrowLeft: async () => {
+                  if (battleEngine.awaitingAttackDirection) {
+                    await battleEngine.attackInDirection(-1, 0, party[battleEngine.currentUnit], recordAttack);
+                  } else {
+                    battleEngine.moveUnit(-1, 0);
+                  }
+                  renderBattlefield();
+                },
+                ArrowRight: async () => {
+                  if (battleEngine.awaitingAttackDirection) {
+                    await battleEngine.attackInDirection(1, 0, party[battleEngine.currentUnit], recordAttack);
+                  } else {
+                    battleEngine.moveUnit(1, 0);
+                  }
+                  renderBattlefield();
+                }
+              },
+              victory: {
+                Space: () => restartGame()
+              },
+              "game-over": {
+                Space: () => restartGame()
+              }
+            };
+
+            document.addEventListener("keydown", async (event) => {
+              if (document.getElementById("game-over").style.display === "flex") {
+                const action = keyActions["game-over"][event.code] || keyActions["game-over"][event.key];
+                if (action) {
+                  event.preventDefault();
+                  await action();
+                }
+                return;
+              }
+
+              const actions = keyActions[currentScreen];
+              const action = actions && (actions[event.code] || actions[event.key]);
+              if (action) {
+                event.preventDefault();
+                await action();
+              }
+            });
+
+            // Initialize game: load the griot training corpus then show the title screen.
+            initializeGriot("fantasy_narrative.txt").then(() => {
+              showScreen("title");
+            });
     </script>
   </body>
 </html>
