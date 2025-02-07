@@ -1,16 +1,18 @@
 // battleEngine.js
 // Refactored BattleEngine class with improved state management and turn progression.
-// Also, added support for lingering status effects such as burn.
-// The Slüjier now does not inflict a slüj effect directly on attack; instead, mode-up grants the party a slüj buff,
-// similar to how Torcher grants a burn buff.
+// Added support for lingering status effects such as burn and slüj.
+// Now when a unit with a burn property (e.g. Torcher) attacks an enemy, it applies a burn effect.
+// Also when a unit with a slüj property (e.g. Slüjier) attacks an enemy, it applies (or increases)
+// the enemy's slüj effect. This effect will only process on enemies that have been attacked with a slüj attack,
+// and not simply because a mode-up was chosen.
 //
-// Slüj Effect Levels (if implemented as a buff later):
-//   slüj +1: 1 damage every 4th turn.
-//   slüj +2: 1 damage every 3rd turn.
-//   slüj +3: 1 damage every 2nd turn.
+// Slüj Effect Levels on an enemy:
+//   slüj +1: 1 damage every 4 turns.
+//   slüj +2: 1 damage every 3 turns.
+//   slüj +3: 1 damage every 2 turns.
 //   slüj +4: 1 damage every turn.
 //   slüj +5: 2 damage every turn.
-//   slüj +6: 3 damage every turn.
+//   slüj +6 (or higher): 3 damage every turn.
 
 export class BattleEngine {
   constructor(
@@ -44,8 +46,9 @@ export class BattleEngine {
     this.party.forEach(hero => {
       hero.statusEffects = hero.statusEffects || {};
     });
+    // Reset enemy status effects to avoid any lingering effects from mode-up or previous rounds.
     this.enemies.forEach(enemy => {
-      enemy.statusEffects = enemy.statusEffects || {};
+      enemy.statusEffects = {};
     });
 
     this.battlefield = this.initializeBattlefield();
@@ -62,8 +65,9 @@ export class BattleEngine {
       hero.y = 0;
       field[hero.y][hero.x] = hero.symbol;
     });
-    // Place enemies.
+    // Place enemies and reset their status effects.
     this.enemies.forEach(enemy => {
+      enemy.statusEffects = {}; // clear any previous status effects.
       field[enemy.y][enemy.x] = enemy.symbol;
     });
     // Create the wall along the bottom row.
@@ -153,7 +157,30 @@ export class BattleEngine {
         this.logCallback(
           `${unit.name} attacks ${enemy.name} for ${unit.attack} damage! (HP left: ${enemy.hp})`
         );
-        // Removed slüj effect: the Slüjier no longer inflicts slüj on attack.
+        // If the attacker has a burn property, apply a burn effect.
+        if (unit.burn) {
+          enemy.statusEffects.burn = { damage: unit.burn, duration: 3 };
+          this.logCallback(
+            `${enemy.name} is now burning for ${unit.burn} damage per turn for 3 turns!`
+          );
+        }
+        // If the attacker has a slüj property, apply (or increase) the slüj effect.
+        if (unit.sluj) {
+          if (!enemy.statusEffects.sluj) {
+            // Initialize a slüj effect with a counter to track turns.
+            enemy.statusEffects.sluj = {
+              level: unit.sluj,
+              duration: 4,
+              counter: 0,
+            };
+          } else {
+            enemy.statusEffects.sluj.level += unit.sluj;
+            enemy.statusEffects.sluj.duration = 4; // refresh duration on attack
+          }
+          this.logCallback(
+            `${enemy.name} is afflicted with slüj (level ${enemy.statusEffects.sluj.level}) for 4 turns!`
+          );
+        }
         if (enemy.hp <= 0) {
           this.logCallback(`${enemy.name} is defeated!`);
           this.battlefield[targetY][targetX] = '.';
@@ -294,11 +321,12 @@ export class BattleEngine {
     });
   }
 
-  // Move to the next turn while applying status effects (burn and any ongoing effects).
+  // Move to the next turn while applying status effects (burn, slüj, etc.).
   nextTurn() {
     if (this.transitioningLevel) return;
-    // Apply all status effects.
+    // Apply status effects.
     this.applyStatusEffects();
+    // Check for defeat.
     if (this.party.length === 0) {
       this.logCallback('All heroes have been defeated! Game Over.');
       if (typeof this.onGameOver === 'function') this.onGameOver();
@@ -310,6 +338,7 @@ export class BattleEngine {
       this.currentUnit = 0;
       this.logCallback('Enemy turn begins.');
       this.enemyTurn();
+      // Process status effects again after enemy turn.
       this.applyStatusEffects();
       if (this.party.length === 0) {
         this.logCallback('All heroes have been defeated! Game Over.');
@@ -321,7 +350,7 @@ export class BattleEngine {
     this.logCallback(`Now it's ${this.party[this.currentUnit].name}'s turn.`);
   }
 
-  // Apply status effects (burn, etc.) to heroes and enemies.
+  // Apply status effects (burn and slüj) to heroes and enemies.
   applyStatusEffects() {
     // Process effects for heroes.
     this.party.forEach(hero => {
@@ -337,12 +366,12 @@ export class BattleEngine {
           this.battlefield[hero.y][hero.x] = '.';
         }
       }
-      // (Additional status effects can be processed here.)
     });
     this.party = this.party.filter(hero => hero.hp > 0);
 
     // Process effects for enemies.
     this.enemies.forEach(enemy => {
+      // Process burn effect.
       if (enemy.statusEffects.burn && enemy.statusEffects.burn.duration > 0) {
         this.logCallback(
           `${enemy.name} is burned and takes ${enemy.statusEffects.burn.damage} damage!`
@@ -351,6 +380,41 @@ export class BattleEngine {
         enemy.statusEffects.burn.duration--;
         if (enemy.hp <= 0) {
           this.logCallback(`${enemy.name} was defeated by burn damage!`);
+          this.battlefield[enemy.y][enemy.x] = '.';
+        }
+      }
+      // Process slüj effect only if it was applied via an attack.
+      if (enemy.statusEffects.sluj && enemy.statusEffects.sluj.duration > 0) {
+        enemy.statusEffects.sluj.counter++;
+        const level = enemy.statusEffects.sluj.level;
+        let trigger = false;
+        let damage = 0;
+        if (level === 1 && enemy.statusEffects.sluj.counter % 4 === 0) {
+          trigger = true;
+          damage = 1;
+        } else if (level === 2 && enemy.statusEffects.sluj.counter % 3 === 0) {
+          trigger = true;
+          damage = 1;
+        } else if (level === 3 && enemy.statusEffects.sluj.counter % 2 === 0) {
+          trigger = true;
+          damage = 1;
+        } else if (level === 4) {
+          trigger = true;
+          damage = 1;
+        } else if (level === 5) {
+          trigger = true;
+          damage = 2;
+        } else if (level >= 6) {
+          trigger = true;
+          damage = 3;
+        }
+        if (trigger) {
+          this.logCallback(`${enemy.name} takes ${damage} slüj damage!`);
+          enemy.hp -= damage;
+        }
+        enemy.statusEffects.sluj.duration--;
+        if (enemy.hp <= 0) {
+          this.logCallback(`${enemy.name} is defeated by slüj damage!`);
           this.battlefield[enemy.y][enemy.x] = '.';
         }
       }
