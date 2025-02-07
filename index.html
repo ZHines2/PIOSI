@@ -17,7 +17,6 @@
       body {
         /* Use the Sono extra light font with a fallback to monospace */
         font-family: 'Sono', monospace;
-        /* Base font size can also be set here, e.g., 14px or 0.875rem */
         font-size: 1rem;
         text-align: center;
         background-color: #222;
@@ -34,9 +33,8 @@
         flex-direction: column;
         color: white;
         text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
-        overflow: hidden; /* Hide any potential overflow */
+        overflow: hidden;
       }
-
       /* Blurred background */
       #title-screen::before {
         content: '';
@@ -47,22 +45,20 @@
         height: 100%;
         background: url('IMG_0905.JPG') no-repeat center center;
         background-size: cover;
-        filter: blur(20px); /* Adjust blur amount as needed */
-        opacity: 0.7; /* Adjust opacity as needed */
-        z-index: -1; /* Place behind the content */
+        filter: blur(20px);
+        opacity: 0.7;
+        z-index: -1;
       }
-
       /* Image container to hold the original image */
       .image-container {
-        width: 80%; /* Adjust as needed */
-        height: 80%; /* Adjust as needed */
-        max-width: 80vh; /* Ensure it doesn't exceed viewport height */
-        max-height: 80vw; /* Ensure it doesn't exceed viewport width */
+        width: 80%;
+        height: 80%;
+        max-width: 80vh;
+        max-height: 80vw;
         background: url('IMG_0905.JPG') no-repeat center center;
         background-size: contain;
-        z-index: 1; /* Ensure it's above the blurred background */
+        z-index: 1;
       }
-
       /* Add a pseudo-element for the static effect */
       .image-container::before {
         content: '';
@@ -72,22 +68,20 @@
         width: 140%;
         height: 140%;
         background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAAAAAsNcNlwAAAAkUlEQVR42mNkgIH/j4wMDAwMDAY0wAGGfgYWFgYGBgYGNpgIMEAoggMDwMDAwMDAwMAAALsc9j1vXLaAAAAAAElFTkSuQmCC') repeat;
-        opacity: 0.1; /* Adjust for desired dimness */
+        opacity: 0.1;
         animation: static-noise 10s linear infinite;
-        z-index: 2; /* Ensure it's above the background image but below the text */
+        z-index: 2;
       }
-
-      /* Keyframes for the static noise animation */
       @keyframes static-noise {
         0% { transform: translate(0, 0); }
         100% { transform: translate(-5%, -5%); }
       }
-
       #title-screen,
       #party-select,
       #game-container,
       #victory,
-      #game-over {
+      #game-over,
+      #mode-up-window {
         display: none;
         padding: 20px;
       }
@@ -105,7 +99,6 @@
         width: 40px;
         height: 40px;
         text-align: center;
-        /* Reduced font size for cells from 24px to 18px */
         font-size: 18px;
         border: 1px solid gray;
         line-height: 40px;
@@ -131,7 +124,6 @@
         margin: 5px;
         font-size: 18px;
       }
-      /* Game Over overlay styles. Initially hidden via display: none */
       #game-over {
         display: none;
         position: fixed;
@@ -152,6 +144,40 @@
       #game-over p {
         font-size: 1.5em;
       }
+      #mode-up-window {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 1000;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        color: white;
+      }
+      #mode-up-window h2 {
+        margin-bottom: 20px;
+        margin-top: 20px;
+      }
+      /* For highlighting the currently selected hero in mode-up */
+      #mode-up-hero-display {
+        margin: 10px;
+        font-size: 1.2em;
+      }
+      #mode-up-instructions {
+        margin-top: 10px;
+      }
+      .stat-up {
+        color: #32cd32; /* limegreen or similar */
+        font-weight: bold;
+      }
+      .dead-hero {
+        color: #aaa;
+        text-decoration: line-through;
+      }
     </style>
   </head>
   <body>
@@ -160,7 +186,6 @@
       <div class="image-container">
         <div class="static-noise"></div>
       </div>
-
       <p>PRESS SPACE</p>
     </div>
 
@@ -203,303 +228,437 @@
       <p>All your heroes have been defeated.<br />Press Spacebar to Restart.</p>
     </div>
 
+    <!-- Mode Up Window -->
+    <div id="mode-up-window">
+      <h2>Level Complete! Choose one living hero to power up everyone:</h2>
+      <div id="mode-up-hero-display"></div>
+      <p id="mode-up-instructions">
+        Use Left/Right to select. Press Space to confirm.
+      </p>
+    </div>
+
     <audio id="background-music" src="DarkAnoid.mp3" loop></audio>
 
     <script type="module">
-            import {
-              fetchJoke,
-              fetchBaconIpsum,
-              fetchTarotCard,
-              fetchNonseqFact,
-              getGriotReaction,
-              initializeGriot,
-              recordInteraction
-            } from "./griot.js";
-            import { BattleEngine } from "./battleEngine.js";
+      import {
+        fetchJoke,
+        fetchBaconIpsum,
+        fetchTarotCard,
+        fetchNonseqFact,
+        getGriotReaction,
+        initializeGriot,
+        recordInteraction,
+      } from "./griot.js";
+      import { BattleEngine } from "./battleEngine.js";
 
-            let currentScreen = "title";
-            let selectedHeroes = [];
-            let heroIndex = 0;
-            let party = [];
-            let level = 1;
-            let enemies = [];
-            let battleEngine = null;
+      let currentScreen = "title";
+      let selectedHeroes = [];
+      let heroIndex = 0;
+      let party = [];
+      let level = 1;
+      let enemies = [];
+      let battleEngine = null;
 
-            const allHeroes = [
-              { name: "Knight", symbol: "♞", attack: 4, range: 1, agility: 5, hp: 15 },
-              { name: "Archer", symbol: "⚔", attack: 3, range: 4, agility: 3, hp: 12 },
-              { name: "Wizard", symbol: "✡", attack: 2, range: 6, agility: 2, hp: 10 },
-              { name: "Berserker", symbol: "⚒", attack: 5, range: 1, agility: 4, hp: 18 },
-              { name: "Rogue", symbol: "☠", attack: 4, range: 2, agility: 4, hp: 12 },
-              { name: "Jester", symbol: "♣", attack: 3, range: 2, agility: 5, hp: 10, joke: true },
-              { name: "Meatwalker", symbol: "₻", attack: 6, range: 1, agility: 3, hp: 20, meat: true },
-              { name: "Soothscribe", symbol: "☄", attack: 2, range: 5, agility: 3, hp: 11, tarot: true },
-              { name: "Nonsequiteur", symbol: "∄", attack: 3, range: 3, agility: 3, hp: 10, nonseq: true },
-              { name: "Griot", symbol: "℣", attack: 1, range: 1, agility: 1, hp: 10, reactsToHistory: true }
-            ];
+      // For Mode Up selection:
+      let modeUpIndex = 0;
+      let livingHeroes = [];
 
-            // Screen management.
-            function showScreen(screen) {
-              document.getElementById("title-screen").style.display = (screen === "title") ? "flex" : "none";
-              document.getElementById("party-select").style.display = (screen === "party") ? "block" : "none";
-              document.getElementById("game-container").style.display = (screen === "battle") ? "block" : "none";
-              document.getElementById("victory").style.display = (screen === "victory") ? "block" : "none";
-              // Game over overlay is managed separately.
-              currentScreen = screen;
-            }
+      // Updated hero roster.
+      // Torcher now starts with burn +1, and Slüjier starts with slüj +1.
+      const allHeroes = [
+        { name: "Knight", symbol: "♞", attack: 4, range: 1, agility: 5, hp: 15 },
+        { name: "Archer", symbol: "⚔", attack: 3, range: 4, agility: 3, hp: 12 },
+        { name: "Wizard", symbol: "✡", attack: 2, range: 6, agility: 2, hp: 10 },
+        { name: "Berserker", symbol: "⚒", attack: 5, range: 1, agility: 4, hp: 18 },
+        { name: "Rogue", symbol: "☠", attack: 4, range: 2, agility: 4, hp: 12 },
+        { name: "Jester", symbol: "♣", attack: 3, range: 2, agility: 5, hp: 10, joke: true },
+        { name: "Meatwalker", symbol: "₻", attack: 6, range: 1, agility: 3, hp: 20, meat: true },
+        { name: "Soothscribe", symbol: "☄", attack: 2, range: 5, agility: 3, hp: 11, tarot: true },
+        { name: "Nonsequiteur", symbol: "∄", attack: 3, range: 3, agility: 3, hp: 10, nonseq: true },
+        { name: "Griot", symbol: "℣", attack: 1, range: 1, agility: 1, hp: 10, reactsToHistory: true },
+        { name: "Torcher", symbol: "⚶", attack: 3, range: 2, agility: 3, hp: 14, torcher: true, burn: 1 },
+        { name: "Slüjier", symbol: "🜜", attack: 4, range: 1, agility: 4, hp: 16, sluj: 1 }
+      ];
 
-            // Update hero display during party selection.
-            async function updateHeroDisplay() {
-              const hero = allHeroes[heroIndex];
-              let display = `<p class="highlight">${hero.name} (${hero.symbol})</p>`;
-              if (hero.joke) {
-                const joke = await fetchJoke();
-                display += `<p>${joke}</p>`;
-              } else if (hero.meat) {
-                const meatMsg = await fetchBaconIpsum();
-                display += `<p>${meatMsg}</p>`;
-              } else if (hero.tarot) {
-                const tarot = await fetchTarotCard();
-                display += `<p>${tarot}</p>`;
-              } else if (hero.nonseq) {
-                const fact = await fetchNonseqFact();
-                display += `<p>${fact}</p>`;
-              } else if (hero.reactsToHistory) {
-                const reaction = await getGriotReaction();
-                display += `<p>${reaction}</p>`;
-              } else {
-                display += `<p>Attack: ${hero.attack} | Range: ${hero.range} | Agility: ${hero.agility} | HP: ${hero.hp}</p>`;
-                display += `<p>${selectedHeroes.includes(heroIndex) ? "SELECTED" : "Press Spacebar to Select"}</p>`;
-              }
-              document.getElementById("hero-display").innerHTML = display;
-              document.getElementById("selection-info").textContent = `Selected Heroes: ${selectedHeroes.length}/3`;
-            }
-
-            function selectHero() {
-              if (selectedHeroes.includes(heroIndex)) {
-                selectedHeroes = selectedHeroes.filter(i => i !== heroIndex);
-              } else if (selectedHeroes.length < 3) {
-                selectedHeroes.push(heroIndex);
-              }
-              updateHeroDisplay();
-            }
-
-            function startGame() {
-              if (selectedHeroes.length !== 3) {
-                alert("Select exactly 3 heroes!");
-                return;
-              }
-              const backgroundMusic = document.getElementById("background-music");
-              backgroundMusic.play();
-              party = selectedHeroes.map(i => Object.assign({}, allHeroes[i]));
-              // Sort party by agility.
-              party.sort((a, b) => b.agility - a.agility);
-              initializeBattle();
-              showScreen("battle");
-            }
-
-            // Initialize battle parameters based on the current level.
-            function initializeBattle() {
-              let rows, cols, wallHP;
-              enemies = [];
-              if (level === 1) {
-                rows = 5; cols = 10; wallHP = 20;
-                document.getElementById("level-title").textContent = "Level 1: The Breaking Wall";
-              } else if (level === 2) {
-                rows = 7; cols = 12; wallHP = 40;
-                document.getElementById("level-title").textContent = "Level 2: The Reinforced Barricade";
-                enemies.push({ name: "Brigand", symbol: "Җ", attack: 3, range: 1, hp: 12, agility: 2, x: cols - 3, y: Math.floor(rows / 2) });
-                enemies.push({ name: "Brigand", symbol: "Җ", attack: 3, range: 1, hp: 12, agility: 2, x: cols - 5, y: Math.floor(rows / 2) });
-              } else if (level === 3) {
-                rows = 14; cols = 3; wallHP = 60;
-                document.getElementById("level-title").textContent = "Level 3: The Vertical Corridor";
-                for (let col = 0; col < cols; col++) {
-                  enemies.push({ name: "Buckleman", symbol: "⛨", attack: 1, range: 1, hp: 20, agility: 1, x: col, y: 7 });
-                }
-              }
-              else if (level === 4) {
-        rows = 3; cols = 15; wallHP = 70;
-        document.getElementById("level-title").textContent = "Level 4: Outside the Gratt";
-
-        enemies = [];
-        enemies.push({ name: "Brigand", symbol: "Җ", attack: 3, range: 1, hp: 12, agility: 2, x: 12, y: 0 });
-        enemies.push({ name: "Brigand", symbol: "Җ", attack: 3, range: 1, hp: 12, agility: 2, x: 11, y: 1 });
-        enemies.push({ name: "Buckleman", symbol: "⛨", attack: 1, range: 1, hp: 20, agility: 1, x: 8, y: 2 });
-        enemies.push({ name: "Brigand", symbol: "Җ", attack: 3, range: 1, hp: 12, agility: 2, x: 12, y: 2 });
+      // Screen management.
+      function showScreen(screen) {
+        document.getElementById("title-screen").style.display = (screen === "title") ? "flex" : "none";
+        document.getElementById("party-select").style.display = (screen === "party") ? "block" : "none";
+        document.getElementById("game-container").style.display = (screen === "battle") ? "block" : "none";
+        document.getElementById("victory").style.display = (screen === "victory") ? "block" : "none";
+        document.getElementById("mode-up-window").style.display = (screen === "modeUp") ? "flex" : "none";
+        currentScreen = screen;
       }
-              // Create a new BattleEngine instance and pass the log, level complete, and onGameOver callbacks.
-              battleEngine = new BattleEngine(
-                party,
-                enemies,
-                rows,
-                cols,
-                wallHP,
-                logMessage,
-                onLevelComplete,
-                onGameOver
-              );
-              renderBattlefield();
-            }
 
-            // Handle level transition.
-            function onLevelComplete() {
-              if (level < 4) {
-                level++;
-                logMessage(`Transitioning to Level ${level}...`);
-                setTimeout(initializeBattle, 2000);
-              } else {
-                logMessage("All levels completed! You win!");
-                showScreen("victory");
+      // Display hero stats during party selection.
+      async function updateHeroDisplay() {
+        const hero = allHeroes[heroIndex];
+        let display = `<p class="highlight">${hero.name} (${hero.symbol})</p>`;
+        if (hero.joke) {
+          const joke = await fetchJoke();
+          display += `<p>${joke}</p>`;
+        } else if (hero.meat) {
+          const meatMsg = await fetchBaconIpsum();
+          display += `<p>${meatMsg}</p>`;
+        } else if (hero.tarot) {
+          const tarot = await fetchTarotCard();
+          display += `<p>${tarot}</p>`;
+        } else if (hero.nonseq) {
+          const fact = await fetchNonseqFact();
+          display += `<p>${fact}</p>`;
+        } else if (hero.reactsToHistory) {
+          const reaction = await getGriotReaction();
+          display += `<p>${reaction}</p>`;
+        } else {
+          // Display regular stats for all heroes.
+          display += `<p>Attack: ${hero.attack} | Range: ${hero.range} | Agility: ${hero.agility} | HP: ${hero.hp}</p>`;
+          // Additionally show bonus stats if present.
+          if (hero.burn) {
+            display += `<p>Burn: ${hero.burn}</p>`;
+          }
+          if (hero.sluj) {
+            display += `<p>Slüj: ${hero.sluj}</p>`;
+          }
+          display += `<p>${selectedHeroes.includes(heroIndex) ? "SELECTED" : "Press Spacebar to Select"}</p>`;
+        }
+        document.getElementById("hero-display").innerHTML = display;
+        document.getElementById("selection-info").textContent = `Selected Heroes: ${selectedHeroes.length}/3`;
+      }
+
+      // Toggle hero selection.
+      function selectHero() {
+        if (selectedHeroes.includes(heroIndex)) {
+          selectedHeroes = selectedHeroes.filter(i => i !== heroIndex);
+        } else if (selectedHeroes.length < 3) {
+          selectedHeroes.push(heroIndex);
+        }
+        updateHeroDisplay();
+      }
+
+      function startGame() {
+        if (selectedHeroes.length !== 3) {
+          alert("Select exactly 3 heroes!");
+          return;
+        }
+        const backgroundMusic = document.getElementById("background-music");
+        backgroundMusic.play().catch(() => {
+          // Some browsers disallow autoplay without user interaction
+        });
+        party = selectedHeroes.map(i => Object.assign({}, allHeroes[i]));
+        // Sort party by agility.
+        party.sort((a, b) => b.agility - a.agility);
+        initializeBattle();
+        showScreen("battle");
+      }
+
+      // Returns the possible buff for a given hero, based on the current level.
+      function getModeUpBuff(chosenHero) {
+        const buffIncrement = level; // finishing level 1 => x1 bonus, level 2 => x2, etc.
+        if (chosenHero.name === "Knight") {
+          return { attack: 1 * buffIncrement, hp: 2 * buffIncrement };
+        } else if (chosenHero.name === "Archer") {
+          return { range: 1 * buffIncrement };
+        } else if (chosenHero.name === "Berserker") {
+          return { attack: 3 * buffIncrement };
+        } else if (chosenHero.name === "Torcher") {
+          return { burn: 1 * buffIncrement };
+        } else if (chosenHero.name === "Slüjier") {
+          return { sluj: 1 * buffIncrement };
+        } else {
+          // default placeholder buff.
+          return { ghis: 1 };
+        }
+      }
+
+      // Mode Up progression mechanic.
+      function showModeUpWindow() {
+        livingHeroes = party.filter(hero => hero.hp > 0); // Only living heroes.
+        if (livingHeroes.length === 0) {
+          setTimeout(initializeBattle, 500);
+          return;
+        }
+        modeUpIndex = 0;
+        showScreen("modeUp");
+        updateModeUpHeroDisplay();
+      }
+
+      function updateModeUpHeroDisplay() {
+        const hero = livingHeroes[modeUpIndex];
+        const buff = getModeUpBuff(hero);
+        const lines = [];
+        lines.push(`<p class="highlight">${hero.name} (${hero.symbol})</p>`);
+        lines.push(`<p>HP: ${hero.hp <= 0 ? `<span class="dead-hero">${hero.hp}</span>` : hero.hp} ${buff.hp ? `<span class="stat-up">+${buff.hp}</span>` : ""}</p>`);
+        lines.push(`<p>Attack: ${hero.attack} ${buff.attack ? `<span class="stat-up">+${buff.attack}</span>` : ""}</p>`);
+        lines.push(`<p>Range: ${hero.range} ${buff.range ? `<span class="stat-up">+${buff.range}</span>` : ""}</p>`);
+        if (buff.burn) {
+          lines.push(`<p class="stat-up">+${buff.burn} burn</p>`);
+        }
+        if (buff.sluj) {
+          lines.push(`<p class="stat-up">+${buff.sluj} slüj</p>`);
+        }
+        if (buff.ghis) {
+          lines.push(`<p>+<span class="stat-up">${buff.ghis} ghïs</span></p>`);
+        }
+        document.getElementById("mode-up-hero-display").innerHTML = lines.join("");
+      }
+
+      function applyModeUp(chosenHero) {
+        const buff = getModeUpBuff(chosenHero);
+        let messageParts = [];
+        if (buff.hp) {
+          messageParts.push(`+${buff.hp} HP`);
+        }
+        if (buff.attack) {
+          messageParts.push(`+${buff.attack} Attack`);
+        }
+        if (buff.range) {
+          messageParts.push(`+${buff.range} Range`);
+        }
+        if (buff.burn) {
+          messageParts.push(`+${buff.burn} burn`);
+        }
+        if (buff.sluj) {
+          messageParts.push(`+${buff.sluj} slüj`);
+        }
+        if (buff.ghis) {
+          messageParts.push(`+${buff.ghis} ghïs`);
+        }
+        const message = (messageParts.length > 0)
+          ? `${chosenHero.name} empowers the party with ${messageParts.join(", ")}!`
+          : `${chosenHero.name} tries to mode up but nothing happens...`;
+
+        party.forEach(h => {
+          for (let stat in buff) {
+            if (stat === "hp") {
+              if (h.hp > 0) {
+                h.hp += buff[stat];
               }
-            }
-
-            // Handle game over by displaying the game-over overlay.
-            function onGameOver() {
-              document.getElementById("game-over").style.display = "flex";
-            }
-
-            // Refresh the battlefield display and update status text.
-            function renderBattlefield() {
-              document.getElementById("battlefield").innerHTML = battleEngine.drawBattlefield();
-              document.getElementById("status").textContent = `Wall HP: ${battleEngine.wallHP} | ${party[battleEngine.currentUnit].name}'s Turn (Moves Left: ${battleEngine.movePoints})`;
-            }
-
-            // Log messages to the log pane.
-            function logMessage(message) {
-              const logDiv = document.getElementById("log");
-              logDiv.innerHTML += `<p>${message}</p>`;
-              logDiv.scrollTop = logDiv.scrollHeight;
-            }
-
-            // Record an attack interaction and have special characters say their cool lines during battle.
-            async function recordAttack(message) {
-              recordInteraction(message);
-              const hero = party[battleEngine.currentUnit];
-              if (hero.joke) {
-                const joke = await fetchJoke();
-                logMessage(joke);
-              } else if (hero.meat) {
-                const meatMsg = await fetchBaconIpsum();
-                logMessage(meatMsg);
-              } else if (hero.tarot) {
-                const tarot = await fetchTarotCard();
-                logMessage(tarot);
-              } else if (hero.nonseq) {
-                const fact = await fetchNonseqFact();
-                logMessage(fact);
-              } else if (hero.reactsToHistory) {
-                const reaction = await getGriotReaction();
-                logMessage(reaction);
+            } else {
+              if (!Object.prototype.hasOwnProperty.call(h, stat)) {
+                h[stat] = 0;
               }
+              h[stat] += buff[stat];
             }
+          }
+        });
+        logMessage(message);
+        showScreen("battle");
+        level++;
+        setTimeout(initializeBattle, 2000);
+      }
 
-            // Restart the game without reloading the page.
-            function restartGame() {
-              // Reset state variables.
-              level = 1;
-              selectedHeroes = [];
-              party = [];
-              heroIndex = 0;
-              document.getElementById("log").innerHTML = "";
-              document.getElementById("game-over").style.display = "none";
-              showScreen("title");
+      // Initialize battle parameters.
+      function initializeBattle() {
+        let rows, cols, wallHP;
+        enemies = [];
+        if (level === 1) {
+          rows = 5; cols = 10; wallHP = 20;
+          document.getElementById("level-title").textContent = "Level 1: The Breaking Wall";
+        } else if (level === 2) {
+          rows = 7; cols = 12; wallHP = 40;
+          document.getElementById("level-title").textContent = "Level 2: The Reinforced Barricade";
+          enemies.push({ name: "Brigand", symbol: "Җ", attack: 3, range: 1, hp: 12, agility: 2, x: cols - 3, y: Math.floor(rows / 2) });
+          enemies.push({ name: "Brigand", symbol: "Җ", attack: 3, range: 1, hp: 12, agility: 2, x: cols - 5, y: Math.floor(rows / 2) });
+        } else if (level === 3) {
+          rows = 14; cols = 3; wallHP = 60;
+          document.getElementById("level-title").textContent = "Level 3: The Vertical Corridor";
+          for (let col = 0; col < cols; col++) {
+            enemies.push({ name: "Buckleman", symbol: "⛨", attack: 1, range: 1, hp: 20, agility: 1, x: col, y: 7 });
+          }
+        } else if (level === 4) {
+          rows = 3; cols = 15; wallHP = 70;
+          document.getElementById("level-title").textContent = "Level 4: Outside the Gratt";
+          enemies.push({ name: "Brigand", symbol: "Җ", attack: 3, range: 1, hp: 12, agility: 2, x: 12, y: 0 });
+          enemies.push({ name: "Brigand", symbol: "Җ", attack: 3, range: 1, hp: 12, agility: 2, x: 11, y: 1 });
+          enemies.push({ name: "Buckleman", symbol: "⛨", attack: 1, range: 1, hp: 20, agility: 1, x: 8, y: 2 });
+          enemies.push({ name: "Brigand", symbol: "Җ", attack: 3, range: 1, hp: 12, agility: 2, x: 12, y: 2 });
+        } else {
+          showScreen("victory");
+          return;
+        }
+
+        battleEngine = new BattleEngine(
+          party,
+          enemies,
+          rows,
+          cols,
+          wallHP,
+          logMessage,
+          onLevelComplete,
+          onGameOver
+        );
+        renderBattlefield();
+      }
+
+      function onLevelComplete() {
+        if (level < 4) {
+          logMessage(`Level ${level} complete!`);
+          showModeUpWindow();
+        } else {
+          logMessage("All levels completed! You win!");
+          showScreen("victory");
+        }
+      }
+
+      function onGameOver() {
+        document.getElementById("game-over").style.display = "flex";
+      }
+
+      function renderBattlefield() {
+        document.getElementById("battlefield").innerHTML = battleEngine.drawBattlefield();
+        document.getElementById("status").textContent =
+          `Wall HP: ${battleEngine.wallHP} | ` +
+          `${party[battleEngine.currentUnit].name}'s Turn (Moves Left: ${battleEngine.movePoints})`;
+      }
+
+      function logMessage(message) {
+        const logDiv = document.getElementById("log");
+        logDiv.innerHTML += `<p>${message}</p>`;
+        logDiv.scrollTop = logDiv.scrollHeight;
+      }
+
+      async function recordAttack(message) {
+        recordInteraction(message);
+        const hero = party[battleEngine.currentUnit];
+        if (hero.joke) {
+          const joke = await fetchJoke();
+          logMessage(joke);
+        } else if (hero.meat) {
+          const meatMsg = await fetchBaconIpsum();
+          logMessage(meatMsg);
+        } else if (hero.tarot) {
+          const tarot = await fetchTarotCard();
+          logMessage(tarot);
+        } else if (hero.nonseq) {
+          const fact = await fetchNonseqFact();
+          logMessage(fact);
+        } else if (hero.reactsToHistory) {
+          const reaction = await getGriotReaction();
+          logMessage(reaction);
+        }
+      }
+
+      function restartGame() {
+        level = 1;
+        selectedHeroes = [];
+        party = [];
+        heroIndex = 0;
+        document.getElementById("log").innerHTML = "";
+        document.getElementById("game-over").style.display = "none";
+        showScreen("title");
+      }
+
+      const keyActions = {
+        title: {
+          Space: () => {
+            showScreen("party");
+            updateHeroDisplay();
+          }
+        },
+        party: {
+          ArrowLeft: () => {
+            heroIndex = (heroIndex - 1 + allHeroes.length) % allHeroes.length;
+            updateHeroDisplay();
+          },
+          ArrowRight: () => {
+            heroIndex = (heroIndex + 1) % allHeroes.length;
+            updateHeroDisplay();
+          },
+          Space: () => {
+            if (selectedHeroes.length < 3 || !selectedHeroes.includes(heroIndex)) {
+              selectHero();
+            } else {
+              startGame();
             }
+            updateHeroDisplay();
+          }
+        },
+        battle: {
+          Space: () => {
+            battleEngine.awaitingAttackDirection = true;
+            logMessage(`${party[battleEngine.currentUnit].name} is ready to attack! Choose a direction.`);
+            renderBattlefield();
+          },
+          ArrowUp: async () => {
+            if (battleEngine.awaitingAttackDirection) {
+              await battleEngine.attackInDirection(0, -1, party[battleEngine.currentUnit], recordAttack);
+            } else {
+              battleEngine.moveUnit(0, -1);
+            }
+            renderBattlefield();
+          },
+          ArrowDown: async () => {
+            if (battleEngine.awaitingAttackDirection) {
+              await battleEngine.attackInDirection(0, 1, party[battleEngine.currentUnit], recordAttack);
+            } else {
+              battleEngine.moveUnit(0, 1);
+            }
+            renderBattlefield();
+          },
+          ArrowLeft: async () => {
+            if (battleEngine.awaitingAttackDirection) {
+              await battleEngine.attackInDirection(-1, 0, party[battleEngine.currentUnit], recordAttack);
+            } else {
+              battleEngine.moveUnit(-1, 0);
+            }
+            renderBattlefield();
+          },
+          ArrowRight: async () => {
+            if (battleEngine.awaitingAttackDirection) {
+              await battleEngine.attackInDirection(1, 0, party[battleEngine.currentUnit], recordAttack);
+            } else {
+              battleEngine.moveUnit(1, 0);
+            }
+            renderBattlefield();
+          }
+        },
+        victory: {
+          Space: () => restartGame()
+        },
+        "game-over": {
+          Space: () => restartGame()
+        },
+        modeUp: {
+          ArrowLeft: () => {
+            if (livingHeroes.length > 0) {
+              modeUpIndex = (modeUpIndex - 1 + livingHeroes.length) % livingHeroes.length;
+              updateModeUpHeroDisplay();
+            }
+          },
+          ArrowRight: () => {
+            if (livingHeroes.length > 0) {
+              modeUpIndex = (modeUpIndex + 1) % livingHeroes.length;
+              updateModeUpHeroDisplay();
+            }
+          },
+          Space: () => {
+            if (livingHeroes.length > 0) {
+              applyModeUp(livingHeroes[modeUpIndex]);
+            }
+          }
+        }
+      };
 
-            // Key actions for each screen.
-            const keyActions = {
-              title: {
-                Space: () => {
-                  showScreen("party");
-                  updateHeroDisplay();
-                }
-              },
-              party: {
-                ArrowLeft: () => {
-                  heroIndex = (heroIndex - 1 + allHeroes.length) % allHeroes.length;
-                  updateHeroDisplay();
-                },
-                ArrowRight: () => {
-                  heroIndex = (heroIndex + 1) % allHeroes.length;
-                  updateHeroDisplay();
-                },
-                Space: () => {
-                  if (selectedHeroes.length < 3 || !selectedHeroes.includes(heroIndex)) {
-                    selectHero();
-                  } else {
-                    startGame();
-                  }
-                  updateHeroDisplay();
-                }
-              },
-              battle: {
-                Space: () => {
-                  battleEngine.awaitingAttackDirection = true;
-                  logMessage(`${party[battleEngine.currentUnit].name} is ready to attack! Choose a direction.`);
-                  renderBattlefield();
-                },
-                ArrowUp: async () => {
-                  if (battleEngine.awaitingAttackDirection) {
-                    await battleEngine.attackInDirection(0, -1, party[battleEngine.currentUnit], recordAttack);
-                  } else {
-                    battleEngine.moveUnit(0, -1);
-                  }
-                  renderBattlefield();
-                },
-                ArrowDown: async () => {
-                  if (battleEngine.awaitingAttackDirection) {
-                    await battleEngine.attackInDirection(0, 1, party[battleEngine.currentUnit], recordAttack);
-                  } else {
-                    battleEngine.moveUnit(0, 1);
-                  }
-                  renderBattlefield();
-                },
-                ArrowLeft: async () => {
-                  if (battleEngine.awaitingAttackDirection) {
-                    await battleEngine.attackInDirection(-1, 0, party[battleEngine.currentUnit], recordAttack);
-                  } else {
-                    battleEngine.moveUnit(-1, 0);
-                  }
-                  renderBattlefield();
-                },
-                ArrowRight: async () => {
-                  if (battleEngine.awaitingAttackDirection) {
-                    await battleEngine.attackInDirection(1, 0, party[battleEngine.currentUnit], recordAttack);
-                  } else {
-                    battleEngine.moveUnit(1, 0);
-                  }
-                  renderBattlefield();
-                }
-              },
-              victory: {
-                Space: () => restartGame()
-              },
-              "game-over": {
-                Space: () => restartGame()
-              }
-            };
+      document.addEventListener("keydown", async (event) => {
+        if (document.getElementById("game-over").style.display === "flex") {
+          const action = keyActions["game-over"][event.code] || keyActions["game-over"][event.key];
+          if (action) {
+            event.preventDefault();
+            await action();
+          }
+          return;
+        }
+        const actions = keyActions[currentScreen];
+        const action = actions && (actions[event.code] || actions[event.key]);
+        if (action) {
+          event.preventDefault();
+          await action();
+        }
+      });
 
-            document.addEventListener("keydown", async (event) => {
-              if (document.getElementById("game-over").style.display === "flex") {
-                const action = keyActions["game-over"][event.code] || keyActions["game-over"][event.key];
-                if (action) {
-                  event.preventDefault();
-                  await action();
-                }
-                return;
-              }
-
-              const actions = keyActions[currentScreen];
-              const action = actions && (actions[event.code] || actions[event.key]);
-              if (action) {
-                event.preventDefault();
-                await action();
-              }
-            });
-
-            // Initialize game: load the griot training corpus then show the title screen.
-            initializeGriot("fantasy_narrative.txt").then(() => {
-              showScreen("title");
-            });
+      initializeGriot("fantasy_narrative.txt").then(() => {
+        showScreen("title");
+      });
     </script>
   </body>
 </html>
