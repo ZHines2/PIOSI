@@ -76,6 +76,7 @@
         0% { transform: translate(0, 0); }
         100% { transform: translate(-5%, -5%); }
       }
+      /* Screens */
       #title-screen,
       #party-select,
       #game-container,
@@ -162,7 +163,7 @@
         margin-bottom: 20px;
         margin-top: 20px;
       }
-      /* For highlighting the currently selected hero in mode-up */
+      /* Highlight the currently selected hero in mode-up */
       #mode-up-hero-display {
         margin: 10px;
         font-size: 1.2em;
@@ -171,7 +172,7 @@
         margin-top: 10px;
       }
       .stat-up {
-        color: #32cd32; /* limegreen or similar */
+        color: #32cd32;
         font-weight: bold;
       }
       .dead-hero {
@@ -210,8 +211,7 @@
         style="height:100px; overflow-y:auto; background-color:#111; padding:10px; border:1px solid white; text-align:left;"
       ></div>
       <p>
-        Use Arrow Keys to Move | Press Spacebar to Attack, then choose attack
-        direction.
+        Use Arrow Keys to Move | Press Spacebar to Attack, then choose attack direction.
       </p>
     </div>
 
@@ -250,6 +250,7 @@
         recordInteraction,
       } from "./griot.js";
       import { BattleEngine } from "./battleEngine.js";
+      import { heroes as allHeroes } from "./heroes.js";
 
       let currentScreen = "title";
       let selectedHeroes = [];
@@ -262,23 +263,6 @@
       // For Mode Up selection:
       let modeUpIndex = 0;
       let livingHeroes = [];
-
-      // Updated hero roster.
-      // Torcher now starts with burn +1, and Slüjier starts with slüj +1.
-      const allHeroes = [
-        { name: "Knight", symbol: "♞", attack: 4, range: 1, agility: 5, hp: 15 },
-        { name: "Archer", symbol: "⚔", attack: 3, range: 4, agility: 3, hp: 12 },
-        { name: "Wizard", symbol: "✡", attack: 2, range: 6, agility: 2, hp: 10 },
-        { name: "Berserker", symbol: "⚒", attack: 5, range: 1, agility: 4, hp: 18 },
-        { name: "Rogue", symbol: "☠", attack: 4, range: 2, agility: 4, hp: 12 },
-        { name: "Jester", symbol: "♣", attack: 3, range: 2, agility: 5, hp: 10, joke: true },
-        { name: "Meatwalker", symbol: "₻", attack: 6, range: 1, agility: 3, hp: 20, meat: true },
-        { name: "Soothscribe", symbol: "☄", attack: 2, range: 5, agility: 3, hp: 11, tarot: true },
-        { name: "Nonsequiteur", symbol: "∄", attack: 3, range: 3, agility: 3, hp: 10, nonseq: true },
-        { name: "Griot", symbol: "℣", attack: 1, range: 1, agility: 1, hp: 10, reactsToHistory: true },
-        { name: "Torcher", symbol: "⚶", attack: 3, range: 2, agility: 3, hp: 14, torcher: true, burn: 1 },
-        { name: "Slüjier", symbol: "🜜", attack: 4, range: 1, agility: 4, hp: 16, sluj: 1 }
-      ];
 
       // Screen management.
       function showScreen(screen) {
@@ -312,7 +296,6 @@
         } else {
           // Display regular stats for all heroes.
           display += `<p>Attack: ${hero.attack} | Range: ${hero.range} | Agility: ${hero.agility} | HP: ${hero.hp}</p>`;
-          // Additionally show bonus stats if present.
           if (hero.burn) {
             display += `<p>Burn: ${hero.burn}</p>`;
           }
@@ -352,6 +335,7 @@
       }
 
       // Returns the possible buff for a given hero, based on the current level.
+      // Mode up fix for Rogue: provide an agility buff.
       function getModeUpBuff(chosenHero) {
         const buffIncrement = level; // finishing level 1 => x1 bonus, level 2 => x2, etc.
         if (chosenHero.name === "Knight") {
@@ -360,6 +344,9 @@
           return { range: 1 * buffIncrement };
         } else if (chosenHero.name === "Berserker") {
           return { attack: 3 * buffIncrement };
+        } else if (chosenHero.name === "Rogue") {
+          // New mode up for Rogue: boost agility.
+          return { agility: 2 * buffIncrement };
         } else if (chosenHero.name === "Torcher") {
           return { burn: 1 * buffIncrement };
         } else if (chosenHero.name === "Slüjier") {
@@ -390,6 +377,9 @@
         lines.push(`<p>HP: ${hero.hp <= 0 ? `<span class="dead-hero">${hero.hp}</span>` : hero.hp} ${buff.hp ? `<span class="stat-up">+${buff.hp}</span>` : ""}</p>`);
         lines.push(`<p>Attack: ${hero.attack} ${buff.attack ? `<span class="stat-up">+${buff.attack}</span>` : ""}</p>`);
         lines.push(`<p>Range: ${hero.range} ${buff.range ? `<span class="stat-up">+${buff.range}</span>` : ""}</p>`);
+        if (buff.agility) {
+          lines.push(`<p class="stat-up">+${buff.agility} agility</p>`);
+        }
         if (buff.burn) {
           lines.push(`<p class="stat-up">+${buff.burn} burn</p>`);
         }
@@ -413,6 +403,9 @@
         }
         if (buff.range) {
           messageParts.push(`+${buff.range} Range`);
+        }
+        if (buff.agility) {
+          messageParts.push(`+${buff.agility} Agility`);
         }
         if (buff.burn) {
           messageParts.push(`+${buff.burn} burn`);
@@ -452,21 +445,29 @@
         let rows, cols, wallHP;
         enemies = [];
         if (level === 1) {
-          rows = 5; cols = 10; wallHP = 20;
+          rows = 5;
+          cols = 10;
+          wallHP = 20;
           document.getElementById("level-title").textContent = "Level 1: The Breaking Wall";
         } else if (level === 2) {
-          rows = 7; cols = 12; wallHP = 40;
+          rows = 7;
+          cols = 12;
+          wallHP = 40;
           document.getElementById("level-title").textContent = "Level 2: The Reinforced Barricade";
           enemies.push({ name: "Brigand", symbol: "Җ", attack: 3, range: 1, hp: 12, agility: 2, x: cols - 3, y: Math.floor(rows / 2) });
           enemies.push({ name: "Brigand", symbol: "Җ", attack: 3, range: 1, hp: 12, agility: 2, x: cols - 5, y: Math.floor(rows / 2) });
         } else if (level === 3) {
-          rows = 14; cols = 3; wallHP = 60;
+          rows = 14;
+          cols = 3;
+          wallHP = 60;
           document.getElementById("level-title").textContent = "Level 3: The Vertical Corridor";
           for (let col = 0; col < cols; col++) {
             enemies.push({ name: "Buckleman", symbol: "⛨", attack: 1, range: 1, hp: 20, agility: 1, x: col, y: 7 });
           }
         } else if (level === 4) {
-          rows = 3; cols = 15; wallHP = 70;
+          rows = 3;
+          cols = 15;
+          wallHP = 70;
           document.getElementById("level-title").textContent = "Level 4: Outside the Gratt";
           enemies.push({ name: "Brigand", symbol: "Җ", attack: 3, range: 1, hp: 12, agility: 2, x: 12, y: 0 });
           enemies.push({ name: "Brigand", symbol: "Җ", attack: 3, range: 1, hp: 12, agility: 2, x: 11, y: 1 });
@@ -661,4 +662,4 @@
       });
     </script>
   </body>
-</html>
+</html>  
