@@ -495,16 +495,16 @@
           logMessage(reaction);
         }
       }
-
-      function restartGame() {
-        level = 1;
-        selectedHeroes = [];
-        party = [];
-        heroIndex = 0;
-        document.getElementById("log").innerHTML = "";
-        document.getElementById("game-over").style.display = "none";
-        showScreen("title");
-      }
+function restartGame() {
+    level = 1;
+    selectedHeroes = [];
+    party = [];
+    heroIndex = 0;
+    cheatActive = false; // Reset the cheat flag
+    document.getElementById("log").innerHTML = "";
+    document.getElementById("game-over").style.display = "none";
+    showScreen("title");
+}
 
       // Function to activate the cheat code branch (Level 99: The Hidden Arena)
       function activateCheat() {
