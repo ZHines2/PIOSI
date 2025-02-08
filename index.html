@@ -10,12 +10,10 @@
       rel="stylesheet"
     />
     <style>
-      /* Optionally set a base font size on the html element */
       html {
         font-size: 14px;
       }
       body {
-        /* Use the Sono extra light font with a fallback to monospace */
         font-family: 'Sono', monospace;
         font-size: 1rem;
         text-align: center;
@@ -35,7 +33,6 @@
         text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
         overflow: hidden;
       }
-      /* Blurred background */
       #title-screen::before {
         content: '';
         position: absolute;
@@ -49,7 +46,6 @@
         opacity: 0.7;
         z-index: -1;
       }
-      /* Image container to hold the original image */
       .image-container {
         width: 80%;
         height: 80%;
@@ -59,7 +55,6 @@
         background-size: contain;
         z-index: 1;
       }
-      /* Add a pseudo-element for the static effect */
       .image-container::before {
         content: '';
         position: absolute;
@@ -76,7 +71,6 @@
         0% { transform: translate(0, 0); }
         100% { transform: translate(-5%, -5%); }
       }
-      /* Screens */
       #title-screen,
       #party-select,
       #game-container,
@@ -163,7 +157,6 @@
         margin-bottom: 20px;
         margin-top: 20px;
       }
-      /* Highlight the currently selected hero in mode-up */
       #mode-up-hero-display {
         margin: 10px;
         font-size: 1.2em;
@@ -203,9 +196,9 @@
 
     <!-- Battle Screen -->
     <div id="game-container">
-      <h1 id="level-title">Level 1: The Breaking Wall</h1>
+      <h1 id="level-title">Level Title</h1>
       <div id="battlefield"></div>
-      <p id="status">Wall HP: 20</p>
+      <p id="status"></p>
       <div
         id="log"
         style="height:100px; overflow-y:auto; background-color:#111; padding:10px; border:1px solid white; text-align:left;"
@@ -251,20 +244,35 @@
       } from "./griot.js";
       import { BattleEngine } from "./battleEngine.js";
       import { heroes as allHeroes } from "./heroes.js";
+      import { getLevel } from "./levels.js";
 
       let currentScreen = "title";
       let selectedHeroes = [];
       let heroIndex = 0;
       let party = [];
+      // Initialize starting level number normally.
       let level = 1;
       let enemies = [];
       let battleEngine = null;
+      let cheatActive = false;  // Flag to prevent repeated cheat activation
+
+      // Cheat code detection variables.
+      const cheatSequence = [
+        "ArrowLeft",
+        "ArrowLeft",
+        "ArrowRight",
+        "ArrowRight",
+        "ArrowUp",
+        "ArrowUp",
+        "ArrowDown",
+        "Space"
+      ];
+      let cheatBuffer = [];
 
       // For Mode Up selection:
       let modeUpIndex = 0;
       let livingHeroes = [];
 
-      // Screen management.
       function showScreen(screen) {
         document.getElementById("title-screen").style.display = (screen === "title") ? "flex" : "none";
         document.getElementById("party-select").style.display = (screen === "party") ? "block" : "none";
@@ -274,10 +282,8 @@
         currentScreen = screen;
       }
 
-      // Display hero stats during party selection.
       async function updateHeroDisplay() {
         const hero = allHeroes[heroIndex];
-        // Display basic hero info along with heal stat if present.
         let display = `<p class="highlight">${hero.name} (${hero.symbol})</p>`;
         if (hero.joke) {
           const joke = await fetchJoke();
@@ -306,7 +312,6 @@
         document.getElementById("selection-info").textContent = `Selected Heroes: ${selectedHeroes.length}/3`;
       }
 
-      // Toggle hero selection.
       function selectHero() {
         if (selectedHeroes.includes(heroIndex)) {
           selectedHeroes = selectedHeroes.filter(i => i !== heroIndex);
@@ -322,19 +327,15 @@
           return;
         }
         const backgroundMusic = document.getElementById("background-music");
-        backgroundMusic.play().catch(() => {
-          // Some browsers disallow autoplay without user interaction
-        });
+        backgroundMusic.play().catch(() => {});
         party = selectedHeroes.map(i => Object.assign({}, allHeroes[i]));
-        // Sort party by agility.
         party.sort((a, b) => b.agility - a.agility);
         initializeBattle();
         showScreen("battle");
       }
 
-      // Returns the possible buff for a given hero, based on the current level.
       function getModeUpBuff(chosenHero) {
-        const buffIncrement = level; // finishing level 1 => x1 bonus, level 2 => x2, etc.
+        const buffIncrement = level;
         if (chosenHero.name === "Knight") {
           return { attack: 1 * buffIncrement, hp: 2 * buffIncrement };
         } else if (chosenHero.name === "Archer") {
@@ -348,20 +349,16 @@
         } else if (chosenHero.name === "Slüjier") {
           return { sluj: 1 * buffIncrement };
         } else if (chosenHero.name === "Cleric") {
-          // Cleric now handles healing.
           return { heal: 2 * buffIncrement };
         } else if (chosenHero.heal !== undefined) {
-          // For any other hero with a heal property.
           return { heal: 1 * buffIncrement };
         } else {
-          // Default placeholder buff.
           return { ghis: 1 };
         }
       }
 
-      // Mode Up progression mechanic.
       function showModeUpWindow() {
-        livingHeroes = party.filter(hero => hero.hp > 0); // Only living heroes.
+        livingHeroes = party.filter(hero => hero.hp > 0);
         if (livingHeroes.length === 0) {
           setTimeout(initializeBattle, 500);
           return;
@@ -399,41 +396,23 @@
 
       function applyModeUp(chosenHero) {
         const buff = getModeUpBuff(chosenHero);
-        let messageParts = [];
-        if (buff.hp) {
-          messageParts.push(`+${buff.hp} HP`);
-        }
-        if (buff.attack) {
-          messageParts.push(`+${buff.attack} Attack`);
-        }
-        if (buff.range) {
-          messageParts.push(`+${buff.range} Range`);
-        }
-        if (buff.agility) {
-          messageParts.push(`+${buff.agility} Agility`);
-        }
-        if (buff.burn) {
-          messageParts.push(`+${buff.burn} burn`);
-        }
-        if (buff.sluj) {
-          messageParts.push(`+${buff.sluj} slüj`);
-        }
-        if (buff.heal) {
-          messageParts.push(`+${buff.heal} Heal`);
-        }
-        if (buff.ghis) {
-          messageParts.push(`+${buff.ghis} ghïs`);
-        }
-        const message = (messageParts.length > 0)
+        const messageParts = [];
+        if (buff.hp) messageParts.push(`+${buff.hp} HP`);
+        if (buff.attack) messageParts.push(`+${buff.attack} Attack`);
+        if (buff.range) messageParts.push(`+${buff.range} Range`);
+        if (buff.agility) messageParts.push(`+${buff.agility} Agility`);
+        if (buff.burn) messageParts.push(`+${buff.burn} burn`);
+        if (buff.sluj) messageParts.push(`+${buff.sluj} slüj`);
+        if (buff.heal) messageParts.push(`+${buff.heal} Heal`);
+        if (buff.ghis) messageParts.push(`+${buff.ghis} ghïs`);
+        const message = messageParts.length > 0
           ? `${chosenHero.name} empowers the party with ${messageParts.join(", ")}!`
           : `${chosenHero.name} tries to mode up but nothing happens...`;
 
         party.forEach(h => {
           for (let stat in buff) {
             if (stat === "hp") {
-              if (h.hp > 0) {
-                h.hp += buff[stat];
-              }
+              if (h.hp > 0) h.hp += buff[stat];
             } else {
               if (!Object.prototype.hasOwnProperty.call(h, stat)) {
                 h[stat] = 0;
@@ -448,44 +427,15 @@
         setTimeout(initializeBattle, 2000);
       }
 
-      // Initialize battle parameters.
       function initializeBattle() {
-        let rows, cols, wallHP;
-        enemies = [];
-        if (level === 1) {
-          rows = 5;
-          cols = 10;
-          wallHP = 20;
-          document.getElementById("level-title").textContent = "Level 1: The Breaking Wall";
-        } else if (level === 2) {
-          rows = 7;
-          cols = 12;
-          wallHP = 40;
-          document.getElementById("level-title").textContent = "Level 2: The Reinforced Barricade";
-          enemies.push({ name: "Brigand", symbol: "Җ", attack: 3, range: 1, hp: 12, agility: 2, x: cols - 3, y: Math.floor(rows / 2) });
-          enemies.push({ name: "Brigand", symbol: "Җ", attack: 3, range: 1, hp: 12, agility: 2, x: cols - 5, y: Math.floor(rows / 2) });
-        } else if (level === 3) {
-          rows = 14;
-          cols = 3;
-          wallHP = 60;
-          document.getElementById("level-title").textContent = "Level 3: The Vertical Corridor";
-          for (let col = 0; col < cols; col++) {
-            enemies.push({ name: "Buckleman", symbol: "⛨", attack: 1, range: 1, hp: 20, agility: 1, x: col, y: 7 });
-          }
-        } else if (level === 4) {
-          rows = 3;
-          cols = 15;
-          wallHP = 70;
-          document.getElementById("level-title").textContent = "Level 4: Outside the Gratt";
-          enemies.push({ name: "Brigand", symbol: "Җ", attack: 3, range: 1, hp: 12, agility: 2, x: 12, y: 0 });
-          enemies.push({ name: "Brigand", symbol: "Җ", attack: 3, range: 1, hp: 12, agility: 2, x: 11, y: 1 });
-          enemies.push({ name: "Buckleman", symbol: "⛨", attack: 1, range: 1, hp: 20, agility: 1, x: 8, y: 2 });
-          enemies.push({ name: "Brigand", symbol: "Җ", attack: 3, range: 1, hp: 12, agility: 2, x: 12, y: 2 });
-        } else {
+        const settings = getLevel(level);
+        if (!settings) {
           showScreen("victory");
           return;
         }
-
+        const { rows, cols, wallHP, title, enemies: levelEnemies } = settings;
+        document.getElementById("level-title").textContent = title;
+        enemies = levelEnemies;
         battleEngine = new BattleEngine(
           party,
           enemies,
@@ -514,10 +464,31 @@
       }
 
       function renderBattlefield() {
-        document.getElementById("battlefield").innerHTML = battleEngine.drawBattlefield();
+        const battlefield = document.getElementById("battlefield");
+        const settings = getLevel(level);
+        const { rows, cols, enemies } = settings;
+        battlefield.innerHTML = ""; // Clear existing battlefield
+
+        battlefield.style.gridTemplateColumns = `repeat(${cols}, 40px)`;
+
+        for (let i = 0; i < rows * cols; i++) {
+          const cell = document.createElement("div");
+          cell.classList.add("cell"); // Add base cell class
+          battlefield.appendChild(cell);
+        }
+
+        // Add enemies to cells and apply 'enemy' class
+        enemies.forEach(enemy => {
+          const index = enemy.y * cols + enemy.x;
+          const cell = battlefield.children[index];
+          if (cell) {
+            cell.classList.add("enemy"); // Ensure 'enemy' class is added
+            cell.textContent = enemy.symbol;
+          }
+        });
+
         document.getElementById("status").textContent =
-          `Wall HP: ${battleEngine.wallHP} | ` +
-          `${party[battleEngine.currentUnit].name}'s Turn (Moves Left: ${battleEngine.movePoints})`;
+          `Wall HP: ${settings.wallHP} | Level: ${level} `;
       }
 
       function logMessage(message) {
@@ -556,6 +527,49 @@
         document.getElementById("game-over").style.display = "none";
         showScreen("title");
       }
+
+      // Function to activate the cheat code branch (Level 99: The Hidden Arena)
+      function activateCheat() {
+        if (!cheatActive) {
+          cheatActive = true; // Prevent activating multiple times
+          console.log("Cheat code detected! Activating Level 99: The Hidden Arena!");
+          level = 99;  // Set the level to 99
+          initializeBattle(); // Re-initialize the battle with the new level
+        }
+      }
+
+      // Global keydown listener for cheat code detection
+      document.addEventListener("keydown", async (event) => {
+        // Add key to cheat buffer.
+        cheatBuffer.push(event.code);
+        // Keep only the latest N key presses.
+        if (cheatBuffer.length > cheatSequence.length) {
+          cheatBuffer.shift();
+        }
+        // Check if the sequence matches.
+        if (cheatBuffer.join() === cheatSequence.join()) {
+          activateCheat();
+          // Clear the buffer once the cheat code is activated.
+          cheatBuffer = [];
+          return;
+        }
+        
+        // Handle screen-specific key actions.
+        if (document.getElementById("game-over").style.display === "flex") {
+          const action = keyActions["game-over"][event.code] || keyActions["game-over"][event.key];
+          if (action) {
+            event.preventDefault();
+            await action();
+          }
+          return;
+        }
+        const actions = keyActions[currentScreen];
+        const action = actions && (actions[event.code] || actions[event.key]);
+        if (action) {
+          event.preventDefault();
+          await action();
+        }
+      });
 
       const keyActions = {
         title: {
@@ -648,26 +662,9 @@
         }
       };
 
-      document.addEventListener("keydown", async (event) => {
-        if (document.getElementById("game-over").style.display === "flex") {
-          const action = keyActions["game-over"][event.code] || keyActions["game-over"][event.key];
-          if (action) {
-            event.preventDefault();
-            await action();
-          }
-          return;
-        }
-        const actions = keyActions[currentScreen];
-        const action = actions && (actions[event.code] || actions[event.key]);
-        if (action) {
-          event.preventDefault();
-          await action();
-        }
-      });
-
       initializeGriot("fantasy_narrative.txt").then(() => {
         showScreen("title");
       });
     </script>
   </body>
-</html> 
+</html>
