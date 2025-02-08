@@ -464,31 +464,9 @@
       }
 
       function renderBattlefield() {
-        const battlefield = document.getElementById("battlefield");
-        const settings = getLevel(level);
-        const { rows, cols, enemies } = settings;
-        battlefield.innerHTML = ""; // Clear existing battlefield
-
-        battlefield.style.gridTemplateColumns = `repeat(${cols}, 40px)`;
-
-        for (let i = 0; i < rows * cols; i++) {
-          const cell = document.createElement("div");
-          cell.classList.add("cell"); // Add base cell class
-          battlefield.appendChild(cell);
-        }
-
-        // Add enemies to cells and apply 'enemy' class
-        enemies.forEach(enemy => {
-          const index = enemy.y * cols + enemy.x;
-          const cell = battlefield.children[index];
-          if (cell) {
-            cell.classList.add("enemy"); // Ensure 'enemy' class is added
-            cell.textContent = enemy.symbol;
-          }
-        });
-
+        document.getElementById("battlefield").innerHTML = battleEngine.drawBattlefield();
         document.getElementById("status").textContent =
-          `Wall HP: ${settings.wallHP} | Level: ${level} `;
+          `Wall HP: ${battleEngine.wallHP} | ${party[battleEngine.currentUnit].name}'s Turn (Moves Left: ${battleEngine.movePoints})`;
       }
 
       function logMessage(message) {
