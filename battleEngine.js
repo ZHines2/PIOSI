@@ -66,9 +66,15 @@ export class BattleEngine {
       for (let x = 0; x < this.cols; x++) {
         const cellContent = this.battlefield[y][x];
         let cellClass = '';
-        if (cellContent === 'Җ' || cellContent === '⛨') {
+
+        // Dynamically check if the cell content matches any enemy symbol
+        const isEnemy = this.enemies.some(
+          enemy => enemy.symbol === cellContent
+        );
+        if (isEnemy) {
           cellClass += ' enemy';
         }
+
         if (
           this.party[this.currentUnit] &&
           this.party[this.currentUnit].x === x &&
