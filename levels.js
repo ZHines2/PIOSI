@@ -96,7 +96,7 @@ export const levelSettings = [
   // Cheat Level: A special secret branch.
   {
     level: 99,
-    title: "Cheat Level: The Hidden Arena",
+    title: "Level ௧: Further Introspection",
     rows: 15,
     cols: 15,
     wallHP: 100,
