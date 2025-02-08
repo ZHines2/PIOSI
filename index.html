@@ -277,6 +277,7 @@
       // Display hero stats during party selection.
       async function updateHeroDisplay() {
         const hero = allHeroes[heroIndex];
+        // Display basic hero info along with heal stat if present.
         let display = `<p class="highlight">${hero.name} (${hero.symbol})</p>`;
         if (hero.joke) {
           const joke = await fetchJoke();
@@ -294,14 +295,11 @@
           const reaction = await getGriotReaction();
           display += `<p>${reaction}</p>`;
         } else {
-          // Display regular stats for all heroes.
-          display += `<p>Attack: ${hero.attack} | Range: ${hero.range} | Agility: ${hero.agility} | HP: ${hero.hp}</p>`;
-          if (hero.burn) {
-            display += `<p>Burn: ${hero.burn}</p>`;
+          display += `<p>Attack: ${hero.attack} | Range: ${hero.range} | Agility: ${hero.agility} | HP: ${hero.hp}`;
+          if (hero.heal !== undefined) {
+            display += ` | Heal: ${hero.heal}`;
           }
-          if (hero.sluj) {
-            display += `<p>Slüj: ${hero.sluj}</p>`;
-          }
+          display += `</p>`;
           display += `<p>${selectedHeroes.includes(heroIndex) ? "SELECTED" : "Press Spacebar to Select"}</p>`;
         }
         document.getElementById("hero-display").innerHTML = display;
@@ -335,7 +333,6 @@
       }
 
       // Returns the possible buff for a given hero, based on the current level.
-      // Mode up fix for Rogue: provide an agility buff.
       function getModeUpBuff(chosenHero) {
         const buffIncrement = level; // finishing level 1 => x1 bonus, level 2 => x2, etc.
         if (chosenHero.name === "Knight") {
@@ -345,14 +342,19 @@
         } else if (chosenHero.name === "Berserker") {
           return { attack: 3 * buffIncrement };
         } else if (chosenHero.name === "Rogue") {
-          // New mode up for Rogue: boost agility.
           return { agility: 2 * buffIncrement };
         } else if (chosenHero.name === "Torcher") {
           return { burn: 1 * buffIncrement };
         } else if (chosenHero.name === "Slüjier") {
           return { sluj: 1 * buffIncrement };
+        } else if (chosenHero.name === "Cleric") {
+          // Cleric now handles healing.
+          return { heal: 2 * buffIncrement };
+        } else if (chosenHero.heal !== undefined) {
+          // For any other hero with a heal property.
+          return { heal: 1 * buffIncrement };
         } else {
-          // default placeholder buff.
+          // Default placeholder buff.
           return { ghis: 1 };
         }
       }
@@ -386,6 +388,9 @@
         if (buff.sluj) {
           lines.push(`<p class="stat-up">+${buff.sluj} slüj</p>`);
         }
+        if (buff.heal) {
+          lines.push(`<p class="stat-up">+${buff.heal} heal</p>`);
+        }
         if (buff.ghis) {
           lines.push(`<p>+<span class="stat-up">${buff.ghis} ghïs</span></p>`);
         }
@@ -412,6 +417,9 @@
         }
         if (buff.sluj) {
           messageParts.push(`+${buff.sluj} slüj`);
+        }
+        if (buff.heal) {
+          messageParts.push(`+${buff.heal} Heal`);
         }
         if (buff.ghis) {
           messageParts.push(`+${buff.ghis} ghïs`);
@@ -662,4 +670,4 @@
       });
     </script>
   </body>
-</html>  
+</html> 
