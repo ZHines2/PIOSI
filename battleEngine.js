@@ -1,19 +1,4 @@
 // battleEngine.js
-// Refactored BattleEngine class with improved state management and turn progression.
-// Added support for lingering status effects such as burn and slüj.
-// Now when a unit with a burn property (e.g. Torcher) attacks an enemy, it applies a burn effect.
-// Also when a unit with a slüj property (e.g. Slüjier) attacks an enemy, it applies (or increases)
-// the enemy's slüj effect. This effect will only process on enemies that have been attacked with a slüj attack,
-// and not simply because a mode-up was chosen.
-//
-// Slüj Effect Levels on an enemy:
-//   slüj +1: 1 damage every 4 turns.
-//   slüj +2: 1 damage every 3 turns.
-//   slüj +3: 1 damage every 2 turns.
-//   slüj +4: 1 damage every turn.
-//   slüj +5: 2 damage every turn.
-//   slüj +6 (or higher): 3 damage every turn.
-
 export class BattleEngine {
   constructor(
     party,
@@ -42,11 +27,9 @@ export class BattleEngine {
     this.awaitingAttackDirection = false;
     this.transitioningLevel = false;
 
-    // Initialize status effects (burn, etc.) if not already present.
     this.party.forEach(hero => {
       hero.statusEffects = hero.statusEffects || {};
     });
-    // Reset enemy status effects to avoid any lingering effects from mode-up or previous rounds.
     this.enemies.forEach(enemy => {
       enemy.statusEffects = {};
     });
@@ -54,20 +37,19 @@ export class BattleEngine {
     this.battlefield = this.initializeBattlefield();
   }
 
-  // Build the battlefield grid and place heroes, enemies, and the wall.
   initializeBattlefield() {
     const field = Array.from({ length: this.rows }, () =>
       Array(this.cols).fill('.')
     );
-    // Place heroes in the top row.
+    // Place heroes on the top row.
     this.party.forEach((hero, index) => {
       hero.x = Math.min(index, this.cols - 1);
       hero.y = 0;
       field[hero.y][hero.x] = hero.symbol;
     });
-    // Place enemies and reset their status effects.
+    // Place enemies.
     this.enemies.forEach(enemy => {
-      enemy.statusEffects = {}; // clear any previous status effects.
+      enemy.statusEffects = {};
       field[enemy.y][enemy.x] = enemy.symbol;
     });
     // Create the wall along the bottom row.
@@ -77,7 +59,6 @@ export class BattleEngine {
     return field;
   }
 
-  // Render the battlefield as HTML.
   drawBattlefield() {
     let html = '';
     for (let y = 0; y < this.rows; y++) {
@@ -85,11 +66,9 @@ export class BattleEngine {
       for (let x = 0; x < this.cols; x++) {
         const cellContent = this.battlefield[y][x];
         let cellClass = '';
-        // Check for enemy symbols.
         if (cellContent === 'Җ' || cellContent === '⛨') {
           cellClass += ' enemy';
         }
-        // Mark the active hero cell.
         if (
           this.party[this.currentUnit] &&
           this.party[this.currentUnit].x === x &&
@@ -106,7 +85,6 @@ export class BattleEngine {
     return html;
   }
 
-  // Move the current hero unit if possible.
   moveUnit(dx, dy) {
     if (
       this.awaitingAttackDirection ||
@@ -118,7 +96,6 @@ export class BattleEngine {
     const newX = unit.x + dx;
     const newY = unit.y + dy;
     if (!this.isValidMove(newX, newY)) return;
-    // Update the battlefield with the hero's movement.
     this.battlefield[unit.y][unit.x] = '.';
     unit.x = newX;
     unit.y = newY;
@@ -139,8 +116,7 @@ export class BattleEngine {
     );
   }
 
-  // Process an attack in a specified direction.
-  // The recordAttackCallback logs narrative messages (such as character banter).
+  // Attack (or heal) logic: if an ally is targeted, interpret as healing if the attacker has a heal stat.
   async attackInDirection(dx, dy, unit, recordAttackCallback) {
     if (this.transitioningLevel) return;
     await recordAttackCallback(
@@ -150,24 +126,43 @@ export class BattleEngine {
       const targetX = unit.x + dx * i;
       const targetY = unit.y + dy * i;
       if (!this.isWithinBounds(targetX, targetY)) break;
-      // Check for an enemy at the target location.
+
+      // Check for an ally (different from the attacker).
+      const ally = this.party.find(
+        h => h.x === targetX && h.y === targetY && h !== unit
+      );
+      if (ally) {
+        if (unit.heal && unit.heal > 0) {
+          ally.hp += unit.heal;
+          this.logCallback(
+            `${unit.name} heals ${ally.name} for ${unit.heal} HP! (New HP: ${ally.hp})`
+          );
+        } else {
+          this.logCallback(
+            `${unit.name} attacks ${ally.name} but nothing happens.`
+          );
+        }
+        this.awaitingAttackDirection = false;
+        await this.shortPause();
+        this.nextTurn();
+        return;
+      }
+
+      // Check for an enemy.
       const enemy = this.enemies.find(e => e.x === targetX && e.y === targetY);
       if (enemy) {
         enemy.hp -= unit.attack;
         this.logCallback(
           `${unit.name} attacks ${enemy.name} for ${unit.attack} damage! (HP left: ${enemy.hp})`
         );
-        // If the attacker has a burn property, apply a burn effect.
         if (unit.burn) {
           enemy.statusEffects.burn = { damage: unit.burn, duration: 3 };
           this.logCallback(
             `${enemy.name} is now burning for ${unit.burn} damage per turn for 3 turns!`
           );
         }
-        // If the attacker has a slüj property, apply (or increase) the slüj effect.
         if (unit.sluj) {
           if (!enemy.statusEffects.sluj) {
-            // Initialize a slüj effect with a counter to track turns.
             enemy.statusEffects.sluj = {
               level: unit.sluj,
               duration: 4,
@@ -175,7 +170,7 @@ export class BattleEngine {
             };
           } else {
             enemy.statusEffects.sluj.level += unit.sluj;
-            enemy.statusEffects.sluj.duration = 4; // refresh duration on attack
+            enemy.statusEffects.sluj.duration = 4;
           }
           this.logCallback(
             `${enemy.name} is afflicted with slüj (level ${enemy.statusEffects.sluj.level}) for 4 turns!`
@@ -191,7 +186,7 @@ export class BattleEngine {
         this.nextTurn();
         return;
       }
-      // Check if the wall is hit.
+      // Check for the wall.
       if (this.battlefield[targetY][targetX] === 'ᚙ') {
         this.wallHP -= unit.attack;
         this.logCallback(
@@ -217,7 +212,6 @@ export class BattleEngine {
     return x >= 0 && x < this.cols && y >= 0 && y < this.rows;
   }
 
-  // Transition the level when the wall's HP drops to zero.
   handleWallCollapse() {
     this.logCallback('The Wall Collapses!');
     this.transitioningLevel = true;
@@ -228,7 +222,6 @@ export class BattleEngine {
     }, 1500);
   }
 
-  // Enemy turn: each enemy moves and then attempts to attack an adjacent hero.
   enemyTurn() {
     if (this.transitioningLevel) return;
     this.enemies.forEach(enemy => {
@@ -240,7 +233,6 @@ export class BattleEngine {
     this.logCallback('Enemy turn completed.');
   }
 
-  // Move enemy toward the closest hero.
   moveEnemy(enemy) {
     const targetHero = this.findClosestHero(enemy);
     if (!targetHero) return;
@@ -290,7 +282,6 @@ export class BattleEngine {
     return this.isWithinBounds(x, y) && this.battlefield[y][x] === '.';
   }
 
-  // Enemy attacks any hero in adjacent cells.
   enemyAttackAdjacent(enemy) {
     const directions = [
       [0, -1],
@@ -321,12 +312,9 @@ export class BattleEngine {
     });
   }
 
-  // Move to the next turn while applying status effects (burn, slüj, etc.).
   nextTurn() {
     if (this.transitioningLevel) return;
-    // Apply status effects.
     this.applyStatusEffects();
-    // Check for defeat.
     if (this.party.length === 0) {
       this.logCallback('All heroes have been defeated! Game Over.');
       if (typeof this.onGameOver === 'function') this.onGameOver();
@@ -338,7 +326,6 @@ export class BattleEngine {
       this.currentUnit = 0;
       this.logCallback('Enemy turn begins.');
       this.enemyTurn();
-      // Process status effects again after enemy turn.
       this.applyStatusEffects();
       if (this.party.length === 0) {
         this.logCallback('All heroes have been defeated! Game Over.');
@@ -350,11 +337,8 @@ export class BattleEngine {
     this.logCallback(`Now it's ${this.party[this.currentUnit].name}'s turn.`);
   }
 
-  // Apply status effects (burn and slüj) to heroes and enemies.
   applyStatusEffects() {
-    // Process effects for heroes.
     this.party.forEach(hero => {
-      // Process burn effect.
       if (hero.statusEffects.burn && hero.statusEffects.burn.duration > 0) {
         this.logCallback(
           `${hero.name} is burned and takes ${hero.statusEffects.burn.damage} damage!`
@@ -369,9 +353,7 @@ export class BattleEngine {
     });
     this.party = this.party.filter(hero => hero.hp > 0);
 
-    // Process effects for enemies.
     this.enemies.forEach(enemy => {
-      // Process burn effect.
       if (enemy.statusEffects.burn && enemy.statusEffects.burn.duration > 0) {
         this.logCallback(
           `${enemy.name} is burned and takes ${enemy.statusEffects.burn.damage} damage!`
@@ -383,7 +365,6 @@ export class BattleEngine {
           this.battlefield[enemy.y][enemy.x] = '.';
         }
       }
-      // Process slüj effect only if it was applied via an attack.
       if (enemy.statusEffects.sluj && enemy.statusEffects.sluj.duration > 0) {
         enemy.statusEffects.sluj.counter++;
         const level = enemy.statusEffects.sluj.level;
@@ -422,7 +403,6 @@ export class BattleEngine {
     this.enemies = this.enemies.filter(enemy => enemy.hp > 0);
   }
 
-  // A short delay between actions for smoother animations/log rendering.
   shortPause() {
     return new Promise(resolve => setTimeout(resolve, 300));
   }
