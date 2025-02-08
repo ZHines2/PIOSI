@@ -427,37 +427,65 @@
         setTimeout(initializeBattle, 2000);
       }
 
-      function initializeBattle() {
-        const settings = getLevel(level);
-        if (!settings) {
-          showScreen("victory");
-          return;
-        }
-        const { rows, cols, wallHP, title, enemies: levelEnemies } = settings;
-        document.getElementById("level-title").textContent = title;
-        enemies = levelEnemies;
-        battleEngine = new BattleEngine(
-          party,
-          enemies,
-          rows,
-          cols,
-          wallHP,
-          logMessage,
-          onLevelComplete,
-          onGameOver
-        );
-        renderBattlefield();
-      }
+function initializeBattle() {
+  const settings = getLevel(level);
+  if (!settings) {
+    // Only show victory if we're not in a special level sequence
+    if (level < 99 || level > 101) {
+      showScreen("victory");
+      return;
+    }
+  }
+  const { rows, cols, wallHP, title, enemies: levelEnemies } = settings;
+  document.getElementById("level-title").textContent = title;
+  enemies = levelEnemies;
+  battleEngine = new BattleEngine(
+    party,
+    enemies,
+    rows,
+    cols,
+    wallHP,
+    logMessage,
+    onLevelComplete,
+    onGameOver
+  );
+  renderBattlefield();
+}
 
-      function onLevelComplete() {
-        if (level < 4) {
-          logMessage(`Level ${level} complete!`);
-          showModeUpWindow();
-        } else {
-          logMessage("All levels completed! You win!");
-          showScreen("victory");
-        }
-      }
+function onLevelComplete() {
+  // Handle normal progression (levels 1-4)
+  if (level >= 1 && level <= 3) {
+    logMessage(`Level ${level} complete!`);
+    showModeUpWindow();
+  }
+  // Handle completion of normal game
+  else if (level === 4) {
+    logMessage("The normal path is complete!");
+    showScreen("victory");
+  }
+  // Handle special levels progression
+  else if (level === 99) {
+    logMessage("The veil of introspection lifts...");
+    level = 100;
+    setTimeout(initializeBattle, 2000);
+  }
+  else if (level === 100) {
+    logMessage("The echoes fade, revealing the final challenge...");
+    level = 101;
+    setTimeout(initializeBattle, 2000);
+  }
+  // Handle Gratt Prime (endless mode)
+  else if (level === 101) {
+    const currentWave = battleEngine.waveNumber || 0;
+    if (battleEngine.wallHP <= 0) {
+      logMessage("You've broken through! The eternal wall falls!");
+      showScreen("victory");
+    } else {
+      logMessage(`Wave ${currentWave + 1} complete!`);
+      setTimeout(initializeBattle, 2000);
+    }
+  }
+}
 
       function onGameOver() {
         document.getElementById("game-over").style.display = "flex";
