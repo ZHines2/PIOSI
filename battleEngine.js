@@ -75,6 +75,14 @@ export class BattleEngine {
           cellClass += ' enemy';
         }
 
+        // Add 'non-violent' class for Healing Shrine and Gratt Keeper
+        const nonViolentEnemy = this.enemies.find(
+          enemy => enemy.symbol === cellContent && (enemy.name === "Healing Shrine" || enemy.name === "Gratt Keeper")
+        );
+        if (nonViolentEnemy) {
+          cellClass += ' non-violent';
+        }
+
         if (
           this.party[this.currentUnit] &&
           this.party[this.currentUnit].x === x &&
@@ -156,6 +164,16 @@ export class BattleEngine {
 
       // Check for an enemy.
       const enemy = this.enemies.find(e => e.x === targetX && e.y === targetY);
+
+      //Prevent attacking a non-violent enemy
+      if (enemy && enemy.nonViolent) {
+        this.logCallback(`${unit.name} cannot attack the non-violent ${enemy.name}.`);
+        this.awaitingAttackDirection = false;
+        await this.shortPause();
+        this.nextTurn();
+        return;
+      }
+
       if (enemy) {
         enemy.hp -= unit.attack;
         this.logCallback(
@@ -231,6 +249,12 @@ export class BattleEngine {
   enemyTurn() {
     if (this.transitioningLevel) return;
     this.enemies.forEach(enemy => {
+      // Dialogue before movement
+      if (enemy.dialogue && enemy.dialogue.length > 0) {
+        const dialogue = enemy.dialogue[Math.floor(Math.random() * enemy.dialogue.length)];
+        this.logCallback(`${enemy.name} says: "${dialogue}"`);
+      }
+
       for (let moves = 0; moves < enemy.agility; moves++) {
         this.moveEnemy(enemy);
       }
@@ -328,6 +352,7 @@ export class BattleEngine {
     }
     this.awaitingAttackDirection = false;
     this.currentUnit++;
+    let catalystDefeated = false;
     if (this.currentUnit >= this.party.length) {
       this.currentUnit = 0;
       this.logCallback('Enemy turn begins.');
@@ -338,6 +363,18 @@ export class BattleEngine {
         if (typeof this.onGameOver === 'function') this.onGameOver();
         return;
       }
+
+      // --- ADDED SECTION: Wave Increment and Re-initialization ---
+      catalystDefeated = !this.enemies.some(enemy => enemy.name === "Catalyst");
+
+      if (levelSettings[6].level === 101 && catalystDefeated) {
+        levelSettings[6].waveNumber++;
+        this.logCallback(`Starting wave ${levelSettings[6].waveNumber}`);
+        this.initializeBattlefield(); // Re-initialize the battlefield first
+        this.enemies = getLevel(101).enemies; // Get new enemies
+        this.battlefield = this.initializeBattlefield(); // Re-draw the battlefield
+      }
+      // ----------------------------------------------------------
     }
     this.movePoints = this.party[this.currentUnit].agility;
     this.logCallback(`Now it's ${this.party[this.currentUnit].name}'s turn.`);
