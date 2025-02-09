@@ -238,6 +238,7 @@
         fetchBaconIpsum,
         fetchTarotCard,
         fetchNonseqFact,
+        fetchShrinkAdvice,
         getGriotReaction,
         initializeGriot,
         recordInteraction,
@@ -250,13 +251,11 @@
       let selectedHeroes = [];
       let heroIndex = 0;
       let party = [];
-      // Initialize starting level number normally.
       let level = 1;
       let enemies = [];
       let battleEngine = null;
-      let cheatActive = false;  // Flag to prevent repeated cheat activation
+      let cheatActive = false;
 
-      // Cheat code detection variables.
       const cheatSequence = [
         "ArrowLeft",
         "ArrowLeft",
@@ -269,7 +268,6 @@
       ];
       let cheatBuffer = [];
 
-      // For Mode Up selection:
       let modeUpIndex = 0;
       let livingHeroes = [];
 
@@ -297,6 +295,9 @@
         } else if (hero.nonseq) {
           const fact = await fetchNonseqFact();
           display += `<p>${fact}</p>`;
+        } else if (hero.shrink) {
+          const advice = await fetchShrinkAdvice();
+          display += `<p>Advice: ${advice}</p>`;
         } else if (hero.reactsToHistory) {
           const reaction = await getGriotReaction();
           display += `<p>${reaction}</p>`;
@@ -427,65 +428,56 @@
         setTimeout(initializeBattle, 2000);
       }
 
-function initializeBattle() {
-  const settings = getLevel(level);
-  if (!settings) {
-    // Only show victory if we're not in a special level sequence
-    if (level < 99 || level > 101) {
-      showScreen("victory");
-      return;
-    }
-  }
-  const { rows, cols, wallHP, title, enemies: levelEnemies } = settings;
-  document.getElementById("level-title").textContent = title;
-  enemies = levelEnemies;
-  battleEngine = new BattleEngine(
-    party,
-    enemies,
-    rows,
-    cols,
-    wallHP,
-    logMessage,
-    onLevelComplete,
-    onGameOver
-  );
-  renderBattlefield();
-}
+      function initializeBattle() {
+        const settings = getLevel(level);
+        if (!settings) {
+          if (level < 99 || level > 101) {
+            showScreen("victory");
+            return;
+          }
+        }
+        const { rows, cols, wallHP, title, enemies: levelEnemies } = settings;
+        document.getElementById("level-title").textContent = title;
+        enemies = levelEnemies;
+        battleEngine = new BattleEngine(
+          party,
+          enemies,
+          rows,
+          cols,
+          wallHP,
+          logMessage,
+          onLevelComplete,
+          onGameOver
+        );
+        renderBattlefield();
+      }
 
-function onLevelComplete() {
-  // Handle normal progression (levels 1-4)
-  if (level >= 1 && level <= 3) {
-    logMessage(`Level ${level} complete!`);
-    showModeUpWindow();
-  }
-  // Handle completion of normal game
-  else if (level === 4) {
-    logMessage("The normal path is complete!");
-    showScreen("victory");
-  }
-  // Handle special levels progression
-  else if (level === 99) {
-    logMessage("The veil of introspection lifts...");
-    level = 100;
-    setTimeout(initializeBattle, 2000);
-  }
-  else if (level === 100) {
-    logMessage("The echoes fade, revealing the final challenge...");
-    level = 101;
-    setTimeout(initializeBattle, 2000);
-  }
-  // Handle Gratt Prime (endless mode)
-  else if (level === 101) {
-    const currentWave = battleEngine.waveNumber || 0;
-    if (battleEngine.wallHP <= 0) {
-      logMessage("You've broken through! The eternal wall falls!");
-      showScreen("victory");
-    } else {
-      logMessage(`Wave ${currentWave + 1} complete!`);
-      setTimeout(initializeBattle, 2000);
-    }
-  }
-}
+      function onLevelComplete() {
+        if (level >= 1 && level <= 3) {
+          logMessage(`Level ${level} complete!`);
+          showModeUpWindow();
+        } else if (level === 4) {
+          logMessage("The normal path is complete!");
+          showScreen("victory");
+        } else if (level === 99) {
+          logMessage("The veil of introspection lifts...");
+          level = 100;
+          setTimeout(initializeBattle, 2000);
+        } else if (level === 100) {
+          logMessage("The echoes fade, revealing the final challenge...");
+          level = 101;
+          setTimeout(initializeBattle, 2000);
+        } else if (level === 101) {
+          const currentWave = battleEngine.waveNumber || 0;
+          if (battleEngine.wallHP <= 0) {
+            logMessage("You've broken through! The eternal wall falls!");
+            showScreen("victory");
+          } else {
+            logMessage(`Wave ${currentWave + 1} complete!`);
+            setTimeout(initializeBattle, 2000);
+          }
+        }
+      }
 
       function onGameOver() {
         document.getElementById("game-over").style.display = "flex";
@@ -498,175 +490,69 @@ function onLevelComplete() {
       }
 
       function logMessage(message) {
-        const logDiv = document.getElementById("log");
-        logDiv.innerHTML += `<p>${message}</p>`;
-        logDiv.scrollTop = logDiv.scrollHeight;
+        const logElement = document.getElementById("log");
+        logElement.innerHTML += `<p>${message}</p>`;
+        logElement.scrollTop = logElement.scrollHeight;
       }
 
-      async function recordAttack(message) {
-        recordInteraction(message);
-        const hero = party[battleEngine.currentUnit];
-        if (hero.joke) {
-          const joke = await fetchJoke();
-          logMessage(joke);
-        } else if (hero.meat) {
-          const meatMsg = await fetchBaconIpsum();
-          logMessage(meatMsg);
-        } else if (hero.tarot) {
-          const tarot = await fetchTarotCard();
-          logMessage(tarot);
-        } else if (hero.nonseq) {
-          const fact = await fetchNonseqFact();
-          logMessage(fact);
-        } else if (hero.reactsToHistory) {
-          const reaction = await getGriotReaction();
-          logMessage(reaction);
-        }
-      }
-function restartGame() {
-    level = 1;
-    selectedHeroes = [];
-    party = [];
-    heroIndex = 0;
-    cheatActive = false; // Reset the cheat flag
-    document.getElementById("log").innerHTML = "";
-    document.getElementById("game-over").style.display = "none";
-    showScreen("title");
-}
-
-      // Function to activate the cheat code branch (Level 99: The Hidden Arena)
-      function activateCheat() {
-        if (!cheatActive) {
-          cheatActive = true; // Prevent activating multiple times
-          console.log("Cheat code detected! Activating Level 99: The Hidden Arena!");
-          level = 99;  // Set the level to 99
-          initializeBattle(); // Re-initialize the battle with the new level
-        }
-      }
-
-      // Global keydown listener for cheat code detection
       document.addEventListener("keydown", async (event) => {
-        // Add key to cheat buffer.
         cheatBuffer.push(event.code);
-        // Keep only the latest N key presses.
         if (cheatBuffer.length > cheatSequence.length) {
           cheatBuffer.shift();
         }
-        // Check if the sequence matches.
         if (cheatBuffer.join() === cheatSequence.join()) {
-          activateCheat();
-          // Clear the buffer once the cheat code is activated.
+          if (!cheatActive) {
+            cheatActive = true;
+            console.log("Cheat code detected! Activating Level 99: The Hidden Arena!");
+            level = 99;
+            initializeBattle();
+          }
           cheatBuffer = [];
           return;
         }
-        
-        // Handle screen-specific key actions.
-        if (document.getElementById("game-over").style.display === "flex") {
-          const action = keyActions["game-over"][event.code] || keyActions["game-over"][event.key];
-          if (action) {
-            event.preventDefault();
-            await action();
-          }
-          return;
-        }
-        const actions = keyActions[currentScreen];
-        const action = actions && (actions[event.code] || actions[event.key]);
-        if (action) {
-          event.preventDefault();
-          await action();
-        }
-      });
 
-      const keyActions = {
-        title: {
-          Space: () => {
-            showScreen("party");
-            updateHeroDisplay();
-          }
-        },
-        party: {
-          ArrowLeft: () => {
-            heroIndex = (heroIndex - 1 + allHeroes.length) % allHeroes.length;
-            updateHeroDisplay();
-          },
-          ArrowRight: () => {
+        if (currentScreen === "title" && event.code === "Space") {
+          showScreen("party");
+          updateHeroDisplay();
+        } else if (currentScreen === "party") {
+          if (event.code === "ArrowRight") {
             heroIndex = (heroIndex + 1) % allHeroes.length;
             updateHeroDisplay();
-          },
-          Space: () => {
-            if (selectedHeroes.length < 3 || !selectedHeroes.includes(heroIndex)) {
-              selectHero();
-            } else {
-              startGame();
-            }
+          } else if (event.code === "ArrowLeft") {
+            heroIndex = (heroIndex - 1 + allHeroes.length) % allHeroes.length;
             updateHeroDisplay();
+          } else if (event.code === "Space") {
+            selectHero();
+          } else if (event.code === "Enter") {
+            startGame();
           }
-        },
-        battle: {
-          Space: () => {
-            battleEngine.awaitingAttackDirection = true;
-            logMessage(`${party[battleEngine.currentUnit].name} is ready to attack! Choose a direction.`);
-            renderBattlefield();
-          },
-          ArrowUp: async () => {
-            if (battleEngine.awaitingAttackDirection) {
-              await battleEngine.attackInDirection(0, -1, party[battleEngine.currentUnit], recordAttack);
-            } else {
-              battleEngine.moveUnit(0, -1);
-            }
-            renderBattlefield();
-          },
-          ArrowDown: async () => {
-            if (battleEngine.awaitingAttackDirection) {
-              await battleEngine.attackInDirection(0, 1, party[battleEngine.currentUnit], recordAttack);
-            } else {
-              battleEngine.moveUnit(0, 1);
-            }
-            renderBattlefield();
-          },
-          ArrowLeft: async () => {
-            if (battleEngine.awaitingAttackDirection) {
-              await battleEngine.attackInDirection(-1, 0, party[battleEngine.currentUnit], recordAttack);
-            } else {
-              battleEngine.moveUnit(-1, 0);
-            }
-            renderBattlefield();
-          },
-          ArrowRight: async () => {
-            if (battleEngine.awaitingAttackDirection) {
-              await battleEngine.attackInDirection(1, 0, party[battleEngine.currentUnit], recordAttack);
-            } else {
-              battleEngine.moveUnit(1, 0);
-            }
-            renderBattlefield();
-          }
-        },
-        victory: {
-          Space: () => restartGame()
-        },
-        "game-over": {
-          Space: () => restartGame()
-        },
-        modeUp: {
-          ArrowLeft: () => {
-            if (livingHeroes.length > 0) {
-              modeUpIndex = (modeUpIndex - 1 + livingHeroes.length) % livingHeroes.length;
-              updateModeUpHeroDisplay();
-            }
-          },
-          ArrowRight: () => {
-            if (livingHeroes.length > 0) {
-              modeUpIndex = (modeUpIndex + 1) % livingHeroes.length;
-              updateModeUpHeroDisplay();
-            }
-          },
-          Space: () => {
+        } else if (currentScreen === "battle") {
+          // Handle battle screen key actions here, such as movement or attack.
+        } else if (currentScreen === "modeUp") {
+          if (event.code === "ArrowRight") {
+            modeUpIndex = (modeUpIndex + 1) % livingHeroes.length;
+            updateModeUpHeroDisplay();
+          } else if (event.code === "ArrowLeft") {
+            modeUpIndex = (modeUpIndex - 1 + livingHeroes.length) % livingHeroes.length;
+            updateModeUpHeroDisplay();
+          } else if (event.code === "Space") {
             if (livingHeroes.length > 0) {
               applyModeUp(livingHeroes[modeUpIndex]);
             }
           }
+        } else if (currentScreen === "victory" || currentScreen === "game-over") {
+          if (event.code === "Space") {
+            level = 1;
+            selectedHeroes = [];
+            party = [];
+            heroIndex = 0;
+            cheatActive = false;
+            document.getElementById("log").innerHTML = "";
+            document.getElementById("game-over").style.display = "none";
+            showScreen("title");
+          }
         }
-      };
+      });
 
       initializeGriot("fantasy_narrative.txt").then(() => {
         showScreen("title");
