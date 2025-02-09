@@ -3,15 +3,6 @@
  *
  * Tutorial:
  * This module defines game level configurations in a scalable and maintainable way.
- * Each level object includes:
- *   - level: numeric identifier
- *   - title: descriptive title
- *   - rows & cols: grid dimensions
- *   - wallHP: structural health to break through
- *   - enemies: array of enemy configuration objects (optional)
- *   - generateEnemies: boolean for dynamic enemy placement (optional)
- *   - enemyGenerator: function for generating enemies dynamically (optional)
- *   - dialogueEntities: array of entities that can be interacted with for lore (optional)
  */
 
 export const levelSettings = [
@@ -215,8 +206,10 @@ export const levelSettings = [
     waveNumber: 0,
     restPhase: false,
     enemyGenerator: (rows, cols, waveNumber = 0) => {
-      if (waveNumber % 5 === 0) {
-        return [
+      const initialEnemies = [];
+
+      if (waveNumber === 0) {
+        initialEnemies.push(
           {
             name: "Healing Shrine",
             symbol: "₪",
@@ -232,7 +225,8 @@ export const levelSettings = [
               "Rest, warriors. The cycle continues.",
               "Your strength returns, but the wall endures.",
               "The Gratt remembers those who persist."
-            ]
+            ],
+			nonViolent: true,
           },
           {
             name: "Gratt Keeper",
@@ -247,9 +241,25 @@ export const levelSettings = [
               "The wall has stood since time immemorial.",
               "Each strike weakens its eternal vigil.",
               "Wisdom may succeed where force fails."
-            ]
+            ],
+			nonViolent: true,
+          },
+          {
+            name: "Catalyst",
+            symbol: "!",
+            attack: 0,
+            range: 0,
+            hp: 1,
+            agility: 0,
+            x: Math.floor(cols / 2) + 2,
+            y: Math.floor(rows / 2),
+            dialogue: ["The cycle must continue..."],
           }
-        ];
+        );
+      }
+
+      if (waveNumber % 5 === 0) {
+        return initialEnemies;
       }
 
       const enemies = [];
@@ -313,13 +323,13 @@ export const levelSettings = [
       for (let i = 0; i < baseEnemyCount; i++) {
         const enemyType = enemyTypes[Math.floor(Math.random() * enemyTypes.length)];
         const enemy = { ...enemyType, x: 0, y: 0 };
-        
+
         let placed = false;
         while (!placed) {
           const x = Math.floor(Math.random() * (cols - 4)) + 2;
           const y = Math.floor(Math.random() * (rows - 4)) + 2;
-          
-          const isFarEnough = enemies.every(e => 
+
+          const isFarEnough = enemies.every(e =>
             Math.abs(e.x - x) > 3 || Math.abs(e.y - y) > 3
           );
 
@@ -342,8 +352,7 @@ export const levelSettings = [
           ];
         });
       }
-
-      return enemies;
+      return [...initialEnemies, ...enemies];
     },
     onWaveComplete: (waveNumber) => ({
       message: `The eternal wall endures...`,
