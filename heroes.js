@@ -119,5 +119,15 @@ export const heroes = [
     agility: 4,
     hp: 16,
     sluj: 1
+  },
+  // Updated Shrink hero configuration with symbol ☊
+  {
+    name: "Shrink",
+    symbol: "☊",
+    attack: 2,
+    range: 1,
+    agility: 3,
+    hp: 12,
+    shrink: true
   }
 ];
