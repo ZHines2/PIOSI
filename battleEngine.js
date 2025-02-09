@@ -75,14 +75,6 @@ export class BattleEngine {
           cellClass += ' enemy';
         }
 
-        // Add 'non-violent' class for Healing Shrine and Gratt Keeper
-        const nonViolentEnemy = this.enemies.find(
-          enemy => enemy.symbol === cellContent && (enemy.name === "Healing Shrine" || enemy.name === "Gratt Keeper")
-        );
-        if (nonViolentEnemy) {
-          cellClass += ' non-violent';
-        }
-
         if (
           this.party[this.currentUnit] &&
           this.party[this.currentUnit].x === x &&
@@ -164,16 +156,6 @@ export class BattleEngine {
 
       // Check for an enemy.
       const enemy = this.enemies.find(e => e.x === targetX && e.y === targetY);
-
-      //Prevent attacking a non-violent enemy
-      if (enemy && enemy.nonViolent) {
-        this.logCallback(`${unit.name} cannot attack the non-violent ${enemy.name}.`);
-        this.awaitingAttackDirection = false;
-        await this.shortPause();
-        this.nextTurn();
-        return;
-      }
-
       if (enemy) {
         enemy.hp -= unit.attack;
         this.logCallback(
@@ -233,7 +215,7 @@ export class BattleEngine {
   }
 
   isWithinBounds(x, y) {
-    return x >= 0 && x < this.cols && y >= 0 && y >= this.rows;
+    return x >= 0 && x < this.cols && y >= 0 && y < this.rows;
   }
 
   handleWallCollapse() {
@@ -249,12 +231,6 @@ export class BattleEngine {
   enemyTurn() {
     if (this.transitioningLevel) return;
     this.enemies.forEach(enemy => {
-      // Dialogue before movement
-      if (enemy.dialogue && enemy.dialogue.length > 0) {
-        const dialogue = enemy.dialogue[Math.floor(Math.random() * enemy.dialogue.length)];
-        this.logCallback(`${enemy.name} says: "${dialogue}"`);
-      }
-
       for (let moves = 0; moves < enemy.agility; moves++) {
         this.moveEnemy(enemy);
       }
@@ -344,39 +320,25 @@ export class BattleEngine {
 
   nextTurn() {
     if (this.transitioningLevel) return;
-    this.applyStatusEffects(); // Apply status effects BEFORE enemy turn check
-
+    this.applyStatusEffects();
     if (this.party.length === 0) {
       this.logCallback('All heroes have been defeated! Game Over.');
       if (typeof this.onGameOver === 'function') this.onGameOver();
       return;
     }
-
     this.awaitingAttackDirection = false;
-
-    //Check for the catalyst BEFORE enemyTurn
-    const catalystDefeated = !this.enemies.some(enemy => enemy.name === "Catalyst");
-
-    if (levelSettings[6].level === 101 && catalystDefeated) {
-      levelSettings[6].waveNumber++;
-      this.logCallback(`Starting wave ${levelSettings[6].waveNumber}`);
-      this.enemies = getLevel(101).enemies; // Get new enemies
-      this.initializeBattlefield(); // Re-initialize the battlefield first
-      this.battlefield = this.initializeBattlefield(); // Re-draw the battlefield
-    }
-
-    this.logCallback('Enemy turn begins.');
-    this.enemyTurn();
-    this.applyStatusEffects(); //Apply status effects AFTER enemy turn
-    
-    // Move to the next unit
     this.currentUnit++;
-
     if (this.currentUnit >= this.party.length) {
-      this.currentUnit = 0; // Reset to the first unit
+      this.currentUnit = 0;
+      this.logCallback('Enemy turn begins.');
+      this.enemyTurn();
+      this.applyStatusEffects();
+      if (this.party.length === 0) {
+        this.logCallback('All heroes have been defeated! Game Over.');
+        if (typeof this.onGameOver === 'function') this.onGameOver();
+        return;
+      }
     }
-
-    // Set move points for the next hero
     this.movePoints = this.party[this.currentUnit].agility;
     this.logCallback(`Now it's ${this.party[this.currentUnit].name}'s turn.`);
   }
@@ -400,7 +362,7 @@ export class BattleEngine {
     this.enemies.forEach(enemy => {
       if (enemy.statusEffects.burn && enemy.statusEffects.burn.duration > 0) {
         this.logCallback(
-          `${enemy.name} is burned and takes ${hero.statusEffects.burn.damage} damage!`
+          `${enemy.name} is burned and takes ${enemy.statusEffects.burn.damage} damage!`
         );
         enemy.hp -= enemy.statusEffects.burn.damage;
         enemy.statusEffects.burn.duration--;
@@ -439,7 +401,7 @@ export class BattleEngine {
         }
         enemy.statusEffects.sluj.duration--;
         if (enemy.hp <= 0) {
-          this.logCallback(`${enemy.name} was defeated by slüj damage!`);
+          this.logCallback(`${enemy.name} is defeated by slüj damage!`);
           this.battlefield[enemy.y][enemy.x] = '.';
         }
       }
