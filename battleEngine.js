@@ -350,11 +350,15 @@ export class BattleEngine {
       if (typeof this.onGameOver === 'function') this.onGameOver();
       return;
     }
+
     this.awaitingAttackDirection = false;
+    
+    // Move to the next unit
     this.currentUnit++;
-    let catalystDefeated = false;
+
+    // Check if we've reached the end of the party and need to start the enemy turn
     if (this.currentUnit >= this.party.length) {
-      this.currentUnit = 0;
+      this.currentUnit = 0; // Reset to the first unit
       this.logCallback('Enemy turn begins.');
       this.enemyTurn();
       this.applyStatusEffects();
@@ -365,17 +369,19 @@ export class BattleEngine {
       }
 
       // --- ADDED SECTION: Wave Increment and Re-initialization ---
-      catalystDefeated = !this.enemies.some(enemy => enemy.name === "Catalyst");
+      const catalystDefeated = !this.enemies.some(enemy => enemy.name === "Catalyst");
 
       if (levelSettings[6].level === 101 && catalystDefeated) {
         levelSettings[6].waveNumber++;
         this.logCallback(`Starting wave ${levelSettings[6].waveNumber}`);
-        this.initializeBattlefield(); // Re-initialize the battlefield first
         this.enemies = getLevel(101).enemies; // Get new enemies
+        this.initializeBattlefield(); // Re-initialize the battlefield first
         this.battlefield = this.initializeBattlefield(); // Re-draw the battlefield
       }
       // ----------------------------------------------------------
     }
+
+    // Set move points for the next hero
     this.movePoints = this.party[this.currentUnit].agility;
     this.logCallback(`Now it's ${this.party[this.currentUnit].name}'s turn.`);
   }
