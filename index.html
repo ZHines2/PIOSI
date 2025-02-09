@@ -188,7 +188,7 @@
       <h2>
         Select Your Party<br />
         (Use Left/Right Arrow keys to navigate and Spacebar to select/deselect.
-        Choose exactly 3 heroes.)
+        Choose at least 3 heroes.)
       </h2>
       <div id="hero-display"></div>
       <p id="selection-info"></p>
@@ -310,29 +310,30 @@
           display += `<p>${selectedHeroes.includes(heroIndex) ? "SELECTED" : "Press Spacebar to Select"}</p>`;
         }
         document.getElementById("hero-display").innerHTML = display;
-        document.getElementById("selection-info").textContent = `Selected Heroes: ${selectedHeroes.length}/3`;
+        document.getElementById("selection-info").textContent = `Selected Heroes: ${selectedHeroes.length} (Choose at least 3)`;
+      }
+
+      // Updated startGame to allow 3 or more heroes to be selected. If more than 3 are chosen, only the first 3 are used.
+      function startGame() {
+        if (selectedHeroes.length < 3) {
+          alert("Select at least 3 heroes!");
+          return;
+        }
+        const backgroundMusic = document.getElementById("background-music");
+        backgroundMusic.play().catch(() => {});
+        party = selectedHeroes.slice(0, 3).map(i => Object.assign({}, allHeroes[i]));
+        party.sort((a, b) => b.agility - a.agility);
+        initializeBattle();
+        showScreen("battle");
       }
 
       function selectHero() {
         if (selectedHeroes.includes(heroIndex)) {
           selectedHeroes = selectedHeroes.filter(i => i !== heroIndex);
-        } else if (selectedHeroes.length < 3) {
+        } else {
           selectedHeroes.push(heroIndex);
         }
         updateHeroDisplay();
-      }
-
-      function startGame() {
-        if (selectedHeroes.length !== 3) {
-          alert("Select exactly 3 heroes!");
-          return;
-        }
-        const backgroundMusic = document.getElementById("background-music");
-        backgroundMusic.play().catch(() => {});
-        party = selectedHeroes.map(i => Object.assign({}, allHeroes[i]));
-        party.sort((a, b) => b.agility - a.agility);
-        initializeBattle();
-        showScreen("battle");
       }
 
       function getModeUpBuff(chosenHero) {
