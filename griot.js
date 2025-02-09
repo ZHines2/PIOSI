@@ -123,6 +123,18 @@ export async function fetchNonseqFact() {
   }
 }
 
+// New: Fetch psychology advice from a free API for the Shrink hero.
+export async function fetchShrinkAdvice() {
+  try {
+    const response = await fetch("https://api.adviceslip.com/advice");
+    const data = await response.json();
+    return data.slip.advice;
+  } catch (error) {
+    console.error("Error fetching shrink advice:", error);
+    return "No advice available at the moment.";
+  }
+}
+
 // Generates narrative text for the Griot special character.
 export async function getGriotReaction() {
   return generateText(20);
