@@ -352,7 +352,7 @@ export class BattleEngine {
     }
 
     this.awaitingAttackDirection = false;
-    
+
     // Move to the next unit
     this.currentUnit++;
 
@@ -405,7 +405,7 @@ export class BattleEngine {
     this.enemies.forEach(enemy => {
       if (enemy.statusEffects.burn && enemy.statusEffects.burn.duration > 0) {
         this.logCallback(
-          `${enemy.name} is burned and takes ${enemy.statusEffects.burn.damage} damage!`
+          `${enemy.name} is burned and takes ${hero.statusEffects.burn.damage} damage!`
         );
         enemy.hp -= enemy.statusEffects.burn.damage;
         enemy.statusEffects.burn.duration--;
@@ -444,7 +444,7 @@ export class BattleEngine {
         }
         enemy.statusEffects.sluj.duration--;
         if (enemy.hp <= 0) {
-          this.logCallback(`${enemy.name} is defeated by slüj damage!`);
+          this.logCallback(`${enemy.name} was defeated by slüj damage!`);
           this.battlefield[enemy.y][enemy.x] = '.';
         }
       }
