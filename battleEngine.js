@@ -233,7 +233,7 @@ export class BattleEngine {
   }
 
   isWithinBounds(x, y) {
-    return x >= 0 && x < this.cols && y >= 0 && y < this.rows;
+    return x >= 0 && x < this.cols && y >= 0 && y >= this.rows;
   }
 
   handleWallCollapse() {
@@ -344,7 +344,8 @@ export class BattleEngine {
 
   nextTurn() {
     if (this.transitioningLevel) return;
-    this.applyStatusEffects();
+    this.applyStatusEffects(); // Apply status effects BEFORE enemy turn check
+
     if (this.party.length === 0) {
       this.logCallback('All heroes have been defeated! Game Over.');
       if (typeof this.onGameOver === 'function') this.onGameOver();
@@ -353,32 +354,26 @@ export class BattleEngine {
 
     this.awaitingAttackDirection = false;
 
+    //Check for the catalyst BEFORE enemyTurn
+    const catalystDefeated = !this.enemies.some(enemy => enemy.name === "Catalyst");
+
+    if (levelSettings[6].level === 101 && catalystDefeated) {
+      levelSettings[6].waveNumber++;
+      this.logCallback(`Starting wave ${levelSettings[6].waveNumber}`);
+      this.enemies = getLevel(101).enemies; // Get new enemies
+      this.initializeBattlefield(); // Re-initialize the battlefield first
+      this.battlefield = this.initializeBattlefield(); // Re-draw the battlefield
+    }
+
+    this.logCallback('Enemy turn begins.');
+    this.enemyTurn();
+    this.applyStatusEffects(); //Apply status effects AFTER enemy turn
+    
     // Move to the next unit
     this.currentUnit++;
 
-    // Check if we've reached the end of the party and need to start the enemy turn
     if (this.currentUnit >= this.party.length) {
       this.currentUnit = 0; // Reset to the first unit
-      this.logCallback('Enemy turn begins.');
-      this.enemyTurn();
-      this.applyStatusEffects();
-      if (this.party.length === 0) {
-        this.logCallback('All heroes have been defeated! Game Over.');
-        if (typeof this.onGameOver === 'function') this.onGameOver();
-        return;
-      }
-
-      // --- ADDED SECTION: Wave Increment and Re-initialization ---
-      const catalystDefeated = !this.enemies.some(enemy => enemy.name === "Catalyst");
-
-      if (levelSettings[6].level === 101 && catalystDefeated) {
-        levelSettings[6].waveNumber++;
-        this.logCallback(`Starting wave ${levelSettings[6].waveNumber}`);
-        this.enemies = getLevel(101).enemies; // Get new enemies
-        this.initializeBattlefield(); // Re-initialize the battlefield first
-        this.battlefield = this.initializeBattlefield(); // Re-draw the battlefield
-      }
-      // ----------------------------------------------------------
     }
 
     // Set move points for the next hero
