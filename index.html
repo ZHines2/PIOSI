@@ -311,7 +311,8 @@
           heal: hero.heal !== undefined ? hero.heal : 0,
           burn: hero.burn !== undefined ? hero.burn : 0,
           sluj: hero.sluj !== undefined ? hero.sluj : 0,
-          ghis: hero.ghis !== undefined ? hero.ghis : 0
+          ghis: hero.ghis !== undefined ? hero.ghis : 0,
+          yeet: hero.yeet !== undefined ? hero.yeet : 0
         };
       }
 
@@ -345,7 +346,7 @@
         // Get complete stats for the hero
         const stats = getCompleteStats(hero);
         display += `<p>
-          Attack: ${stats.attack} | Range: ${stats.range} | Agility: ${stats.agility} | HP: ${stats.hp} | Heal: ${stats.heal} | Burn: ${stats.burn} | Slüj: ${stats.sluj} | Ghïs: ${stats.ghis}
+          Attack: ${stats.attack} | Range: ${stats.range} | Agility: ${stats.agility} | HP: ${stats.hp} | Heal: ${stats.heal} | Burn: ${stats.burn} | Slüj: ${stats.sluj} | Ghïs: ${stats.ghis} | Yeet: ${stats.yeet}
         </p>`;
         // Indicate selection status
         display += `<p>${selectedHeroes.includes(heroIndex) ? "SELECTED" : "Press Spacebar to Select"}</p>`;
@@ -417,6 +418,9 @@
         );
         lines.push(
           `<p>Ghïs: ${stats.ghis} ${buff.ghis ? `<span class="stat-up">+${buff.ghis}</span>` : ""}</p>`
+        );
+        lines.push(
+          `<p>Yeet: ${stats.yeet} ${buff.yeet ? `<span class="stat-up">+${buff.yeet}</span>` : ""}</p>`
         );
         document.getElementById("mode-up-hero-display").innerHTML = lines.join("");
       }
