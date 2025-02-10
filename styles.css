@@ -1,202 +1,250 @@
 /* Global Styles */
+/* Set the base font size for the html element */
 html {
-  font-size: 14px;
+  font-size: 14px; /* Base font size, adjust to scale the entire page's text */
 }
 
+/* Apply global styles to the body element */
 body {
-  font-family: 'Sono', monospace;
-  font-size: 1rem;
-  text-align: center;
-  background-color: #222;
-  color: white;
-  margin: 0;
-  padding: 0;
+  font-family: 'Sono', monospace; /* Use the 'Sono' font in monospace style */
+  font-size: 1rem; /* Base font size relative to html font size */
+  text-align: center; /* Center align text by default */
+  background-color: #222; /* Dark background color for the entire page */
+  color: white; /* Default text color */
+  margin: 0; /* Remove default margin */
+  padding: 0; /* Remove default padding */
 }
 
-/* Screen containers */
+/* Screen Containers */
+/* These containers are used to hold different screens in the game (title, party select, etc.)
+   and are hidden by default until needed. */
 #title-screen,
 #party-select,
 #game-container,
 #victory,
 #game-over,
 #mode-up-window {
-  display: none;
-  padding: 20px;
+  display: none; /* Hide screens by default */
+  padding: 20px; /* Padding around content for spacing */
 }
 
-/* Title screen styles */
+/* Title Screen Styles */
+/* Styles for the title screen which covers the full viewport */
 #title-screen {
-  position: relative;
-  height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  color: white;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
-  overflow: hidden;
+  position: relative; /* Allows positioning of pseudo-elements */
+  height: 100vh; /* Full viewport height */
+  display: flex; /* Use flexbox for easy centering */
+  align-items: center; /* Vertically center items */
+  justify-content: center; /* Horizontally center items */
+  flex-direction: column; /* Stack children vertically */
+  color: white; /* White text color */
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); /* Add shadow effect to text for readability */
+  overflow: hidden; /* Hide overflow content */
 }
 
+/* Pseudo-element for the title screen background image with blur effect */
 #title-screen::before {
-  content: '';
-  position: absolute;
+  content: ''; /* Empty content for styling purposes */
+  position: absolute; /* Position absolutely to cover the screen */
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
-  background: url('IMG_0905.JPG') no-repeat center center;
-  background-size: cover;
-  filter: blur(20px);
-  opacity: 0.7;
-  z-index: -1;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  background: url('IMG_0905.JPG') no-repeat center center; /* Background image settings */
+  background-size: cover; /* Ensure background covers entire element */
+  filter: blur(20px); /* Apply blur effect to the background image */
+  opacity: 0.7; /* Set opacity for a subtle background */
+  z-index: -1; /* Place the background behind other content */
 }
 
-/* Image container styles */
+/* Image Container Styles */
+/* Container that holds the main image in the title screen */
 .image-container {
-  width: 80%;
-  height: 80%;
-  max-width: 80vh;
-  max-height: 80vw;
-  background: url('IMG_0905.JPG') no-repeat center center;
-  background-size: contain;
-  z-index: 1;
+  width: 80%; /* Width relative to its container */
+  height: 80%; /* Height relative to its container */
+  max-width: 80vh; /* Maximum width relative to viewport height */
+  max-height: 80vw; /* Maximum height relative to viewport width */
+  background: url('IMG_0905.JPG') no-repeat center center; /* Background image settings */
+  background-size: contain; /* Ensure the image is contained within the box */
+  z-index: 1; /* Position on top of pseudo-elements */
 }
 
+/* Pseudo-element for the image container to add a static noise effect */
 .image-container::before {
-  content: '';
-  position: absolute;
-  top: -20%;
-  left: -20%;
-  width: 140%;
-  height: 140%;
-  background: url('IMG_0905.JPG') no-repeat center center;
-  background-size: cover;
-  opacity: 0.1;
-  animation: static-noise 10s linear infinite;
-  z-index: 2;
+  content: ''; /* Empty content for styling */
+  position: absolute; /* Position absolutely within the container */
+  top: -20%; /* Offset from top */
+  left: -20%; /* Offset from left */
+  width: 140%; /* Extend width beyond container bounds */
+  height: 140%; /* Extend height beyond container bounds */
+  background: url('IMG_0905.JPG') no-repeat center center; /* Use the same background image */
+  background-size: cover; /* Cover entire area */
+  opacity: 0.1; /* Low opacity for a subtle effect */
+  animation: static-noise 10s linear infinite; /* Apply static noise animation */
+  z-index: 2; /* Layer it above the main background image if necessary */
 }
 
+/* Keyframes for static noise animation on the image container */
 @keyframes static-noise {
-  0% { transform: translate(0, 0); }
-  100% { transform: translate(-5%, -5%); }
+  0% { transform: translate(0, 0); } /* Start without any translation */
+  100% { transform: translate(-5%, -5%); } /* End with a slight diagonal translation */
 }
 
-/* Game container styles */
+/* Game Container Styles */
+/* Styled container that holds the battlefield element */
 #battlefield {
-  display: inline-block;
-  border: 2px solid white;
-  padding: 10px;
-  margin-bottom: 10px;
+  display: inline-block; /* Inline block to size according to its contents */
+  border: 2px solid white; /* White border around the battlefield */
+  padding: 10px; /* Padding inside the battlefield */
+  margin-bottom: 10px; /* Margin below the battlefield for spacing */
 }
 
+/* Flex container for rows in the battlefield */
 .row {
-  display: flex;
-  justify-content: center;
+  display: flex; /* Use flexbox to arrange cells */
+  justify-content: center; /* Center align the cells horizontally */
 }
 
+/* Cell Styles */
+/* Styles applied to each cell in the battlefield grid */
 .cell {
-  width: 40px;
-  height: 40px;
-  text-align: center;
-  font-size: 18px;
-  border: 1px solid gray;
-  line-height: 40px;
-  transition: all 0.2s ease-in-out;
+  width: 40px; /* Fixed width for each cell */
+  height: 40px; /* Fixed height for each cell */
+  text-align: center; /* Center text horizontally */
+  font-size: 18px; /* Font size for cell content */
+  border: 1px solid gray; /* Gray border around each cell */
+  line-height: 40px; /* Line height matches cell height for vertical centering */
+  transition: all 0.2s ease-in-out; /* Smooth transition for state changes */
 }
 
+/* Active cell state styles */
 .active {
-  background-color: darkblue;
-  color: white;
+  background-color: darkblue; /* Dark blue background for active cells */
+  color: white; /* White text when active */
 }
 
+/* Attack mode cell state styles */
 .attack-mode {
-  background-color: darkred;
-  color: white;
+  background-color: darkred; /* Dark red background for attack mode */
+  color: white; /* White text color */
 }
 
+/* Enemy cell style */
+/* Highlight enemy cells with distinctive color and bold text */
 .enemy {
-  color: #ff5722;
-  font-weight: bold;
+  color: #ff5722; /* Bright orange color for enemy text */
+  font-weight: bold; /* Bold text for emphasis */
 }
 
+/* Non-violent cell style */
+/* Mark cells that are non-violent with light green text */
 .non-violent {
-  color: lightgreen;
+  color: lightgreen; /* Light green text color for non-violent cells */
 }
 
+/* Highlighted Cell */
+/* Add a yellow border to highlight certain elements */
 .highlight {
-  border: 2px solid yellow;
+  border: 2px solid yellow; /* Yellow border for highlighting */
 }
 
+/* Button Styles */
+/* Style for interactive buttons */
 button {
-  padding: 10px;
-  margin: 5px;
-  font-size: 18px;
+  padding: 10px; /* Add space within the button */
+  margin: 5px; /* Space around buttons */
+  font-size: 18px; /* Font size for button text */
 }
 
 /* Overlays */
+/* Styles for the game over overlay screen */
 #game-over {
-  display: none;
-  position: fixed;
+  display: none; /* Hidden by default */
+  position: fixed; /* Fixed position to cover the entire viewport */
   top: 0;
   left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.90);
-  z-index: 999;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  width: 100vw; /* Full viewport width */
+  height: 100vh; /* Full viewport height */
+  background: rgba(0, 0, 0, 0.90); /* Semi-transparent black background */
+  z-index: 999; /* High z-index to appear on top of other elements */
+  flex-direction: column; /* Stack overlay content vertically */
+  align-items: center; /* Center content horizontally */
+  justify-content: center; /* Center content vertically */
 }
+
+/* Style for the main title in the game over overlay */
 #game-over h1 {
-  font-size: 3em;
-  margin-bottom: 20px;
-}
-#game-over p {
-  font-size: 1.5em;
+  font-size: 3em; /* Large font size for the game over message */
+  margin-bottom: 20px; /* Space below the heading */
 }
 
+/* Style for text in the game over overlay */
+#game-over p {
+  font-size: 1.5em; /* Increased font size for readability */
+}
+
+/* Mode Up Window Overlay */
+/* Styles for the level-up or mode-up window that overlays the game screen */
 #mode-up-window {
-  display: none;
-  position: fixed;
+  display: none; /* Hidden by default */
+  position: fixed; /* Fixed position to cover the viewport */
   top: 0;
   left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.8);
-  z-index: 1000;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  color: white;
+  width: 100vw; /* Cover full viewport width */
+  height: 100vh; /* Cover full viewport height */
+  background: rgba(0, 0, 0, 0.8); /* Semi-transparent black background */
+  z-index: 1000; /* Higher z-index to appear above game elements */
+  flex-direction: column; /* Stack children vertically */
+  align-items: center; /* Center children horizontally */
+  justify-content: flex-start; /* Start aligning children from the top */
+  color: white; /* White text color */
 }
+
+/* Style for headings in mode up window */
 #mode-up-window h2 {
-  margin-bottom: 20px;
-  margin-top: 20px;
+  margin-top: 20px; /* Space above the heading */
+  margin-bottom: 20px; /* Space below the heading */
 }
+
+/* Style for hero display in mode up window */
 #mode-up-hero-display {
-  margin: 10px;
-  font-size: 1.2em;
+  margin: 10px; /* Space around the hero display area */
+  font-size: 1.2em; /* Slightly larger font for hero details */
 }
+
+/* Instructions text for mode up window */
 #mode-up-instructions {
-  margin-top: 10px;
+  margin-top: 10px; /* Space above the instruction text */
 }
 
+/* Stat Up Highlight */
+/* Style for highlighting stat increases */
 .stat-up {
-  color: #32cd32;
-  font-weight: bold;
+  color: #32cd32; /* Bright green color for stat boosts */
+  font-weight: bold; /* Bold text for emphasis */
 }
 
+/* Dead Hero Styling */
+/* Style for showing heroes that are no longer active */
 .dead-hero {
-  color: #aaa;
-  text-decoration: line-through;
+  color: #aaa; /* Gray text for dead heroes */
+  text-decoration: line-through; /* Strike-through effect */
 }
 
 /* Log Area */
+/* Styles for the area displaying log messages and game events */
 #log {
-  height: 100px;
-  overflow-y: auto;
-  background-color: #111;
-  padding: 10px;
-  border: 1px solid white;
-  text-align: left;
+  height: 200px; /* Increased height for more log content visibility */
+  overflow-y: auto; /* Enable vertical scrolling */
+  background-color: #111; /* Dark background for contrast */
+  padding: 10px; /* Padding inside the log area */
+  border: 1px solid white; /* White border around the log area */
+  text-align: left; /* Left align text for readability */
+  font-size: 0.8rem; /* Smaller font size to show more text */
+}
+
+/* Log Paragraph Styles */
+/* Margins for each paragraph inside the log area for spacing */
+#log p {
+  margin: 0.5rem 0; /* Vertical margin for each paragraph */
 }
