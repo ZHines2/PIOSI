@@ -134,7 +134,6 @@
       /**
        * Helper function to generate a complete stats object.
        * Even if a specific stat is 0 or undefined, we display it.
-       * Now includes the yeet stat for the yeetrian.
        */
       function getCompleteStats(hero) {
         return {
@@ -180,7 +179,15 @@
         // Get complete stats for the hero, including yeet
         const stats = getCompleteStats(hero);
         display += `<p>
-          Attack: ${stats.attack} | Range: ${stats.range} | Agility: ${stats.agility} | HP: ${stats.hp} | Heal: ${stats.heal} | Burn: ${stats.burn} | Slüj: ${stats.sluj} | Ghïs: ${stats.ghis} | Yeet[...]
+          Attack: ${stats.attack} | 
+          Range: ${stats.range} | 
+          Agility: ${stats.agility} | 
+          HP: ${stats.hp} | 
+          Heal: ${stats.heal} | 
+          Burn: ${stats.burn} | 
+          Slüj: ${stats.sluj} | 
+          Ghïs: ${stats.ghis} | 
+          Yeet: ${stats.yeet}
         </p>`;
         // Indicate selection status
         display += `<p>${
@@ -206,6 +213,7 @@
 
       /**
        * Start the game and initialize the party based on selected heroes.
+       * Begins by fading out the hero select music and fading in DarkAnoid.
        */
       function startGame() {
         if (selectedHeroes.length !== 3) {
@@ -251,33 +259,52 @@
         // Display current stats with buff preview for each stat, including yeet
         const stats = getCompleteStats(hero);
         lines.push(
-          `<p>HP: ${stats.hp} ${buff.hp ? `<span class="stat-up">+${buff.hp}</span>` : ""}</p>`
+          `<p>HP: ${stats.hp} ${
+            buff.hp ? `<span class="stat-up">+${buff.hp}</span>` : ""
+          }</p>`
         );
         lines.push(
-          `<p>Attack: ${stats.attack} ${buff.attack ? `<span class="stat-up">+${buff.attack}</span>` : ""}</p>`
+          `<p>Attack: ${stats.attack} ${
+            buff.attack ? `<span class="stat-up">+${buff.attack}</span>` : ""
+          }</p>`
         );
         lines.push(
-          `<p>Range: ${stats.range} ${buff.range ? `<span class="stat-up">+${buff.range}</span>` : ""}</p>`
+          `<p>Range: ${stats.range} ${
+            buff.range ? `<span class="stat-up">+${buff.range}</span>` : ""
+          }</p>`
         );
         lines.push(
-          `<p>Agility: ${stats.agility} ${buff.agility ? `<span class="stat-up">+${buff.agility}</span>` : ""}</p>`
+          `<p>Agility: ${stats.agility} ${
+            buff.agility ? `<span class="stat-up">+${buff.agility}</span>` : ""
+          }</p>`
         );
         lines.push(
-          `<p>Heal: ${stats.heal} ${buff.heal ? `<span class="stat-up">+${buff.heal}</span>` : ""}</p>`
+          `<p>Heal: ${stats.heal} ${
+            buff.heal ? `<span class="stat-up">+${buff.heal}</span>` : ""
+          }</p>`
         );
         lines.push(
-          `<p>Burn: ${stats.burn} ${buff.burn ? `<span class="stat-up">+${buff.burn}</span>` : ""}</p>`
+          `<p>Burn: ${stats.burn} ${
+            buff.burn ? `<span class="stat-up">+${buff.burn}</span>` : ""
+          }</p>`
         );
         lines.push(
-          `<p>Slüj: ${stats.sluj} ${buff.sluj ? `<span class="stat-up">+${buff.sluj}</span>` : ""}</p>`
+          `<p>Slüj: ${stats.sluj} ${
+            buff.sluj ? `<span class="stat-up">+${buff.sluj}</span>` : ""
+          }</p>`
         );
         lines.push(
-          `<p>Ghïs: ${stats.ghis} ${buff.ghis ? `<span class="stat-up">+${buff.ghis}</span>` : ""}</p>`
+          `<p>Ghïs: ${stats.ghis} ${
+            buff.ghis ? `<span class="stat-up">+${buff.ghis}</span>` : ""
+          }</p>`
         );
         lines.push(
-          `<p>Yeet: ${stats.yeet} ${buff.yeet ? `<span class="stat-up">+${buff.yeet}</span>` : ""}</p>`
+          `<p>Yeet: ${stats.yeet} ${
+            buff.yeet ? `<span class="stat-up">+${buff.yeet}</span>` : ""
+          }</p>`
         );
-        document.getElementById("mode-up-hero-display").innerHTML = lines.join("");
+        document.getElementById("mode-up-hero-display").innerHTML =
+          lines.join("");
       }
 
       /**
@@ -296,7 +323,6 @@
 
       /**
        * Apply the buffs from the selected hero and progress to the next level.
-       * This uses the imported applyModeUp function.
        */
       function applyCurrentModeUp() {
         if (livingHeroes.length > 0) {
@@ -376,7 +402,8 @@
        * Render the battlefield by drawing it from the battle engine.
        */
       function renderBattlefield() {
-        document.getElementById("battlefield").innerHTML = battleEngine.drawBattlefield();
+        document.getElementById("battlefield").innerHTML =
+          battleEngine.drawBattlefield();
         document.getElementById("status").textContent =
           "Wall HP: " +
           battleEngine.wallHP +
