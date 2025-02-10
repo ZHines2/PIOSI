@@ -72,6 +72,7 @@ export const heroes = [
     range: 1,
     agility: 2,
     hp: 22,
+    heal: 1,
     meat: true
   },
   {
