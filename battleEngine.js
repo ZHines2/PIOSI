@@ -182,6 +182,10 @@ export class BattleEngine {
             `${enemy.name} is afflicted with slüj (level ${enemy.statusEffects.sluj.level}) for 4 turns!`
           );
         }
+        // Apply knockback if the attacking hero has the yeet stat
+        if (unit.yeet && unit.yeet > 0) {
+          this.applyKnockback(enemy, dx, dy, unit.yeet);
+        }
         if (enemy.hp <= 0) {
           this.logCallback(`${enemy.name} is defeated!`);
           this.battlefield[targetY][targetX] = '.';
@@ -212,6 +216,40 @@ export class BattleEngine {
     this.awaitingAttackDirection = false;
     await this.shortPause();
     this.nextTurn();
+  }
+
+  // New method to apply knockback to an enemy.
+  // It checks the path for collisions and updates the enemy's position if the path is clear.
+  applyKnockback(enemy, dx, dy, knockbackPower) {
+    let allowed = true;
+    let newX = enemy.x;
+    let newY = enemy.y;
+    // Check each intermediate cell to ensure the path is clear.
+    for (let i = 1; i <= knockbackPower; i++) {
+      const testX = enemy.x + dx * i;
+      const testY = enemy.y + dy * i;
+      if (!this.isWithinBounds(testX, testY) || this.battlefield[testY][testX] !== '.') {
+        allowed = false;
+        break;
+      }
+      newX = testX;
+      newY = testY;
+    }
+    if (allowed) {
+      // Clear enemy's current location
+      this.battlefield[enemy.y][enemy.x] = '.';
+      enemy.x = newX;
+      enemy.y = newY;
+      // Place enemy in new location on the battlefield
+      this.battlefield[newY][newX] = enemy.symbol;
+      this.logCallback(
+        `${enemy.name} is knocked back to (${newX}, ${newY}) by the force of yeet!`
+      );
+    } else {
+      this.logCallback(
+        `${enemy.name} resists the knockback due to obstacles.`
+      );
+    }
   }
 
   isWithinBounds(x, y) {
