@@ -34,9 +34,11 @@ export function getModeUpBuff(chosenHero, level) {
       burn: 1 * buffIncrement,
       sluj: 1 * buffIncrement,
       heal: 1 * buffIncrement,
-      // Optionally include ghis if desired:
       ghis: 1 * buffIncrement,
     };
+  } else if (chosenHero.yeet !== undefined) {
+    // New branch for heroes with a knockback (yeet) stat.
+    return { yeet: 1 * buffIncrement };
   } else if (chosenHero.heal !== undefined) {
     // Generic case for heroes that have a heal property.
     return { heal: 1 * buffIncrement };
@@ -59,6 +61,7 @@ export function applyModeUp(chosenHero, level, party, logCallback) {
   if (buff.sluj) messageParts.push(`+${buff.sluj} Slüj`);
   if (buff.heal) messageParts.push(`+${buff.heal} Heal`);
   if (buff.ghis) messageParts.push(`+${buff.ghis} Ghïs`);
+  if (buff.yeet) messageParts.push(`+${buff.yeet} Yeet`);
   
   const message = messageParts.length > 0
     ? `${chosenHero.name} empowers the party with ${messageParts.join(", ")}!`
