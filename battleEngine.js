@@ -320,12 +320,21 @@ export class BattleEngine {
 
   nextTurn() {
     if (this.transitioningLevel) return;
+    // Process status effects and filter out dead heroes.
     this.applyStatusEffects();
+
+    // If after status effects no heroes remain, the game is over.
     if (this.party.length === 0) {
       this.logCallback('All heroes have been defeated! Game Over.');
       if (typeof this.onGameOver === 'function') this.onGameOver();
       return;
     }
+
+    // Ensure currentUnit is valid, especially if the party size changed.
+    if (this.currentUnit >= this.party.length) {
+      this.currentUnit = 0;
+    }
+
     this.awaitingAttackDirection = false;
     this.currentUnit++;
     if (this.currentUnit >= this.party.length) {
