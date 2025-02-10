@@ -23,6 +23,17 @@ export function getModeUpBuff(chosenHero, level) {
     return { sluj: 1 * buffIncrement };
   } else if (chosenHero.name === "Cleric") {
     return { heal: 2 * buffIncrement };
+  } else if (chosenHero.name === "Sycophant") {
+    // For Sycophant, all stats increase by 1 times the buff increment.
+    return {
+      attack: 1 * buffIncrement,
+      hp: 1 * buffIncrement,
+      range: 1 * buffIncrement,
+      agility: 1 * buffIncrement,
+      burn: 1 * buffIncrement,
+      sluj: 1 * buffIncrement,
+      heal: 1 * buffIncrement,
+    };
   } else if (chosenHero.heal !== undefined) {
     return { heal: 1 * buffIncrement };
   } else {
@@ -37,10 +48,10 @@ export function applyModeUp(chosenHero, level, party, logCallback) {
   if (buff.attack) messageParts.push(`+${buff.attack} Attack`);
   if (buff.range) messageParts.push(`+${buff.range} Range`);
   if (buff.agility) messageParts.push(`+${buff.agility} Agility`);
-  if (buff.burn) messageParts.push(`+${buff.burn} burn`);
-  if (buff.sluj) messageParts.push(`+${buff.sluj} slüj`);
+  if (buff.burn) messageParts.push(`+${buff.burn} Burn`);
+  if (buff.sluj) messageParts.push(`+${buff.sluj} Slüj`);
   if (buff.heal) messageParts.push(`+${buff.heal} Heal`);
-  if (buff.ghis) messageParts.push(`+${buff.ghis} ghïs`);
+  if (buff.ghis) messageParts.push(`+${buff.ghis} Ghïs`);
   
   const message = messageParts.length > 0
     ? `${chosenHero.name} empowers the party with ${messageParts.join(", ")}!`
