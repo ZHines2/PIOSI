@@ -62,7 +62,8 @@
         left: -20%;
         width: 140%;
         height: 140%;
-        background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAAAAAsNcNlwAAAAkUlEQVR42mNkgIH/j4wMDAwMDAY0wAGGfgYWFgYGBgYGNpgIMEAoggMDwMDAwMDAwMAAALsc9j1vXLaAAAAAAElFTkSuQmCC') repeat;
+        background: url('IMG_0905.JPG') no-repeat center center;
+        background-size: cover;
         opacity: 0.1;
         animation: static-noise 10s linear infinite;
         z-index: 2;
@@ -112,9 +113,8 @@
         font-weight: bold;
       }
       .non-violent {
-        color: lightgreen; /* Or any color you prefer */
+        color: lightgreen;
       }
-
       .highlight {
         border: 2px solid yellow;
       }
@@ -250,6 +250,7 @@
       import { BattleEngine } from "./battleEngine.js";
       import { heroes as allHeroes } from "./heroes.js";
       import { getLevel } from "./levels.js";
+      import { getModeUpBuff, applyModeUp } from "./modeup.js";
 
       let currentScreen = "title";
       let selectedHeroes = [];
@@ -342,27 +343,37 @@
         showScreen("battle");
       }
 
-      function getModeUpBuff(chosenHero) {
-        const buffIncrement = level;
-        if (chosenHero.name === "Knight") {
-          return { attack: 1 * buffIncrement, hp: 2 * buffIncrement };
-        } else if (chosenHero.name === "Archer") {
-          return { range: 1 * buffIncrement };
-        } else if (chosenHero.name === "Berserker") {
-          return { attack: 3 * buffIncrement };
-        } else if (chosenHero.name === "Rogue") {
-          return { agility: 2 * buffIncrement };
-        } else if (chosenHero.name === "Torcher") {
-          return { burn: 1 * buffIncrement };
-        } else if (chosenHero.name === "Slüjier") {
-          return { sluj: 1 * buffIncrement };
-        } else if (chosenHero.name === "Cleric") {
-          return { heal: 2 * buffIncrement };
-        } else if (chosenHero.heal !== undefined) {
-          return { heal: 1 * buffIncrement };
-        } else {
-          return { ghis: 1 };
+      function updateModeUpHeroDisplay() {
+        const hero = livingHeroes[modeUpIndex];
+        // Use the imported getModeUpBuff function.
+        const buff = getModeUpBuff(hero, level);
+        const lines = [];
+        lines.push(`<p class="highlight">${hero.name} (${hero.symbol})</p>`);
+        lines.push(
+          `<p>HP: ${hero.hp <= 0 ? `<span class="dead-hero">${hero.hp}</span>` : hero.hp}${buff.hp ? ` <span class="stat-up">+${buff.hp}</span>` : ""}</p>`
+        );
+        lines.push(
+          `<p>Attack: ${hero.attack}${buff.attack ? ` <span class="stat-up">+${buff.attack}</span>` : ""}</p>`
+        );
+        lines.push(
+          `<p>Range: ${hero.range}${buff.range ? ` <span class="stat-up">+${buff.range}</span>` : ""}</p>`
+        );
+        if (buff.agility) {
+          lines.push(`<p>Agility: ${hero.agility} <span class="stat-up">+${buff.agility}</span></p>`);
         }
+        if (buff.burn) {
+          lines.push(`<p>Burn: ${buff.burn} <span class="stat-up">+${buff.burn}</span></p>`);
+        }
+        if (buff.sluj) {
+          lines.push(`<p>Slüj: ${buff.sluj} <span class="stat-up">+${buff.sluj}</span></p>`);
+        }
+        if (buff.heal) {
+          lines.push(`<p>Heal: ${hero.heal || 0} <span class="stat-up">+${buff.heal}</span></p>`);
+        }
+        if (buff.ghis) {
+          lines.push(`<p>Ghïs: ${buff.ghis}</p>`);
+        }
+        document.getElementById("mode-up-hero-display").innerHTML = lines.join("");
       }
 
       function showModeUpWindow() {
@@ -376,63 +387,14 @@
         updateModeUpHeroDisplay();
       }
 
-      function updateModeUpHeroDisplay() {
-        const hero = livingHeroes[modeUpIndex];
-        const buff = getModeUpBuff(hero);
-        const lines = [];
-        lines.push(`<p class="highlight">${hero.name} (${hero.symbol})</p>`);
-        lines.push(`<p>HP: ${hero.hp <= 0 ? `<span class="dead-hero">${hero.hp}</span>` : hero.hp} ${buff.hp ? `<span class="stat-up">+${buff.hp}</span>` : ""}</p>`);
-        lines.push(`<p>Attack: ${hero.attack} ${buff.attack ? `<span class="stat-up">+${buff.attack}</span>` : ""}</p>`);
-        lines.push(`<p>Range: ${hero.range} ${buff.range ? `<span class="stat-up">+${buff.range}</span>` : ""}</p>`);
-        if (buff.agility) {
-          lines.push(`<p class="stat-up">+${buff.agility} agility</p>`);
+      function applyCurrentModeUp() {
+        if (livingHeroes.length > 0) {
+          // Use the imported applyModeUp function.
+          applyModeUp(livingHeroes[modeUpIndex], level, party, logMessage);
+          showScreen("battle");
+          level++;
+          setTimeout(initializeBattle, 2000);
         }
-        if (buff.burn) {
-          lines.push(`<p class="stat-up">+${buff.burn} burn</p>`);
-        }
-        if (buff.sluj) {
-          lines.push(`<p class="stat-up">+${buff.sluj} slüj</p>`);
-        }
-        if (buff.heal) {
-          lines.push(`<p class="stat-up">+${buff.heal} heal</p>`);
-        }
-        if (buff.ghis) {
-          lines.push(`<p>+<span class="stat-up">${buff.ghis} ghïs</span></p>`);
-        }
-        document.getElementById("mode-up-hero-display").innerHTML = lines.join("");
-      }
-
-      function applyModeUp(chosenHero) {
-        const buff = getModeUpBuff(chosenHero);
-        const messageParts = [];
-        if (buff.hp) messageParts.push(`+${buff.hp} HP`);
-        if (buff.attack) messageParts.push(`+${buff.attack} Attack`);
-        if (buff.range) messageParts.push(`+${buff.range} Range`);
-        if (buff.agility) messageParts.push(`+${buff.agility} Agility`);
-        if (buff.burn) messageParts.push(`+${buff.burn} burn`);
-        if (buff.sluj) messageParts.push(`+${buff.sluj} slüj`);
-        if (buff.heal) messageParts.push(`+${buff.heal} Heal`);
-        if (buff.ghis) messageParts.push(`+${buff.ghis} ghïs`);
-        const message = messageParts.length > 0
-          ? `${chosenHero.name} empowers the party with ${messageParts.join(", ")}!`
-          : `${chosenHero.name} tries to mode up but nothing happens...`;
-
-        party.forEach(h => {
-          for (let stat in buff) {
-            if (stat === "hp") {
-              if (h.hp > 0) h.hp += buff[stat];
-            } else {
-              if (!Object.prototype.hasOwnProperty.call(h, stat)) {
-                h[stat] = 0;
-              }
-              h[stat] += buff[stat];
-            }
-          }
-        });
-        logMessage(message);
-        showScreen("battle");
-        level++;
-        setTimeout(initializeBattle, 2000);
       }
 
       function initializeBattle() {
@@ -461,7 +423,7 @@
       }
 
       function onLevelComplete() {
-        // Handle normal progression (levels 1-4)
+        // Handle normal progression (levels 1-3)
         if (level >= 1 && level <= 3) {
           logMessage(`Level ${level} complete!`);
           showModeUpWindow();
@@ -476,8 +438,7 @@
           logMessage("The veil of introspection lifts...");
           level = 100;
           setTimeout(initializeBattle, 2000);
-        }
-        else if (level === 100) {
+        } else if (level === 100) {
           logMessage("The echoes fade, revealing the final challenge...");
           level = 101;
           setTimeout(initializeBattle, 2000);
@@ -549,25 +510,21 @@
       // Function to activate the cheat code branch (Level 99: The Hidden Arena)
       function activateCheat() {
         if (!cheatActive) {
-          cheatActive = true; // Prevent activating multiple times
+          cheatActive = true;
           console.log("Cheat code detected! Activating Level 99: The Hidden Arena!");
-          level = 99;  // Set the level to 99
-          initializeBattle(); // Re-initialize the battle with the new level
+          level = 99;
+          initializeBattle();
         }
       }
 
-      // Global keydown listener for cheat code detection and screen-specific actions.
+      // Global keydown listener.
       document.addEventListener("keydown", async (event) => {
-        // Add key to cheat buffer.
         cheatBuffer.push(event.code);
-        // Keep only the latest N key presses.
         if (cheatBuffer.length > cheatSequence.length) {
           cheatBuffer.shift();
         }
-        // Check if the sequence matches.
         if (cheatBuffer.join() === cheatSequence.join()) {
           activateCheat();
-          // Clear the buffer once the cheat code is activated.
           cheatBuffer = [];
           return;
         }
@@ -673,9 +630,7 @@
             }
           },
           Space: () => {
-            if (livingHeroes.length > 0) {
-              applyModeUp(livingHeroes[modeUpIndex]);
-            }
+            applyCurrentModeUp();
           }
         }
       };
