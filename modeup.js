@@ -9,6 +9,7 @@
 
 export function getModeUpBuff(chosenHero, level) {
   const buffIncrement = level;
+  // Check for specific hero names before generic checks.
   if (chosenHero.name === "Knight") {
     return { attack: 1 * buffIncrement, hp: 2 * buffIncrement };
   } else if (chosenHero.name === "Archer") {
@@ -24,7 +25,7 @@ export function getModeUpBuff(chosenHero, level) {
   } else if (chosenHero.name === "Cleric") {
     return { heal: 2 * buffIncrement };
   } else if (chosenHero.name === "Sycophant") {
-    // For Sycophant, all stats increase by 1 times the buff increment.
+    // For Sycophant, every stat increases by 1 * buffIncrement.
     return {
       attack: 1 * buffIncrement,
       hp: 1 * buffIncrement,
@@ -33,17 +34,23 @@ export function getModeUpBuff(chosenHero, level) {
       burn: 1 * buffIncrement,
       sluj: 1 * buffIncrement,
       heal: 1 * buffIncrement,
+      // Optionally include ghis if desired:
+      ghis: 1 * buffIncrement,
     };
   } else if (chosenHero.heal !== undefined) {
+    // Generic case for heroes that have a heal property.
     return { heal: 1 * buffIncrement };
   } else {
-    return { ghis: 1 };
+    // Fallback case for heroes with no specific buffs.
+    return { ghis: 1 * buffIncrement };
   }
 }
 
 export function applyModeUp(chosenHero, level, party, logCallback) {
   const buff = getModeUpBuff(chosenHero, level);
   const messageParts = [];
+  
+  // Build message parts based on the buff values
   if (buff.hp) messageParts.push(`+${buff.hp} HP`);
   if (buff.attack) messageParts.push(`+${buff.attack} Attack`);
   if (buff.range) messageParts.push(`+${buff.range} Range`);
@@ -60,10 +67,12 @@ export function applyModeUp(chosenHero, level, party, logCallback) {
   party.forEach(hero => {
     for (let stat in buff) {
       if (stat === "hp") {
+        // Only add HP buff if hero is alive
         if (hero.hp > 0) {
           hero.hp += buff[stat];
         }
       } else {
+        // Initialize stat if it doesn't exist, then add buff value
         if (!Object.prototype.hasOwnProperty.call(hero, stat)) {
           hero[stat] = 0;
         }
