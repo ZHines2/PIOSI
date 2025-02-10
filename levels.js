@@ -5,6 +5,59 @@
  * This module defines game level configurations in a scalable and maintainable way.
  */
 
+// Helper function to generate a random integer within a range
+function getRandomInt(min, max) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+// Function to generate a level layout with static "wall" enemies
+function generateLevelLayout(rows, cols, minRoomSize, maxRoomSize, numRooms, wallHP) {
+    const layout = []; // 2D array to hold level data
+    for (let y = 0; y < rows; y++) {
+        layout[y] = [];
+        for (let x = 0; x < cols; x++) {
+            layout[y][x] = null; // Initially empty
+        }
+    }
+
+    const rooms = [];
+
+    // Function to create a room
+    const createRoom = (x, y, width, height) => {
+        const room = { x, y, width, height };
+        rooms.push(room);
+    };
+
+    // Attempt to generate rooms (very simple for now - just places without collision)
+    for (let i = 0; i < numRooms; i++) {
+        let width = getRandomInt(minRoomSize, maxRoomSize);
+        let height = getRandomInt(minRoomSize, maxRoomSize);
+        let x = getRandomInt(1, cols - width - 1);
+        let y = getRandomInt(1, rows - height - 1);
+        createRoom(x, y, width, height);
+    }
+
+    // Place "wall" enemies around the rooms (very basic - needs improvement to connect rooms)
+    for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+            let isWall = true;
+            for (const room of rooms) {
+                if (x >= room.x && x < room.x + room.width && y >= room.y && y < room.y + room.height) {
+                    isWall = false; // Inside a room
+                    break;
+                }
+            }
+            if (isWall) {
+                layout[y][x] = { type: "wall", hp: wallHP }; // Mark as a "wall"
+            }
+        }
+    }
+
+    return { layout, rooms };
+}
+
 export const levelSettings = [
   {
     level: 1,
@@ -77,6 +130,66 @@ export const levelSettings = [
       { name: "Buckleman", symbol: "⛨", attack: 1, range: 1, hp: 20, agility: 1, x: 8, y: 2 },
       { name: "Brigand", symbol: "Җ", attack: 3, range: 1, hp: 12, agility: 2, x: 12, y: 2 }
     ]
+  },
+  {
+    level: 5,
+    title: "Level ߁‎: Gratt ߁‎",
+    rows: 25,
+    cols: 25,
+    wallHP: 500,
+    generateEnemies: true,
+    enemyGenerator: (rows, cols) => {
+      const levelData = generateLevelLayout(rows, cols, 5, 9, 5, 500);
+      const layout = levelData.layout;
+      const rooms = levelData.rooms;
+
+      const enemies = [];
+
+      // Place enemies in rooms
+      const placeEnemiesInRoom = (roomX, roomY, roomWidth, roomHeight, enemyCount) => {
+        for (let i = 0; i < enemyCount; i++) {
+          let x = roomX + Math.floor(Math.random() * (roomWidth - 2)) + 1;
+          let y = roomY + Math.floor(Math.random() * (roomHeight - 2)) + 1;
+
+          const enemyTypes = [
+            { name: "Gratt Imp", symbol: "ȹ", attack: 2, range: 1, hp: 8, agility: 3 },
+            { name: "Cave Goblin", symbol: "Ͼ", attack: 3, range: 1, hp: 10, agility: 2 },
+            { name: "Tunnel Rat", symbol: "ζ", attack: 1, range: 1, hp: 6, agility: 4 }
+          ];
+
+          const enemyType = enemyTypes[Math.floor(Math.random() * enemyTypes.length)];
+          enemies.push({ ...enemyType, x, y });
+        }
+      };
+
+      rooms.forEach(room => {
+        placeEnemiesInRoom(room.x, room.y, room.width, room.height, 2); // 2 enemies per room
+      });
+
+      // Convert "wall" data to actual enemy objects
+      for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+          if (layout[y][x] && layout[y][x].type === "wall") {
+            enemies.push({
+              name: "Static Wall",
+              symbol: "W", // Or some other wall-like symbol
+              attack: 0,
+              range: 0,
+              hp: layout[y][x].hp,
+              agility: 0,
+              x,
+              y,
+              isWall: true // Flag to identify as a wall
+            });
+          }
+        }
+      }
+
+      return enemies;
+    },
+      levelLayoutGenerator: (rows, cols, wallHP) => {
+        return generateLevelLayout(rows, cols, 5, 9, 5, wallHP);
+      }
   },
   {
     level: 99,
