@@ -129,5 +129,13 @@ export const heroes = [
     agility: 3,
     hp: 12,
     shrink: true
+  },
+  {
+    name: "Sycophant",
+    symbol: "♟",
+    attack: 0,
+    range: 0,
+    agility: 2,
+    hp: 15
   }
 ];
