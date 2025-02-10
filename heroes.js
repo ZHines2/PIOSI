@@ -137,5 +137,17 @@ export const heroes = [
     range: 0,
     agility: 2,
     hp: 15
+  },
+  // New hero "Yeetrian" with knockback stat "yeet".
+  // The knockback or "yeet" stat indicates the hero's ability to push enemies.
+  // The "mode up +1 yeet" comment indicates that under certain conditions the yeet value may increase.
+  {
+    name: "Yeetrian",
+    symbol: "⛓",
+    attack: 3,
+    range: 2,
+    agility: 4,
+    hp: 14,
+    yeet: 1 // Knockback power: mode up provides +1 to yeet.
   }
 ];
