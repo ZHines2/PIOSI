@@ -39,7 +39,8 @@
       <p id="status"></p>
       <div id="log"></div>
       <p>
-        Use Arrow Keys to Move | Press Spacebar to Attack, then choose attack direction.
+        Use Arrow Keys to Move | Press Spacebar to Attack, then choose attack
+        direction.
       </p>
     </div>
 
@@ -115,17 +116,23 @@
        * Function to show a specific screen by setting display properties.
        */
       function showScreen(screen) {
-        document.getElementById("title-screen").style.display = (screen === "title") ? "flex" : "none";
-        document.getElementById("party-select").style.display = (screen === "party") ? "block" : "none";
-        document.getElementById("game-container").style.display = (screen === "battle") ? "block" : "none";
-        document.getElementById("victory").style.display = (screen === "victory") ? "block" : "none";
-        document.getElementById("mode-up-window").style.display = (screen === "modeUp") ? "flex" : "none";
+        document.getElementById("title-screen").style.display =
+          screen === "title" ? "flex" : "none";
+        document.getElementById("party-select").style.display =
+          screen === "party" ? "block" : "none";
+        document.getElementById("game-container").style.display =
+          screen === "battle" ? "block" : "none";
+        document.getElementById("victory").style.display =
+          screen === "victory" ? "block" : "none";
+        document.getElementById("mode-up-window").style.display =
+          screen === "modeUp" ? "flex" : "none";
         currentScreen = screen;
       }
 
       /**
        * Helper function to generate a complete stats object.
        * Even if a specific stat is 0 or undefined, we display it.
+       * Now includes the yeet stat for the yeetrian.
        */
       function getCompleteStats(hero) {
         return {
@@ -136,13 +143,14 @@
           heal: hero.heal !== undefined ? hero.heal : 0,
           burn: hero.burn !== undefined ? hero.burn : 0,
           sluj: hero.sluj !== undefined ? hero.sluj : 0,
-          ghis: hero.ghis !== undefined ? hero.ghis : 0
+          ghis: hero.ghis !== undefined ? hero.ghis : 0,
+          yeet: hero.yeet !== undefined ? hero.yeet : 0
         };
       }
 
       /**
        * Update the hero display in the party selection screen.
-       * All stats are displayed, even if they are 0, to add mystery.
+       * All stats are displayed, including the yeet stat.
        */
       async function updateHeroDisplay() {
         const hero = allHeroes[heroIndex];
@@ -167,13 +175,17 @@
           const reaction = await getGriotReaction();
           display += `<p>${reaction}</p>`;
         }
-        // Get complete stats for the hero
+        // Get complete stats for the hero, including yeet
         const stats = getCompleteStats(hero);
         display += `<p>
-          Attack: ${stats.attack} | Range: ${stats.range} | Agility: ${stats.agility} | HP: ${stats.hp} | Heal: ${stats.heal} | Burn: ${stats.burn} | Slüj: ${stats.sluj} | Ghïs: ${stats.ghis}
+          Attack: ${stats.attack} | Range: ${stats.range} | Agility: ${stats.agility} | HP: ${stats.hp} | Heal: ${stats.heal} | Burn: ${stats.burn} | Slüj: ${stats.sluj} | Ghïs: ${stats.ghis} | Yeet: ${stats.yeet}
         </p>`;
         // Indicate selection status
-        display += `<p>${selectedHeroes.includes(heroIndex) ? "SELECTED" : "Press Spacebar to Select"}</p>`;
+        display += `<p>${
+          selectedHeroes.includes(heroIndex)
+            ? "SELECTED"
+            : "Press Spacebar to Select"
+        }</p>`;
         document.getElementById("hero-display").innerHTML = display;
         document.getElementById("selection-info").textContent = `Selected Heroes: ${selectedHeroes.length}/3`;
       }
@@ -183,7 +195,7 @@
        */
       function selectHero() {
         if (selectedHeroes.includes(heroIndex)) {
-          selectedHeroes = selectedHeroes.filter(i => i !== heroIndex);
+          selectedHeroes = selectedHeroes.filter((i) => i !== heroIndex);
         } else if (selectedHeroes.length < 3) {
           selectedHeroes.push(heroIndex);
         }
@@ -201,7 +213,7 @@
         const backgroundMusic = document.getElementById("background-music");
         backgroundMusic.play().catch(() => {});
         // Clone selected heroes so that changes do not affect base definitions
-        party = selectedHeroes.map(i => Object.assign({}, allHeroes[i]));
+        party = selectedHeroes.map((i) => Object.assign({}, allHeroes[i]));
         // Sort party by agility descending for turn order
         party.sort((a, b) => b.agility - a.agility);
         initializeBattle();
@@ -210,6 +222,7 @@
 
       /**
        * Update the Mode Up display for the currently selected hero.
+       * The display now shows the yeet stat along with a buff preview.
        */
       function updateModeUpHeroDisplay() {
         const hero = livingHeroes[modeUpIndex];
@@ -217,7 +230,7 @@
         const buff = getModeUpBuff(hero, level);
         const lines = [];
         lines.push(`<p class="highlight">${hero.name} (${hero.symbol})</p>`);
-        // Display current stats with buff preview for each stat
+        // Display current stats with buff preview for each stat, including yeet
         const stats = getCompleteStats(hero);
         lines.push(
           `<p>HP: ${stats.hp} ${buff.hp ? `<span class="stat-up">+${buff.hp}</span>` : ""}</p>`
@@ -243,6 +256,9 @@
         lines.push(
           `<p>Ghïs: ${stats.ghis} ${buff.ghis ? `<span class="stat-up">+${buff.ghis}</span>` : ""}</p>`
         );
+        lines.push(
+          `<p>Yeet: ${stats.yeet} ${buff.yeet ? `<span class="stat-up">+${buff.yeet}</span>` : ""}</p>`
+        );
         document.getElementById("mode-up-hero-display").innerHTML = lines.join("");
       }
 
@@ -250,7 +266,7 @@
        * Show the Mode Up selection window after a level is completed.
        */
       function showModeUpWindow() {
-        livingHeroes = party.filter(hero => hero.hp > 0);
+        livingHeroes = party.filter((hero) => hero.hp > 0);
         if (livingHeroes.length === 0) {
           setTimeout(initializeBattle, 500);
           return;
@@ -344,7 +360,13 @@
       function renderBattlefield() {
         document.getElementById("battlefield").innerHTML = battleEngine.drawBattlefield();
         document.getElementById("status").textContent =
-          `Wall HP: ${battleEngine.wallHP} | ${party[battleEngine.currentUnit].name}'s Turn (Moves Left: ${battleEngine.movePoints})`;
+          "Wall HP: " +
+          battleEngine.wallHP +
+          " | " +
+          party[battleEngine.currentUnit].name +
+          "'s Turn (Moves Left: " +
+          battleEngine.movePoints +
+          ")";
       }
 
       /**
@@ -420,10 +442,12 @@
           cheatBuffer = [];
           return;
         }
-        
+
         // Handle key actions for game-over
         if (document.getElementById("game-over").style.display === "flex") {
-          const action = keyActions["game-over"][event.code] || keyActions["game-over"][event.key];
+          const action =
+            keyActions["game-over"][event.code] ||
+            keyActions["game-over"][event.key];
           if (action) {
             event.preventDefault();
             await action();
@@ -456,7 +480,10 @@
             updateHeroDisplay();
           },
           Space: () => {
-            if (selectedHeroes.length < 3 || !selectedHeroes.includes(heroIndex)) {
+            if (
+              selectedHeroes.length < 3 ||
+              !selectedHeroes.includes(heroIndex)
+            ) {
               selectHero();
             } else {
               startGame();
@@ -467,12 +494,19 @@
         battle: {
           Space: () => {
             battleEngine.awaitingAttackDirection = true;
-            logMessage(`${party[battleEngine.currentUnit].name} is ready to attack! Choose a direction.`);
+            logMessage(
+              `${party[battleEngine.currentUnit].name} is ready to attack! Choose a direction.`
+            );
             renderBattlefield();
           },
           ArrowUp: async () => {
             if (battleEngine.awaitingAttackDirection) {
-              await battleEngine.attackInDirection(0, -1, party[battleEngine.currentUnit], recordAttack);
+              await battleEngine.attackInDirection(
+                0,
+                -1,
+                party[battleEngine.currentUnit],
+                recordAttack
+              );
             } else {
               battleEngine.moveUnit(0, -1);
             }
@@ -480,7 +514,12 @@
           },
           ArrowDown: async () => {
             if (battleEngine.awaitingAttackDirection) {
-              await battleEngine.attackInDirection(0, 1, party[battleEngine.currentUnit], recordAttack);
+              await battleEngine.attackInDirection(
+                0,
+                1,
+                party[battleEngine.currentUnit],
+                recordAttack
+              );
             } else {
               battleEngine.moveUnit(0, 1);
             }
@@ -488,7 +527,12 @@
           },
           ArrowLeft: async () => {
             if (battleEngine.awaitingAttackDirection) {
-              await battleEngine.attackInDirection(-1, 0, party[battleEngine.currentUnit], recordAttack);
+              await battleEngine.attackInDirection(
+                -1,
+                0,
+                party[battleEngine.currentUnit],
+                recordAttack
+              );
             } else {
               battleEngine.moveUnit(-1, 0);
             }
@@ -496,7 +540,12 @@
           },
           ArrowRight: async () => {
             if (battleEngine.awaitingAttackDirection) {
-              await battleEngine.attackInDirection(1, 0, party[battleEngine.currentUnit], recordAttack);
+              await battleEngine.attackInDirection(
+                1,
+                0,
+                party[battleEngine.currentUnit],
+                recordAttack
+              );
             } else {
               battleEngine.moveUnit(1, 0);
             }
@@ -512,7 +561,8 @@
         modeUp: {
           ArrowLeft: () => {
             if (livingHeroes.length > 0) {
-              modeUpIndex = (modeUpIndex - 1 + livingHeroes.length) % livingHeroes.length;
+              modeUpIndex =
+                (modeUpIndex - 1 + livingHeroes.length) % livingHeroes.length;
               updateModeUpHeroDisplay();
             }
           },
