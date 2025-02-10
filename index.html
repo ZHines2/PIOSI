@@ -22,6 +22,17 @@
         margin: 0;
         padding: 0;
       }
+      /* Screen containers */
+      #title-screen,
+      #party-select,
+      #game-container,
+      #victory,
+      #game-over,
+      #mode-up-window {
+        display: none;
+        padding: 20px;
+      }
+      /* Title screen styles */
       #title-screen {
         position: relative;
         height: 100vh;
@@ -46,6 +57,7 @@
         opacity: 0.7;
         z-index: -1;
       }
+      /* Image container styles */
       .image-container {
         width: 80%;
         height: 80%;
@@ -72,15 +84,7 @@
         0% { transform: translate(0, 0); }
         100% { transform: translate(-5%, -5%); }
       }
-      #title-screen,
-      #party-select,
-      #game-container,
-      #victory,
-      #game-over,
-      #mode-up-window {
-        display: none;
-        padding: 20px;
-      }
+      /* Game container styles */
       #battlefield {
         display: inline-block;
         border: 2px solid white;
@@ -123,6 +127,7 @@
         margin: 5px;
         font-size: 18px;
       }
+      /* Overlays */
       #game-over {
         display: none;
         position: fixed;
@@ -194,6 +199,7 @@
         (Use Left/Right Arrow keys to navigate and Spacebar to select/deselect.
         Choose exactly 3 heroes.)
       </h2>
+      <!-- Hero display area with complete stats shown -->
       <div id="hero-display"></div>
       <p id="selection-info"></p>
     </div>
@@ -237,6 +243,7 @@
     <audio id="background-music" src="DarkAnoid.mp3" loop></audio>
 
     <script type="module">
+      // Import necessary modules with ample comments
       import {
         fetchJoke,
         fetchBaconIpsum,
@@ -252,17 +259,17 @@
       import { getLevel } from "./levels.js";
       import { getModeUpBuff, applyModeUp } from "./modeup.js";
 
+      // Global variables to manage game state
       let currentScreen = "title";
       let selectedHeroes = [];
       let heroIndex = 0;
       let party = [];
-      // Initialize starting level number normally.
-      let level = 1;
+      let level = 1; // Starting level
       let enemies = [];
       let battleEngine = null;
-      let cheatActive = false;  // Flag to prevent repeated cheat activation
+      let cheatActive = false;  // Prevent waiting cheat activation
 
-      // Cheat code detection variables.
+      // Cheat detection variables
       const cheatSequence = [
         "ArrowLeft",
         "ArrowLeft",
@@ -275,10 +282,13 @@
       ];
       let cheatBuffer = [];
 
-      // For Mode Up selection:
+      // For Mode Up selection
       let modeUpIndex = 0;
       let livingHeroes = [];
 
+      /**
+       * Function to show a specific screen by setting display properties.
+       */
       function showScreen(screen) {
         document.getElementById("title-screen").style.display = (screen === "title") ? "flex" : "none";
         document.getElementById("party-select").style.display = (screen === "party") ? "block" : "none";
@@ -288,9 +298,31 @@
         currentScreen = screen;
       }
 
+      /**
+       * Helper function to generate a complete stats object.
+       * Even if a specific stat is 0 or undefined, we display it.
+       */
+      function getCompleteStats(hero) {
+        return {
+          attack: hero.attack || 0,
+          range: hero.range || 0,
+          agility: hero.agility || 0,
+          hp: hero.hp || 0,
+          heal: hero.heal !== undefined ? hero.heal : 0,
+          burn: hero.burn !== undefined ? hero.burn : 0,
+          sluj: hero.sluj !== undefined ? hero.sluj : 0,
+          ghis: hero.ghis !== undefined ? hero.ghis : 0
+        };
+      }
+
+      /**
+       * Update the hero display in the party selection screen.
+       * All stats are displayed, even if they are 0, to add mystery.
+       */
       async function updateHeroDisplay() {
         const hero = allHeroes[heroIndex];
         let display = `<p class="highlight">${hero.name} (${hero.symbol})</p>`;
+        // Display special interactions for heroes that have extra properties
         if (hero.joke) {
           const joke = await fetchJoke();
           display += `<p>${joke}</p>`;
@@ -309,18 +341,21 @@
         } else if (hero.reactsToHistory) {
           const reaction = await getGriotReaction();
           display += `<p>${reaction}</p>`;
-        } else {
-          display += `<p>Attack: ${hero.attack} | Range: ${hero.range} | Agility: ${hero.agility} | HP: ${hero.hp}`;
-          if (hero.heal !== undefined) {
-            display += ` | Heal: ${hero.heal}`;
-          }
-          display += `</p>`;
-          display += `<p>${selectedHeroes.includes(heroIndex) ? "SELECTED" : "Press Spacebar to Select"}</p>`;
         }
+        // Get complete stats for the hero
+        const stats = getCompleteStats(hero);
+        display += `<p>
+          Attack: ${stats.attack} | Range: ${stats.range} | Agility: ${stats.agility} | HP: ${stats.hp} | Heal: ${stats.heal} | Burn: ${stats.burn} | Slüj: ${stats.sluj} | Ghïs: ${stats.ghis}
+        </p>`;
+        // Indicate selection status
+        display += `<p>${selectedHeroes.includes(heroIndex) ? "SELECTED" : "Press Spacebar to Select"}</p>`;
         document.getElementById("hero-display").innerHTML = display;
         document.getElementById("selection-info").textContent = `Selected Heroes: ${selectedHeroes.length}/3`;
       }
 
+      /**
+       * Toggle hero selection from the party selection screen.
+       */
       function selectHero() {
         if (selectedHeroes.includes(heroIndex)) {
           selectedHeroes = selectedHeroes.filter(i => i !== heroIndex);
@@ -330,6 +365,9 @@
         updateHeroDisplay();
       }
 
+      /**
+       * Start the game and initialize the party based on selected heroes.
+       */
       function startGame() {
         if (selectedHeroes.length !== 3) {
           alert("Select exactly 3 heroes!");
@@ -337,45 +375,55 @@
         }
         const backgroundMusic = document.getElementById("background-music");
         backgroundMusic.play().catch(() => {});
+        // Clone selected heroes so that changes do not affect base definitions
         party = selectedHeroes.map(i => Object.assign({}, allHeroes[i]));
+        // Sort party by agility descending for turn order
         party.sort((a, b) => b.agility - a.agility);
         initializeBattle();
         showScreen("battle");
       }
 
+      /**
+       * Update the Mode Up display for the currently selected hero.
+       */
       function updateModeUpHeroDisplay() {
         const hero = livingHeroes[modeUpIndex];
-        // Use the imported getModeUpBuff function.
+        // Use the imported getModeUpBuff method to determine buffs
         const buff = getModeUpBuff(hero, level);
         const lines = [];
         lines.push(`<p class="highlight">${hero.name} (${hero.symbol})</p>`);
+        // Display current stats with buff preview for each stat
+        const stats = getCompleteStats(hero);
         lines.push(
-          `<p>HP: ${hero.hp <= 0 ? `<span class="dead-hero">${hero.hp}</span>` : hero.hp}${buff.hp ? ` <span class="stat-up">+${buff.hp}</span>` : ""}</p>`
+          `<p>HP: ${stats.hp} ${buff.hp ? `<span class="stat-up">+${buff.hp}</span>` : ""}</p>`
         );
         lines.push(
-          `<p>Attack: ${hero.attack}${buff.attack ? ` <span class="stat-up">+${buff.attack}</span>` : ""}</p>`
+          `<p>Attack: ${stats.attack} ${buff.attack ? `<span class="stat-up">+${buff.attack}</span>` : ""}</p>`
         );
         lines.push(
-          `<p>Range: ${hero.range}${buff.range ? ` <span class="stat-up">+${buff.range}</span>` : ""}</p>`
+          `<p>Range: ${stats.range} ${buff.range ? `<span class="stat-up">+${buff.range}</span>` : ""}</p>`
         );
-        if (buff.agility) {
-          lines.push(`<p>Agility: ${hero.agility} <span class="stat-up">+${buff.agility}</span></p>`);
-        }
-        if (buff.burn) {
-          lines.push(`<p>Burn: ${buff.burn} <span class="stat-up">+${buff.burn}</span></p>`);
-        }
-        if (buff.sluj) {
-          lines.push(`<p>Slüj: ${buff.sluj} <span class="stat-up">+${buff.sluj}</span></p>`);
-        }
-        if (buff.heal) {
-          lines.push(`<p>Heal: ${hero.heal || 0} <span class="stat-up">+${buff.heal}</span></p>`);
-        }
-        if (buff.ghis) {
-          lines.push(`<p>Ghïs: ${buff.ghis}</p>`);
-        }
+        lines.push(
+          `<p>Agility: ${stats.agility} ${buff.agility ? `<span class="stat-up">+${buff.agility}</span>` : ""}</p>`
+        );
+        lines.push(
+          `<p>Heal: ${stats.heal} ${buff.heal ? `<span class="stat-up">+${buff.heal}</span>` : ""}</p>`
+        );
+        lines.push(
+          `<p>Burn: ${stats.burn} ${buff.burn ? `<span class="stat-up">+${buff.burn}</span>` : ""}</p>`
+        );
+        lines.push(
+          `<p>Slüj: ${stats.sluj} ${buff.sluj ? `<span class="stat-up">+${buff.sluj}</span>` : ""}</p>`
+        );
+        lines.push(
+          `<p>Ghïs: ${stats.ghis} ${buff.ghis ? `<span class="stat-up">+${buff.ghis}</span>` : ""}</p>`
+        );
         document.getElementById("mode-up-hero-display").innerHTML = lines.join("");
       }
 
+      /**
+       * Show the Mode Up selection window after a level is completed.
+       */
       function showModeUpWindow() {
         livingHeroes = party.filter(hero => hero.hp > 0);
         if (livingHeroes.length === 0) {
@@ -387,9 +435,12 @@
         updateModeUpHeroDisplay();
       }
 
+      /**
+       * Apply the buffs from the selected hero and progress to the next level.
+       * This uses the imported applyModeUp function.
+       */
       function applyCurrentModeUp() {
         if (livingHeroes.length > 0) {
-          // Use the imported applyModeUp function.
           applyModeUp(livingHeroes[modeUpIndex], level, party, logMessage);
           showScreen("battle");
           level++;
@@ -397,10 +448,13 @@
         }
       }
 
+      /**
+       * Initialize a battle based on the current level settings.
+       */
       function initializeBattle() {
         const settings = getLevel(level);
         if (!settings) {
-          // Only show victory if we're not in a special level sequence
+          // If no settings found, show victory unless in special level sequences.
           if (level < 99 || level > 101) {
             showScreen("victory");
             return;
@@ -422,19 +476,17 @@
         renderBattlefield();
       }
 
+      /**
+       * Called when a level is completed and determines the next action.
+       */
       function onLevelComplete() {
-        // Handle normal progression (levels 1-3)
         if (level >= 1 && level <= 3) {
           logMessage(`Level ${level} complete!`);
           showModeUpWindow();
-        }
-        // Handle completion of normal game
-        else if (level === 4) {
+        } else if (level === 4) {
           logMessage("The normal path is complete!");
           showScreen("victory");
-        }
-        // Handle special levels progression
-        else if (level === 99) {
+        } else if (level === 99) {
           logMessage("The veil of introspection lifts...");
           level = 100;
           setTimeout(initializeBattle, 2000);
@@ -442,9 +494,7 @@
           logMessage("The echoes fade, revealing the final challenge...");
           level = 101;
           setTimeout(initializeBattle, 2000);
-        }
-        // Handle Gratt Prime (endless mode)
-        else if (level === 101) {
+        } else if (level === 101) {
           const currentWave = battleEngine.waveNumber || 0;
           if (battleEngine.wallHP <= 0) {
             logMessage("You've broken through! The eternal wall falls!");
@@ -456,22 +506,34 @@
         }
       }
 
+      /**
+       * Called when the game detects a game over condition.
+       */
       function onGameOver() {
         document.getElementById("game-over").style.display = "flex";
       }
 
+      /**
+       * Render the battlefield by drawing it from the battle engine.
+       */
       function renderBattlefield() {
         document.getElementById("battlefield").innerHTML = battleEngine.drawBattlefield();
         document.getElementById("status").textContent =
           `Wall HP: ${battleEngine.wallHP} | ${party[battleEngine.currentUnit].name}'s Turn (Moves Left: ${battleEngine.movePoints})`;
       }
 
+      /**
+       * Log messages to the game log area.
+       */
       function logMessage(message) {
         const logDiv = document.getElementById("log");
         logDiv.innerHTML += `<p>${message}</p>`;
         logDiv.scrollTop = logDiv.scrollHeight;
       }
 
+      /**
+       * Record attack interactions and display hero-specific messages.
+       */
       async function recordAttack(message) {
         recordInteraction(message);
         const hero = party[battleEngine.currentUnit];
@@ -496,18 +558,23 @@
         }
       }
 
+      /**
+       * Restart the game and reset all global variables.
+       */
       function restartGame() {
         level = 1;
         selectedHeroes = [];
         party = [];
         heroIndex = 0;
-        cheatActive = false; // Reset the cheat flag
+        cheatActive = false;
         document.getElementById("log").innerHTML = "";
         document.getElementById("game-over").style.display = "none";
         showScreen("title");
       }
 
-      // Function to activate the cheat code branch (Level 99: The Hidden Arena)
+      /**
+       * Activate the cheat code branch (Level 99: The Hidden Arena).
+       */
       function activateCheat() {
         if (!cheatActive) {
           cheatActive = true;
@@ -517,7 +584,7 @@
         }
       }
 
-      // Global keydown listener.
+      // Global keydown listener handling various game screens and actions.
       document.addEventListener("keydown", async (event) => {
         cheatBuffer.push(event.code);
         if (cheatBuffer.length > cheatSequence.length) {
@@ -529,7 +596,7 @@
           return;
         }
         
-        // Handle screen-specific key actions.
+        // Handle key actions for game-over
         if (document.getElementById("game-over").style.display === "flex") {
           const action = keyActions["game-over"][event.code] || keyActions["game-over"][event.key];
           if (action) {
@@ -546,6 +613,7 @@
         }
       });
 
+      // Mapping key codes to actions based on current screen context.
       const keyActions = {
         title: {
           Space: () => {
@@ -635,6 +703,7 @@
         }
       };
 
+      // Initialize griot narrative and show title screen when ready.
       initializeGriot("fantasy_narrative.txt").then(() => {
         showScreen("title");
       });
