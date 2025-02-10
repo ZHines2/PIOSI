@@ -1,4 +1,11 @@
-// battleEngine.js
+/**
+ * battleEngine.js
+ *
+ * This version includes updated "yeet" logic so that if an enemy is knocked back
+ * (yeeted) into the wall and cannot move past it, they take damage or die as intended.
+ * It also applies damage if they collide with the wall during a yeet attempt.
+ */
+
 export class BattleEngine {
   constructor(
     party,
@@ -182,9 +189,10 @@ export class BattleEngine {
             `${enemy.name} is afflicted with slüj (level ${enemy.statusEffects.sluj.level}) for 4 turns!`
           );
         }
+
         // Apply knockback if the attacking hero has the yeet stat
         if (unit.yeet && unit.yeet > 0) {
-          this.applyKnockback(enemy, dx, dy, unit.yeet);
+          this.applyKnockback(enemy, dx, dy, unit.yeet, unit.attack);
         }
         if (enemy.hp <= 0) {
           this.logCallback(`${enemy.name} is defeated!`);
@@ -218,37 +226,63 @@ export class BattleEngine {
     this.nextTurn();
   }
 
-  // New method to apply knockback to an enemy.
-  // It checks the path for collisions and updates the enemy's position if the path is clear.
-  applyKnockback(enemy, dx, dy, knockbackPower) {
-    let allowed = true;
+  /**
+   * Updated method to apply knockback to an enemy.
+   * - if collision with the wall (ᚙ) happens or the path is blocked by the wall,
+   *   the enemy takes extra damage or dies.
+   * - if the enemy cannot move past the wall, they take the hero's attack damage a second time.
+   */
+  applyKnockback(enemy, dx, dy, knockbackPower, yeetDamage) {
     let newX = enemy.x;
     let newY = enemy.y;
-    // Check each intermediate cell to ensure the path is clear.
+    let pathIsBlocked = false;
+    // Check each intermediate cell to see if the path remains clear.
     for (let i = 1; i <= knockbackPower; i++) {
       const testX = enemy.x + dx * i;
       const testY = enemy.y + dy * i;
-      if (!this.isWithinBounds(testX, testY) || this.battlefield[testY][testX] !== '.') {
-        allowed = false;
+      if (!this.isWithinBounds(testX, testY)) {
+        // Out of bounds means a collision with the map edge
+        pathIsBlocked = true;
         break;
       }
+      if (this.battlefield[testY][testX] === 'ᚙ') {
+        // Collision with the wall
+        pathIsBlocked = true;
+        break;
+      }
+      if (this.battlefield[testY][testX] !== '.') {
+        // Some other obstacle
+        pathIsBlocked = true;
+        break;
+      }
+      // If it's clear, we can move the enemy to this cell
       newX = testX;
       newY = testY;
     }
-    if (allowed) {
-      // Clear enemy's current location
+
+    // If no obstacles, move them to the final location.
+    if (!pathIsBlocked) {
       this.battlefield[enemy.y][enemy.x] = '.';
       enemy.x = newX;
       enemy.y = newY;
-      // Place enemy in new location on the battlefield
       this.battlefield[newY][newX] = enemy.symbol;
       this.logCallback(
-        `${enemy.name} is knocked back to (${newX}, ${newY}) by the force of yeet!`
+        `${enemy.name} is knocked back to (${newX}, ${newY}) by yeet!`
       );
     } else {
+      // If the enemy hits the wall or can't move further, apply extra damage.
       this.logCallback(
-        `${enemy.name} resists the knockback due to obstacles.`
+        `${enemy.name} collides with the wall or an obstacle during yeet!`
       );
+      enemy.hp -= yeetDamage;
+      this.logCallback(
+        `${enemy.name} takes ${yeetDamage} collision damage! (HP left: ${enemy.hp})`
+      );
+      if (enemy.hp <= 0) {
+        this.logCallback(`${enemy.name} is defeated by the collision!`);
+        this.battlefield[enemy.y][enemy.x] = '.';
+        this.enemies = this.enemies.filter(e => e !== enemy);
+      }
     }
   }
 
