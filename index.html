@@ -66,7 +66,9 @@
       </p>
     </div>
 
+    <!-- Audio elements -->
     <audio id="background-music" src="DarkAnoid.mp3" loop></audio>
+    <audio id="hero-select-music" src="WoodenPath.mp3" loop></audio>
 
     <script type="module">
       // Import necessary modules with ample comments
@@ -178,7 +180,7 @@
         // Get complete stats for the hero, including yeet
         const stats = getCompleteStats(hero);
         display += `<p>
-          Attack: ${stats.attack} | Range: ${stats.range} | Agility: ${stats.agility} | HP: ${stats.hp} | Heal: ${stats.heal} | Burn: ${stats.burn} | Slüj: ${stats.sluj} | Ghïs: ${stats.ghis} | Yeet: ${stats.yeet}
+          Attack: ${stats.attack} | Range: ${stats.range} | Agility: ${stats.agility} | HP: ${stats.hp} | Heal: ${stats.heal} | Burn: ${stats.burn} | Slüj: ${stats.sluj} | Ghïs: ${stats.ghis} | Yeet[...]
         </p>`;
         // Indicate selection status
         display += `<p>${
@@ -210,8 +212,24 @@
           alert("Select exactly 3 heroes!");
           return;
         }
+
         const backgroundMusic = document.getElementById("background-music");
-        backgroundMusic.play().catch(() => {});
+        const heroSelectMusic = document.getElementById("hero-select-music");
+
+        // Fade out hero select music
+        let volume = 1;
+        const fadeInterval = setInterval(() => {
+          if (volume > 0) {
+            volume -= 0.1;
+            heroSelectMusic.volume = volume;
+          } else {
+            clearInterval(fadeInterval);
+            heroSelectMusic.pause();
+            heroSelectMusic.volume = 1; // Reset volume for future use
+            backgroundMusic.play().catch(() => {});
+          }
+        }, 100); // Adjust timing as needed
+
         // Clone selected heroes so that changes do not affect base definitions
         party = selectedHeroes.map((i) => Object.assign({}, allHeroes[i]));
         // Sort party by agility descending for turn order
@@ -416,6 +434,18 @@
         cheatActive = false;
         document.getElementById("log").innerHTML = "";
         document.getElementById("game-over").style.display = "none";
+
+        // Stop DarkAnoid music
+        const backgroundMusic = document.getElementById("background-music");
+        backgroundMusic.pause();
+        backgroundMusic.currentTime = 0;
+
+        // Start Hero Select music (WoodenPath.mp3)
+        const heroSelectMusic = document.getElementById("hero-select-music");
+        heroSelectMusic.currentTime = 0;
+        heroSelectMusic.volume = 1;
+        heroSelectMusic.play().catch(() => {});
+
         showScreen("title");
       }
 
@@ -468,6 +498,7 @@
           Space: () => {
             showScreen("party");
             updateHeroDisplay();
+            document.getElementById("hero-select-music").play().catch(() => {});
           }
         },
         party: {
