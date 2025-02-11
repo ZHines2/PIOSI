@@ -636,6 +636,15 @@
         }
       };
 
+      // Minimal mobile support: Map a simple touch tap to a Space key press.
+      if ('ontouchstart' in window) {
+        document.addEventListener("touchend", function(e) {
+          e.preventDefault();
+          const spaceEvent = new KeyboardEvent("keydown", { code: "Space", key: " " });
+          document.dispatchEvent(spaceEvent);
+        });
+      }
+
       // Initialize griot narrative and show title screen when ready.
       initializeGriot("fantasy_narrative.txt").then(() => {
         showScreen("title");
