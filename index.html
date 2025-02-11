@@ -636,6 +636,40 @@
         }
       };
 
+      // Minimal mobile support: Map a simple touch tap to a key event based on touch location.
+      // Taps on the extreme left/right/top/bottom of the screen will simulate Arrow keys,
+      // and taps elsewhere will trigger a Space key press.
+      if ("ontouchstart" in window) {
+        document.addEventListener("touchend", function (e) {
+          e.preventDefault();
+          const touch = e.changedTouches[0];
+          const x = touch.clientX;
+          const y = touch.clientY;
+          const w = window.innerWidth;
+          const h = window.innerHeight;
+
+          let code = "Space";
+          let key = " ";
+
+          if (x < w * 0.2) {
+            code = "ArrowLeft";
+            key = "ArrowLeft";
+          } else if (x > w * 0.8) {
+            code = "ArrowRight";
+            key = "ArrowRight";
+          } else if (y < h * 0.2) {
+            code = "ArrowUp";
+            key = "ArrowUp";
+          } else if (y > h * 0.8) {
+            code = "ArrowDown";
+            key = "ArrowDown";
+          }
+
+          const keyEvent = new KeyboardEvent("keydown", { code, key });
+          document.dispatchEvent(keyEvent);
+        });
+      }
+
       // Initialize griot narrative and show title screen when ready.
       initializeGriot("fantasy_narrative.txt").then(() => {
         showScreen("title");
