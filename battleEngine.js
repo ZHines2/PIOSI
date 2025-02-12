@@ -4,10 +4,6 @@
  * This version includes updated "yeet" logic so that if an enemy is knocked back
  * (yeeted) into the wall and cannot move past it, they take damage or die as intended.
  * It also applies damage if they collide with the wall during a yeet attempt.
- *
- * Additionally, we've integrated Mellitron's swarm ability.
- * Mellitron's swarm deals turn-based damage to any enemy in an adjacent tile.
- * The damage dealt is equal to Mellitron's current swarm stat.
  */
 
 export class BattleEngine {
@@ -194,7 +190,7 @@ export class BattleEngine {
           );
         }
 
-        // Apply knockback if the attacking hero has the yeet stat.
+        // Apply knockback if the attacking hero has the yeet stat
         if (unit.yeet && unit.yeet > 0) {
           this.applyKnockback(enemy, dx, dy, unit.yeet, unit.attack);
         }
@@ -232,39 +228,39 @@ export class BattleEngine {
 
   /**
    * Updated method to apply knockback to an enemy.
-   * - If collision with the wall (ᚙ) or any obstacle happens,
-   *   the enemy takes extra damage or dies as intended.
-   * - If the enemy cannot move past the obstacle, they take the hero's attack damage a second time.
+   * - if collision with the wall (ᚙ) happens or the path is blocked by the wall,
+   *   the enemy takes extra damage or dies.
+   * - if the enemy cannot move past the wall, they take the hero's attack damage a second time.
    */
   applyKnockback(enemy, dx, dy, knockbackPower, yeetDamage) {
     let newX = enemy.x;
     let newY = enemy.y;
     let pathIsBlocked = false;
-    // Check each intermediate cell for obstacles.
+    // Check each intermediate cell to see if the path remains clear.
     for (let i = 1; i <= knockbackPower; i++) {
       const testX = enemy.x + dx * i;
       const testY = enemy.y + dy * i;
       if (!this.isWithinBounds(testX, testY)) {
-        // Out of bounds means a collision with the map edge.
+        // Out of bounds means a collision with the map edge
         pathIsBlocked = true;
         break;
       }
       if (this.battlefield[testY][testX] === 'ᚙ') {
-        // Collision with the wall.
+        // Collision with the wall
         pathIsBlocked = true;
         break;
       }
       if (this.battlefield[testY][testX] !== '.') {
-        // Some other obstacle.
+        // Some other obstacle
         pathIsBlocked = true;
         break;
       }
-      // If clear, update newX and newY.
+      // If it's clear, we can move the enemy to this cell
       newX = testX;
       newY = testY;
     }
 
-    // Move enemy if path is clear.
+    // If no obstacles, move them to the final location.
     if (!pathIsBlocked) {
       this.battlefield[enemy.y][enemy.x] = '.';
       enemy.x = newX;
@@ -274,7 +270,7 @@ export class BattleEngine {
         `${enemy.name} is knocked back to (${newX}, ${newY}) by yeet!`
       );
     } else {
-      // If knockback is blocked, apply collision damage.
+      // If the enemy hits the wall or can't move further, apply extra damage.
       this.logCallback(
         `${enemy.name} collides with the wall or an obstacle during yeet!`
       );
@@ -302,48 +298,6 @@ export class BattleEngine {
         this.onLevelComplete();
       }
     }, 1500);
-  }
-
-  /**
-   * Applies Mellitron's swarm damage.
-   * For each hero with a swarm ability (e.g., Mellitron), any enemy occupying
-   * an adjacent cell takes damage equal to the hero's current swarm stat.
-   */
-  applySwarmDamage() {
-    const adjacentOffsets = [
-      { x: -1, y: 0 },
-      { x: 1, y: 0 },
-      { x: 0, y: -1 },
-      { x: 0, y: 1 },
-      { x: -1, y: -1 },
-      { x: -1, y: 1 },
-      { x: 1, y: -1 },
-      { x: 1, y: 1 }
-    ];
-
-    this.party.forEach(hero => {
-      if (hero.swarm && typeof hero.swarm === 'number') {
-        adjacentOffsets.forEach(offset => {
-          const targetX = hero.x + offset.x;
-          const targetY = hero.y + offset.y;
-          if (this.isWithinBounds(targetX, targetY)) {
-            const enemy = this.enemies.find(e => e.x === targetX && e.y === targetY);
-            if (enemy) {
-              const damage = hero.swarm;
-              enemy.hp -= damage;
-              this.logCallback(
-                `${hero.name}'s swarm deals ${damage} damage to ${enemy.name} at (${targetX},${targetY})! (HP left: ${enemy.hp})`
-              );
-              if (enemy.hp <= 0) {
-                this.logCallback(`${enemy.name} is defeated by swarm damage!`);
-                this.battlefield[targetY][targetX] = '.';
-                this.enemies = this.enemies.filter(e => e !== enemy);
-              }
-            }
-          }
-        });
-      }
-    });
   }
 
   enemyTurn() {
@@ -438,12 +392,8 @@ export class BattleEngine {
 
   nextTurn() {
     if (this.transitioningLevel) return;
-    
-    // Process status effects first.
+    // Process status effects and filter out dead heroes.
     this.applyStatusEffects();
-
-    // Apply swarm damage from heroes like Mellitron.
-    this.applySwarmDamage();
 
     // If after status effects no heroes remain, the game is over.
     if (this.party.length === 0) {
@@ -544,4 +494,3 @@ export class BattleEngine {
     return new Promise(resolve => setTimeout(resolve, 300));
   }
 }
-``` ▋
