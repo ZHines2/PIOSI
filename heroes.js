@@ -3,7 +3,7 @@
  * 
  * This file contains the hero configurations for the game.
  * Each hero is defined as an object with properties like attack, range, agility, and hp.
- * The Cleric hero has an additional "heal" stat that enables friendly healing when interacting.
+ * Some heroes have additional properties for unique behavior.
  */
 
 export const heroes = [
@@ -63,7 +63,7 @@ export const heroes = [
     range: 2,
     agility: 5,
     hp: 10,
-    joke: true
+    joke: true // Provides humorous interactions.
   },
   {
     name: "Meatwalker",
@@ -72,8 +72,8 @@ export const heroes = [
     range: 1,
     agility: 2,
     hp: 22,
-    heal: 1,
-    meat: true
+    heal: 1, // Slight healing property.
+    meat: true // Indicates meat-related interactions.
   },
   {
     name: "Soothscribe",
@@ -82,7 +82,7 @@ export const heroes = [
     range: 6,
     agility: 3,
     hp: 11,
-    tarot: true
+    tarot: true // Can fetch tarot cards for special actions.
   },
   {
     name: "Nonsequiteur",
@@ -91,7 +91,7 @@ export const heroes = [
     range: 3,
     agility: 3,
     hp: 10,
-    nonseq: true
+    nonseq: true // Delivers random, non-sequitur interactions.
   },
   {
     name: "Griot",
@@ -100,7 +100,7 @@ export const heroes = [
     range: 1,
     agility: 1,
     hp: 10,
-    reactsToHistory: true
+    reactsToHistory: true // Reacts uniquely when encountering historical events.
   },
   {
     name: "Torcher",
@@ -109,8 +109,8 @@ export const heroes = [
     range: 2,
     agility: 3,
     hp: 14,
-    torcher: true,
-    burn: 1
+    torcher: true, // Has a burning property.
+    burn: 1      // Burn damage value.
   },
   {
     name: "Slüjier",
@@ -119,7 +119,7 @@ export const heroes = [
     range: 1,
     agility: 4,
     hp: 16,
-    sluj: 1
+    sluj: 1 // Special ability indicator for sluj actions.
   },
   // Updated Shrink hero configuration with symbol ☊
   {
@@ -129,7 +129,7 @@ export const heroes = [
     range: 1,
     agility: 3,
     hp: 12,
-    shrink: true
+    shrink: true // Indicates shrink-related behavior.
   },
   {
     name: "Sycophant",
@@ -140,8 +140,7 @@ export const heroes = [
     hp: 15
   },
   // New hero "Yeetrian" with knockback stat "yeet".
-  // The knockback or "yeet" stat indicates the hero's ability to push enemies.
-  // The "mode up +1 yeet" comment indicates that under certain conditions the yeet value may increase.
+  // The knockback (or "yeet") stat indicates the hero's ability to push enemies.
   {
     name: "Yeetrian",
     symbol: "⛓",
@@ -149,6 +148,17 @@ export const heroes = [
     range: 2,
     agility: 4,
     hp: 14,
-    yeet: 1 // Knockback power: mode up provides +1 to yeet.
+    yeet: 1
+  },
+  // New hero "Mellitron" with customized stats and a swarm ability.
+  {
+    name: "Mellitron",
+    symbol: "丰",
+    attack: 1,
+    range: 3,
+    agility: 5,
+    hp: 18,
+    swarm: 2 // Swarm stat: indicates additional abilities when swarming.
   }
 ];
+``` ▋
