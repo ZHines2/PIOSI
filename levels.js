@@ -172,7 +172,7 @@ export const levelSettings = [
           if (layout[y][x] && layout[y][x].type === "wall") {
             enemies.push({
               name: "Static Wall",
-              symbol: "W", // Or some other wall-like symbol
+              symbol: "█", // Or some other wall-like symbol
               attack: 0,
               range: 0,
               hp: layout[y][x].hp,
