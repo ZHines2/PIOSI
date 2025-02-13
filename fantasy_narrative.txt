@@ -22,3 +22,13 @@ The hero advances with courage. The enemy falters before their might. The wall s
 A cunning plan unfolds. The archer takes aim. The wizard weaves a spell. The berserker charges with fury.
 Fate whispers secrets in the wind. The tapestry of destiny is woven with every action.
 The shadows deepen. A new threat emerges. The battle intensifies. The end draws near.
+
+The many-walled Gratt, a fortress of immense strength, stands as a testament to the resilience of its defenders. Each wall, a barrier against the encroaching darkness, tells a story of battles fought and victories won. The Gratt is not just a physical structure, but a symbol of hope and determination.
+
+Within the Gratt, heroes of unparalleled skill and bravery gather. The Knight, with his unyielding shield and powerful sword, stands at the forefront, defending the realm with unwavering courage. The Archer, with her keen eyes and deadly accuracy, strikes down enemies from afar, her arrows finding their mark with unerring precision. The Wizard, a master of arcane arts, commands the elements, summoning fire and lightning to vanquish foes. The Rogue, shrouded in shadow, moves with unparalleled stealth, striking from the darkness and disappearing without a trace.
+
+Among these heroes are those with unique abilities that set them apart. Yeetrian, with his mighty "yeet" ability, can knock back enemies with a single blow, sending them crashing into walls and obstacles. Mellitron, with his swarm of bees, deals turn-based damage to any enemy in an adjacent tile, his bees stinging with relentless fury.
+
+The heroes of the Gratt are not just warriors, but legends in their own right. The Knight, known for his unbreakable defense, once held the line against an entire army, his shield never faltering. The Archer, famed for her precision, once shot an arrow through the eye of a dragon, bringing the beast down with a single shot. The Wizard, with his mastery of magic, once summoned a storm that wiped out an entire battalion of orcs. The Rogue, with her unmatched stealth, once infiltrated an enemy stronghold and assassinated their leader, turning the tide of battle.
+
+The many-walled Gratt is more than just a fortress; it is a beacon of hope. Its walls, though battered and scarred, stand as a testament to the resilience and determination of its defenders. The heroes within its walls are not just warriors, but symbols of hope and courage. Together, they stand against the darkness, their stories inspiring generations to come.
