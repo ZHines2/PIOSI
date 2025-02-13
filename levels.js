@@ -174,60 +174,42 @@ export const levelSettings = [
     title: "Level 5: Gratt ߁‎",
     rows: 25,
     cols: 25,
-    wallHP: 500,
-    generateEnemies: true,
-    enemyGenerator: (rows, cols) => {
-      const levelData = generateMultiLevelLayout(rows, cols, 5, 9, 5, 500, 3);
-      const layout = levelData[0].layout; // Use the first floor layout for simplicity
-      const rooms = levelData[0].rooms;
-
-      const enemies = [];
-
-      // Place enemies in rooms
-      const placeEnemiesInRoom = (roomX, roomY, roomWidth, roomHeight, enemyCount) => {
-        for (let i = 0; i < enemyCount; i++) {
-          let x = roomX + Math.floor(Math.random() * (roomWidth - 2)) + 1;
-          let y = roomY + Math.floor(Math.random() * (roomHeight - 2)) + 1;
-
-          const enemyTypes = [
-            { name: "Gratt Imp", symbol: "ȹ", attack: 2, range: 1, hp: 8, agility: 3 },
-            { name: "Cave Goblin", symbol: "Ͼ", attack: 3, range: 1, hp: 10, agility: 2 },
-            { name: "Tunnel Rat", symbol: "ζ", attack: 1, range: 1, hp: 6, agility: 4 }
-          ];
-
-          const enemyType = enemyTypes[Math.floor(Math.random() * enemyTypes.length)];
-          enemies.push({ ...enemyType, x, y });
-        }
-      };
-
-      rooms.forEach(room => {
-        placeEnemiesInRoom(room.x, room.y, room.width, room.height, 2); // 2 enemies per room
-      });
-
-      // Convert "wall" data to actual enemy objects
-      for (let y = 0; y < rows; y++) {
-        for (let x = 0; x < cols; x++) {
-          if (layout[y][x] && layout[y][x].type === "wall") {
-            enemies.push({
-              name: "Static Wall",
-              symbol: "█", // Or some other wall-like symbol
-              attack: 0,
-              range: 0,
-              hp: layout[y][x].hp,
-              agility: 0,
-              x,
-              y,
-              isWall: true // Flag to identify as a wall
-            });
-          }
-        }
-      }
-
-      return enemies;
-    },
-      levelLayoutGenerator: (rows, cols, wallHP) => {
-        return generateMultiLevelLayout(rows, cols, 5, 9, 5, wallHP, 3);
-      }
+    wallHP: 50,
+    enemies: [
+      { name: "Gratt Imp", symbol: "ȹ", attack: 2, range: 1, hp: 8, agility: 3, x: 3, y: 3 },
+      { name: "Cave Goblin", symbol: "Ͼ", attack: 3, range: 1, hp: 10, agility: 2, x: 5, y: 5 },
+      { name: "Tunnel Rat", symbol: "ζ", attack: 1, range: 1, hp: 6, agility: 4, x: 7, y: 7 },
+      { name: "Gratt Imp", symbol: "ȹ", attack: 2, range: 1, hp: 8, agility: 3, x: 9, y: 9 },
+      { name: "Cave Goblin", symbol: "Ͼ", attack: 3, range: 1, hp: 10, agility: 2, x: 11, y: 11 },
+      { name: "Tunnel Rat", symbol: "ζ", attack: 1, range: 1, hp: 6, agility: 4, x: 13, y: 13 }
+    ],
+    levelLayout: [
+      "█████████████████████",
+      "█                   █",
+      "█   █████████████   █",
+      "█   █           █   █",
+      "█   █   █████   █   █",
+      "█   █   █   █   █   █",
+      "█   █   █   █   █   █",
+      "█   █   █   █   █   █",
+      "█   █   █   █   █   █",
+      "█   █   █   █   █   █",
+      "█   █   █   █   █   █",
+      "█   █   █   █   █   █",
+      "█   █   █   █   █   █",
+      "█   █   █   █   █   █",
+      "█   █   █   █   █   █",
+      "█   █   █   █   █   █",
+      "█   █   █   █   █   █",
+      "█   █   █   █   █   █",
+      "█   █   █   █   █   █",
+      "█   █   █   █   █   █",
+      "█   █   █   █   █   █",
+      "█   █   █   █   █   █",
+      "█   █   █   █   █   █",
+      "█                   █",
+      "█████████████████████"
+    ]
   },
   {
     level: 99,
