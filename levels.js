@@ -196,38 +196,55 @@ export const levelSettings = [
     rows: 15,
     cols: 15,
     wallHP: 100,
-    enemies: [
-      {
-        name: "Shadow Duelist",
-        symbol: "Ξ",
-        attack: 5,
-        range: 1,
-        hp: 25,
-        agility: 3,
-        x: 10,
-        y: 10,
-        dialogue: [
-          "We are reflections of your inner struggles...",
-          "The wall you seek to break... is it truly stone?",
-          "Some barriers exist in the mind alone."
-        ]
-      },
-      {
-        name: "Spectral Archer",
-        symbol: "Λ",
-        attack: 4,
-        range: 3,
-        hp: 15,
-        agility: 2,
-        x: 8,
-        y: 2,
-        dialogue: [
-          "Our arrows pierce both flesh and illusion.",
-          "Beyond this wall lies a truth you may not be ready to face.",
-          "What drives you to break through? Glory? Knowledge? Or something deeper?"
-        ]
+    generateEnemies: true,
+    enemyGenerator: (rows, cols) => {
+      const enemies = [];
+      // Define enemy types for a denser, more complex chessboard formation
+      const enemyTypes = [
+        {
+          name: "Chess Pawn",
+          symbol: "♙",
+          attack: 2,
+          range: 1,
+          hp: 10,
+          agility: 2,
+          dialogue: ["Pawn advances with silent determination."]
+        },
+        {
+          name: "Chess Knight",
+          symbol: "♘",
+          attack: 4,
+          range: 2,
+          hp: 15,
+          agility: 3,
+          dialogue: ["Knight leaps into battle with tactical prowess."]
+        },
+        {
+          name: "Chess Bishop",
+          symbol: "♗",
+          attack: 3,
+          range: 3,
+          hp: 12,
+          agility: 2,
+          dialogue: ["Bishop glides, striking from afar with precision."]
+        }
+      ];
+      // Increase density by using the bottom three rows for a formation
+      const formationRows = 3;
+      const startRow = rows - formationRows;
+      for (let r = startRow; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          // Choose enemy type based on a cycling pattern to add variety
+          const enemyType = enemyTypes[(r + c) % enemyTypes.length];
+          enemies.push({
+            ...enemyType,
+            x: c,
+            y: r
+          });
+        }
       }
-    ]
+      return enemies;
+    }
   },
   {
     level: 100,
@@ -338,7 +355,7 @@ export const levelSettings = [
               "Your strength returns, but the wall endures.",
               "The Gratt remembers those who persist."
             ],
-			nonViolent: true,
+            nonViolent: true,
           },
           {
             name: "Gratt Keeper",
@@ -354,7 +371,7 @@ export const levelSettings = [
               "Each strike weakens its eternal vigil.",
               "Wisdom may succeed where force fails."
             ],
-			nonViolent: true,
+            nonViolent: true,
           },
           {
             name: "Catalyst",
