@@ -181,7 +181,8 @@ export const levelSettings = [
       { name: "Tunnel Rat", symbol: "ζ", attack: 1, range: 1, hp: 6, agility: 4, x: 7, y: 7 },
       { name: "Gratt Imp", symbol: "ȹ", attack: 2, range: 1, hp: 8, agility: 3, x: 9, y: 9 },
       { name: "Cave Goblin", symbol: "Ͼ", attack: 3, range: 1, hp: 10, agility: 2, x: 11, y: 11 },
-      { name: "Tunnel Rat", symbol: "ζ", attack: 1, range: 1, hp: 6, agility: 4, x: 13, y: 13 }
+      { name: "Tunnel Rat", symbol: "ζ", attack: 1, range: 1, hp: 6, agility: 4, x: 13, y: 13 },
+      { name: "Static Wall", symbol: "█", attack: 0, range: 0, hp: 50, agility: 0, x: 0, y: 0 }
     ],
     levelLayout: [
       "█████████████████████",
