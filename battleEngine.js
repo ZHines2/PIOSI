@@ -9,6 +9,10 @@
  * Mellitron's swarm deals turn-based damage to any enemy in an adjacent tile.
  * The damage dealt is equal to Mellitron's current swarm stat.
  *
+ * Updated: Enemy dialogue is now triggered during their turn.
+ * When an enemy takes their turn, if they have dialogue defined, a random dialogue
+ * line will be logged.
+ *
  * For detailed guidelines on creating new levels, refer to the Level Creation Rubric in docs/level-creation.md.
  * 
  * Overview of Level Creation:
@@ -362,10 +366,17 @@ export class BattleEngine {
   enemyTurn() {
     if (this.transitioningLevel) return;
     this.enemies.forEach(enemy => {
+      // Move enemy based on its agility.
       for (let moves = 0; moves < enemy.agility; moves++) {
         this.moveEnemy(enemy);
       }
+      // Enemy attacks adjacent heroes.
       this.enemyAttackAdjacent(enemy);
+      // Trigger enemy dialogue if defined.
+      if (Array.isArray(enemy.dialogue) && enemy.dialogue.length > 0) {
+        const randomIndex = Math.floor(Math.random() * enemy.dialogue.length);
+        this.logCallback(`${enemy.name} says: "${enemy.dialogue[randomIndex]}"`);
+      }
     });
     this.logCallback('Enemy turn completed.');
   }
