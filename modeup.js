@@ -6,12 +6,12 @@
  *  - getModeUpBuff: Computes the buff values based on the selected hero and level.
  *  - applyModeUp: Applies the computed buff values to the entire party and logs a message.
  *
- * Updated to include new heroes and their unique stats, such as Mellitron's swarm ability.
+ * Updated to define explicit modeup logic for all heroes, including Yeetrian and Mellitron.
  */
 
 export function getModeUpBuff(chosenHero, level) {
   const buffIncrement = level;
-  // Check for specific hero names before generic checks.
+  // Define specific buffs for each hero
   if (chosenHero.name === "Knight") {
     // Knight gets increased attack and HP.
     return { attack: 1 * buffIncrement, hp: 2 * buffIncrement };
@@ -34,7 +34,7 @@ export function getModeUpBuff(chosenHero, level) {
     // Cleric's healing power increases.
     return { heal: 2 * buffIncrement };
   } else if (chosenHero.name === "Sycophant") {
-    // For Sycophant, all stats including a special "ghis" stat increase.
+    // Sycophant gets increases in all stats including a special "ghis" stat.
     return {
       attack: 1 * buffIncrement,
       hp: 1 * buffIncrement,
@@ -45,12 +45,12 @@ export function getModeUpBuff(chosenHero, level) {
       heal: 1 * buffIncrement,
       ghis: 1 * buffIncrement,
     };
-  } else if (chosenHero.swarm !== undefined) {
-    // Heroes with the swarm ability (like Mellitron) get an increase in swarm.
-    return { swarm: 1 * buffIncrement };
-  } else if (chosenHero.yeet !== undefined) {
-    // Heroes with the knockback (yeet) ability get an increase in yeet.
+  } else if (chosenHero.name === "Yeetrian") {
+    // Yeetrian's knockback ability increases.
     return { yeet: 1 * buffIncrement };
+  } else if (chosenHero.name === "Mellitron") {
+    // Mellitron's unique swarm ability increases.
+    return { swarm: 1 * buffIncrement };
   } else if (chosenHero.heal !== undefined) {
     // Generic heroes with a heal property get a minor heal increase.
     return { heal: 1 * buffIncrement };
@@ -81,11 +81,11 @@ export function applyModeUp(chosenHero, level, party, logCallback) {
     ? `${chosenHero.name} empowers the party with ${messageParts.join(", ")}!`
     : `${chosenHero.name} tries to mode up but nothing happens...`;
 
-  // Iterate over each hero in the party and apply the buffs.
+  // Apply the buffs to each hero in the party.
   party.forEach(hero => {
     for (let stat in buff) {
       if (stat === "hp") {
-        // Increase HP only if the hero is alive (i.e., has non-zero HP).
+        // Increase HP only if the hero is alive.
         if (hero.hp > 0) {
           hero.hp += buff[stat];
         }
