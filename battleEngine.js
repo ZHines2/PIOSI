@@ -8,6 +8,13 @@
  * Additionally, we've integrated Mellitron's swarm ability.
  * Mellitron's swarm deals turn-based damage to any enemy in an adjacent tile.
  * The damage dealt is equal to Mellitron's current swarm stat.
+ *
+ * For detailed guidelines on creating new levels, refer to the Level Creation Rubric in docs/level-creation.md.
+ * 
+ * Overview of Level Creation:
+ * - Each level is defined by properties like `level`, `title`, `rows`, `cols`, `wallHP`, and `enemies`.
+ * - Levels can use an `enemyGenerator` function to dynamically generate enemies.
+ * - Special properties like `generateEnemies`, `waveNumber`, and `restPhase` can be used for advanced level configurations.
  */
 
 export class BattleEngine {
