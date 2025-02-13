@@ -3,6 +3,15 @@
  *
  * Tutorial:
  * This module defines game level configurations in a scalable and maintainable way.
+ *
+ * For detailed guidelines on creating new levels, refer to the Level Creation Rubric in docs/level-creation.md.
+ * 
+ * Overview of Level Creation:
+ * - Each level is defined by properties like `level`, `title`, `rows`, `cols`, `wallHP`, and `enemies`.
+ * - Levels can use an `enemyGenerator` function to dynamically generate enemies.
+ * - Special properties like `generateEnemies`, `waveNumber`, and `restPhase` can be used for advanced level configurations.
+ * - Levels can include multiple floors or levels within the same grid.
+ * - Stairs or ladders can be used to connect different levels, allowing players to navigate vertically.
  */
 
 // Helper function to generate a random integer within a range
@@ -56,6 +65,35 @@ function generateLevelLayout(rows, cols, minRoomSize, maxRoomSize, numRooms, wal
     }
 
     return { layout, rooms };
+}
+
+// Function to generate a multi-level layout with stairs or ladders
+function generateMultiLevelLayout(rows, cols, minRoomSize, maxRoomSize, numRooms, wallHP, numFloors) {
+  const floors = [];
+  for (let i = 0; i < numFloors; i++) {
+    const floorLayout = generateLevelLayout(rows, cols, minRoomSize, maxRoomSize, numRooms, wallHP);
+    floors.push(floorLayout);
+  }
+
+  // Add stairs or ladders to connect floors
+  for (let i = 0; i < numFloors - 1; i++) {
+    const currentFloor = floors[i];
+    const nextFloor = floors[i + 1];
+
+    // Place stairs in a random room on the current floor
+    const currentRoom = currentFloor.rooms[getRandomInt(0, currentFloor.rooms.length - 1)];
+    const stairX = currentRoom.x + getRandomInt(1, currentRoom.width - 2);
+    const stairY = currentRoom.y + getRandomInt(1, currentRoom.height - 2);
+    currentFloor.layout[stairY][stairX] = { type: "stairs", toFloor: i + 1 };
+
+    // Place corresponding stairs in a random room on the next floor
+    const nextRoom = nextFloor.rooms[getRandomInt(0, nextFloor.rooms.length - 1)];
+    const nextStairX = nextRoom.x + getRandomInt(1, nextRoom.width - 2);
+    const nextStairY = nextRoom.y + getRandomInt(1, nextRoom.height - 2);
+    nextFloor.layout[nextStairY][nextStairX] = { type: "stairs", toFloor: i };
+  }
+
+  return floors;
 }
 
 export const levelSettings = [
@@ -133,15 +171,15 @@ export const levelSettings = [
   },
   {
     level: 5,
-    title: "Level ߁‎: Gratt ߁‎",
+    title: "Level 5: Gratt ߁‎",
     rows: 25,
     cols: 25,
     wallHP: 500,
     generateEnemies: true,
     enemyGenerator: (rows, cols) => {
-      const levelData = generateLevelLayout(rows, cols, 5, 9, 5, 500);
-      const layout = levelData.layout;
-      const rooms = levelData.rooms;
+      const levelData = generateMultiLevelLayout(rows, cols, 5, 9, 5, 500, 3);
+      const layout = levelData[0].layout; // Use the first floor layout for simplicity
+      const rooms = levelData[0].rooms;
 
       const enemies = [];
 
@@ -188,7 +226,7 @@ export const levelSettings = [
       return enemies;
     },
       levelLayoutGenerator: (rows, cols, wallHP) => {
-        return generateLevelLayout(rows, cols, 5, 9, 5, wallHP);
+        return generateMultiLevelLayout(rows, cols, 5, 9, 5, wallHP, 3);
       }
   },
   {
