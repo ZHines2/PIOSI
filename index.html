@@ -145,13 +145,14 @@
           burn: hero.burn !== undefined ? hero.burn : 0,
           sluj: hero.sluj !== undefined ? hero.sluj : 0,
           ghis: hero.ghis !== undefined ? hero.ghis : 0,
-          yeet: hero.yeet !== undefined ? hero.yeet : 0
+          yeet: hero.yeet !== undefined ? hero.yeet : 0,
+          swarm: hero.swarm !== undefined ? hero.swarm : 0
         };
       }
 
       /**
        * Update the hero display in the party selection screen.
-       * All stats are displayed, including the yeet stat.
+       * All stats are displayed, including the yeet and swarm stats.
        */
       async function updateHeroDisplay() {
         const hero = allHeroes[heroIndex];
@@ -176,7 +177,7 @@
           const reaction = await getGriotReaction();
           display += `<p>${reaction}</p>`;
         }
-        // Get complete stats for the hero, including yeet
+        // Get complete stats for the hero, including yeet and swarm
         const stats = getCompleteStats(hero);
         display += `<p>
           Attack: ${stats.attack} | 
@@ -187,7 +188,8 @@
           Burn: ${stats.burn} | 
           Slüj: ${stats.sluj} | 
           Ghïs: ${stats.ghis} | 
-          Yeet: ${stats.yeet}
+          Yeet: ${stats.yeet} | 
+          Swarm: ${stats.swarm}
         </p>`;
         // Indicate selection status
         display += `<p>${
@@ -248,7 +250,7 @@
 
       /**
        * Update the Mode Up display for the currently selected hero.
-       * The display now shows the yeet stat along with a buff preview.
+       * The display now shows the yeet and swarm stats along with a buff preview.
        */
       function updateModeUpHeroDisplay() {
         const hero = livingHeroes[modeUpIndex];
@@ -256,7 +258,7 @@
         const buff = getModeUpBuff(hero, level);
         const lines = [];
         lines.push(`<p class="highlight">${hero.name} (${hero.symbol})</p>`);
-        // Display current stats with buff preview for each stat, including yeet
+        // Display current stats with buff preview for each stat, including yeet and swarm
         const stats = getCompleteStats(hero);
         lines.push(
           `<p>HP: ${stats.hp} ${
@@ -301,6 +303,11 @@
         lines.push(
           `<p>Yeet: ${stats.yeet} ${
             buff.yeet ? `<span class="stat-up">+${buff.yeet}</span>` : ""
+          }</p>`
+        );
+        lines.push(
+          `<p>Swarm: ${stats.swarm} ${
+            buff.swarm ? `<span class="stat-up">+${buff.swarm}</span>` : ""
           }</p>`
         );
         document.getElementById("mode-up-hero-display").innerHTML =
