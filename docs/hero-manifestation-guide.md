@@ -43,7 +43,8 @@ Here are some examples of hero configurations:
   attack: 4,
   range: 1,
   agility: 4,
-  hp: 18
+  hp: 18,
+  description: "The Knight stands at the forefront, defending the realm with unwavering courage. Known for his unbreakable defense, he once held the line against an entire army, his shield never faltering."
 }
 ```
 
@@ -57,7 +58,8 @@ Here are some examples of hero configurations:
   range: 1,
   agility: 3,
   hp: 12,
-  heal: 4 // Healing power: used when interacting with a friendly hero.
+  heal: 4, // Healing power: used when interacting with a friendly hero.
+  description: "The Cleric's healing powers are legendary. She has saved countless lives on the battlefield, her touch mending wounds and restoring hope."
 }
 ```
 
@@ -71,7 +73,23 @@ Here are some examples of hero configurations:
   range: 2,
   agility: 4,
   hp: 14,
-  yeet: 1 // Knockback ability.
+  yeet: 1, // Knockback ability.
+  description: "Yeetrian's mighty 'yeet' ability can knock back enemies with a single blow, sending them crashing into walls and obstacles. His strength is unmatched, and his enemies fear his powerful strikes."
+}
+```
+
+### Example 4: Mellitron
+
+```javascript
+{
+  name: "Mellitron",
+  symbol: "丰",
+  attack: 1,
+  range: 3,
+  agility: 5,
+  hp: 18,
+  swarm: 2, // Swarm ability.
+  description: "Mellitron commands a swarm of bees that deal turn-based damage to any enemy in an adjacent tile. His bees sting with relentless fury, and his enemies are left in agony."
 }
 ```
 
