@@ -372,10 +372,10 @@
        * Called when a level is completed and determines the next action.
        */
       function onLevelComplete() {
-        if (level >= 1 && level <= 3) {
+        if (level >= 1 && level <= 4) {
           logMessage(`Level ${level} complete!`);
           showModeUpWindow();
-        } else if (level === 4) {
+        } else if (level === 5) {
           logMessage("The normal path is complete!");
           showScreen("victory");
         } else if (level === 99) {
