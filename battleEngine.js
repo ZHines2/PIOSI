@@ -74,6 +74,12 @@ export class BattleEngine {
     for (let i = 0; i < this.cols; i++) {
       field[this.rows - 1][i] = 'ᚙ';
     }
+    // Place static wall enemies using Unicode block symbol '█'.
+    this.enemies.forEach(enemy => {
+      if (enemy.symbol === '█') {
+        field[enemy.y][enemy.x] = enemy.symbol;
+      }
+    });
     return field;
   }
 
@@ -216,7 +222,7 @@ export class BattleEngine {
         return;
       }
       // Check for the wall.
-      if (this.battlefield[targetY][targetX] === 'ᚙ') {
+      if (this.battlefield[targetY][targetX] === 'ᚙ' || this.battlefield[targetY][targetX] === '█') {
         this.wallHP -= unit.attack;
         this.logCallback(
           `${unit.name} attacks the wall for ${unit.attack} damage! (Wall HP: ${this.wallHP})`
@@ -256,7 +262,7 @@ export class BattleEngine {
         pathIsBlocked = true;
         break;
       }
-      if (this.battlefield[testY][testX] === 'ᚙ') {
+      if (this.battlefield[testY][testX] === 'ᚙ' || this.battlefield[testY][testX] === '█') {
         // Collision with the wall.
         pathIsBlocked = true;
         break;
