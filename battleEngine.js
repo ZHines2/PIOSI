@@ -1,5 +1,3 @@
-import { Entity, Enemy, Placeable } from './entities.js';
-
 /**
  * battleEngine.js
  *
@@ -67,7 +65,7 @@ export class BattleEngine {
     );
     // Place heroes on the top row.
     this.party.forEach((hero, index) => {
-      hero.x = Math.floor(this.cols / 2) - Math.floor(this.party.length / 2) + index;
+      hero.x = Math.min(index, this.cols - 1);
       hero.y = 0;
       field[hero.y][hero.x] = hero.symbol;
     });
@@ -238,21 +236,6 @@ export class BattleEngine {
           this.handleWallCollapse();
           return;
         }
-        await this.shortPause();
-        this.nextTurn();
-        return;
-      }
-
-      // Check for a mushroom.
-      if (this.battlefield[targetY][targetX] === 'ඉ') {
-        const mushroom = this.enemies.find(e => e.x === targetX && e.y === targetY && e.symbol === 'ඉ');
-        if (mushroom) {
-          mushroom.collect(unit);
-          this.battlefield[targetY][targetX] = '.';
-          this.enemies = this.enemies.filter(e => e !== mushroom);
-          this.logCallback(`${unit.name} collected a mushroom!`);
-        }
-        this.awaitingAttackDirection = false;
         await this.shortPause();
         this.nextTurn();
         return;
