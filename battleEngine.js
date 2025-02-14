@@ -1,22 +1,30 @@
 /**
  * battleEngine.js
  *
- * This version of the battle engine integrates pickup functionality by factoring out
- * pickup logic into a separate module. The engine now supports multiple pickup types,
- * including the vittle and mushroom pickups.
+ * This version includes updated "yeet" logic so that if an enemy is knocked back
+ * (yeeted) into the wall and cannot move past it, they take damage or die as intended.
+ * It also applies damage if they collide with the wall during a yeet attempt.
  *
+ * Additionally, we've integrated Mellitron's swarm ability.
+ * Mellitron's swarm deals turn-based damage to any enemy in an adjacent tile.
+ * The damage dealt is equal to Mellitron's current swarm stat.
+ *
+ * Updated: Enemy dialogue is now triggered during their turn.
+ * When an enemy takes their turn, if they have dialogue defined, a random dialogue
+ * line will be logged.
+ *
+ * For detailed guidelines on creating new levels, refer to the Level Creation Rubric in docs/level-creation.md.
+ * 
  * Overview of Level Creation:
  * - Each level is defined by properties like `level`, `title`, `rows`, `cols`, `wallHP`, and `enemies`.
- * - Levels may include pickups as an array of Pickup objects.
+ * - Levels can use an `enemyGenerator` function to dynamically generate enemies.
+ * - Special properties like `generateEnemies`, `waveNumber`, and `restPhase` can be used for advanced level configurations.
  */
-
-import { Vittle, MushroomPickup } from './pickup.js';
 
 export class BattleEngine {
   constructor(
     party,
     enemies,
-    pickups, // An array of Pickup objects.
     fieldRows,
     fieldCols,
     wallHP,
@@ -25,9 +33,8 @@ export class BattleEngine {
     onGameOver
   ) {
     // Filter out any heroes with 0 HP.
-    this.party = party.filter((hero) => hero.hp > 0);
+    this.party = party.filter(hero => hero.hp > 0);
     this.enemies = enemies;
-    this.pickups = pickups || []; // Initialize pickups if provided.
     this.rows = fieldRows;
     this.cols = fieldCols;
     this.wallHP = wallHP;
@@ -42,10 +49,10 @@ export class BattleEngine {
     this.awaitingAttackDirection = false;
     this.transitioningLevel = false;
 
-    this.party.forEach((hero) => {
+    this.party.forEach(hero => {
       hero.statusEffects = hero.statusEffects || {};
     });
-    this.enemies.forEach((enemy) => {
+    this.enemies.forEach(enemy => {
       enemy.statusEffects = {};
     });
 
@@ -63,20 +70,16 @@ export class BattleEngine {
       field[hero.y][hero.x] = hero.symbol;
     });
     // Place enemies.
-    this.enemies.forEach((enemy) => {
+    this.enemies.forEach(enemy => {
       enemy.statusEffects = {};
       field[enemy.y][enemy.x] = enemy.symbol;
-    });
-    // Place pickups.
-    this.pickups.forEach((pickup) => {
-      field[pickup.y][pickup.x] = pickup.symbol;
     });
     // Create the wall along the bottom row.
     for (let i = 0; i < this.cols; i++) {
       field[this.rows - 1][i] = 'ᚙ';
     }
     // Place static wall enemies using Unicode block symbol '█'.
-    this.enemies.forEach((enemy) => {
+    this.enemies.forEach(enemy => {
       if (enemy.symbol === '█') {
         field[enemy.y][enemy.x] = enemy.symbol;
       }
@@ -92,19 +95,12 @@ export class BattleEngine {
         const cellContent = this.battlefield[y][x];
         let cellClass = '';
 
-        // Check for enemies.
+        // Dynamically check if the cell content matches any enemy symbol
         const isEnemy = this.enemies.some(
-          (enemy) => enemy.symbol === cellContent
-        );
-        // Check for pickups.
-        const isPickup = this.pickups.some(
-          (pickup) => pickup.symbol === cellContent
+          enemy => enemy.symbol === cellContent
         );
         if (isEnemy) {
           cellClass += ' enemy';
-        }
-        if (isPickup) {
-          cellClass += ' pickup';
         }
 
         if (
@@ -112,7 +108,9 @@ export class BattleEngine {
           this.party[this.currentUnit].x === x &&
           this.party[this.currentUnit].y === y
         ) {
-          cellClass += this.awaitingAttackDirection ? ' attack-mode' : ' active';
+          cellClass += this.awaitingAttackDirection
+            ? ' attack-mode'
+            : ' active';
         }
         html += `<div class="cell ${cellClass}">${cellContent}</div>`;
       }
@@ -132,24 +130,9 @@ export class BattleEngine {
     const newX = unit.x + dx;
     const newY = unit.y + dy;
     if (!this.isValidMove(newX, newY)) return;
-
-    // Clear previous cell.
     this.battlefield[unit.y][unit.x] = '.';
     unit.x = newX;
     unit.y = newY;
-
-    // Check if the hero lands on a pickup.
-    const pickupIndex = this.pickups.findIndex(
-      (pickup) => pickup.x === newX && pickup.y === newY
-    );
-    if (pickupIndex !== -1) {
-      const pickup = this.pickups[pickupIndex];
-      pickup.applyEffect(unit, this.logCallback);
-      // Remove the pickup from the game.
-      this.pickups.splice(pickupIndex, 1);
-    }
-
-    // Set the new cell.
     this.battlefield[newY][newX] = unit.symbol;
     this.movePoints--;
     if (this.movePoints === 0) {
@@ -163,14 +146,11 @@ export class BattleEngine {
       x < this.cols &&
       y >= 0 &&
       y < this.rows &&
-      (this.battlefield[y][x] === '.' || this.isPickupCell(x, y))
+      this.battlefield[y][x] === '.'
     );
   }
 
-  isPickupCell(x, y) {
-    return this.pickups.some((pickup) => pickup.x === x && pickup.y === y);
-  }
-
+  // Attack (or heal) logic: if an ally is targeted, interpret as healing if the attacker has a heal stat.
   async attackInDirection(dx, dy, unit, recordAttackCallback) {
     if (this.transitioningLevel) return;
     await recordAttackCallback(
@@ -183,7 +163,7 @@ export class BattleEngine {
 
       // Check for an ally (different from the attacker).
       const ally = this.party.find(
-        (h) => h.x === targetX && h.y === targetY && h !== unit
+        h => h.x === targetX && h.y === targetY && h !== unit
       );
       if (ally) {
         if (unit.heal && unit.heal > 0) {
@@ -203,9 +183,7 @@ export class BattleEngine {
       }
 
       // Check for an enemy.
-      const enemy = this.enemies.find(
-        (e) => e.x === targetX && e.y === targetY
-      );
+      const enemy = this.enemies.find(e => e.x === targetX && e.y === targetY);
       if (enemy) {
         enemy.hp -= unit.attack;
         this.logCallback(
@@ -240,7 +218,7 @@ export class BattleEngine {
         if (enemy.hp <= 0) {
           this.logCallback(`${enemy.name} is defeated!`);
           this.battlefield[targetY][targetX] = '.';
-          this.enemies = this.enemies.filter((e) => e !== enemy);
+          this.enemies = this.enemies.filter(e => e !== enemy);
         }
         this.awaitingAttackDirection = false;
         await this.shortPause();
@@ -248,10 +226,7 @@ export class BattleEngine {
         return;
       }
       // Check for the wall.
-      if (
-        this.battlefield[targetY][targetX] === 'ᚙ' ||
-        this.battlefield[targetY][targetX] === '█'
-      ) {
+      if (this.battlefield[targetY][targetX] === 'ᚙ' || this.battlefield[targetY][targetX] === '█') {
         this.wallHP -= unit.attack;
         this.logCallback(
           `${unit.name} attacks the wall for ${unit.attack} damage! (Wall HP: ${this.wallHP})`
@@ -272,6 +247,12 @@ export class BattleEngine {
     this.nextTurn();
   }
 
+  /**
+   * Updated method to apply knockback to an enemy.
+   * - If collision with the wall (ᚙ) or any obstacle happens,
+   *   the enemy takes extra damage or dies as intended.
+   * - If the enemy cannot move past the obstacle, they take the hero's attack damage a second time.
+   */
   applyKnockback(enemy, dx, dy, knockbackPower, yeetDamage) {
     let newX = enemy.x;
     let newY = enemy.y;
@@ -281,25 +262,26 @@ export class BattleEngine {
       const testX = enemy.x + dx * i;
       const testY = enemy.y + dy * i;
       if (!this.isWithinBounds(testX, testY)) {
-        // Out of bounds indicates a collision with the map edge.
+        // Out of bounds means a collision with the map edge.
         pathIsBlocked = true;
         break;
       }
-      if (
-        this.battlefield[testY][testX] === 'ᚙ' ||
-        this.battlefield[testY][testX] === '█'
-      ) {
+      if (this.battlefield[testY][testX] === 'ᚙ' || this.battlefield[testY][testX] === '█') {
+        // Collision with the wall.
         pathIsBlocked = true;
         break;
       }
       if (this.battlefield[testY][testX] !== '.') {
+        // Some other obstacle.
         pathIsBlocked = true;
         break;
       }
+      // If clear, update newX and newY.
       newX = testX;
       newY = testY;
     }
 
+    // Move enemy if path is clear.
     if (!pathIsBlocked) {
       this.battlefield[enemy.y][enemy.x] = '.';
       enemy.x = newX;
@@ -309,6 +291,7 @@ export class BattleEngine {
         `${enemy.name} is knocked back to (${newX}, ${newY}) by yeet!`
       );
     } else {
+      // If knockback is blocked, apply collision damage.
       this.logCallback(
         `${enemy.name} collides with the wall or an obstacle during yeet!`
       );
@@ -319,7 +302,7 @@ export class BattleEngine {
       if (enemy.hp <= 0) {
         this.logCallback(`${enemy.name} is defeated by the collision!`);
         this.battlefield[enemy.y][enemy.x] = '.';
-        this.enemies = this.enemies.filter((e) => e !== enemy);
+        this.enemies = this.enemies.filter(e => e !== enemy);
       }
     }
   }
@@ -338,6 +321,11 @@ export class BattleEngine {
     }, 1500);
   }
 
+  /**
+   * Applies Mellitron's swarm damage.
+   * For each hero with a swarm ability (e.g., Mellitron), any enemy occupying
+   * an adjacent cell takes damage equal to the hero's current swarm stat.
+   */
   applySwarmDamage() {
     const adjacentOffsets = [
       { x: -1, y: 0 },
@@ -347,18 +335,16 @@ export class BattleEngine {
       { x: -1, y: -1 },
       { x: -1, y: 1 },
       { x: 1, y: -1 },
-      { x: 1, y: 1 },
+      { x: 1, y: 1 }
     ];
 
-    this.party.forEach((hero) => {
+    this.party.forEach(hero => {
       if (hero.swarm && typeof hero.swarm === 'number') {
-        adjacentOffsets.forEach((offset) => {
+        adjacentOffsets.forEach(offset => {
           const targetX = hero.x + offset.x;
           const targetY = hero.y + offset.y;
           if (this.isWithinBounds(targetX, targetY)) {
-            const enemy = this.enemies.find(
-              (e) => e.x === targetX && e.y === targetY
-            );
+            const enemy = this.enemies.find(e => e.x === targetX && e.y === targetY);
             if (enemy) {
               const damage = hero.swarm;
               enemy.hp -= damage;
@@ -368,7 +354,7 @@ export class BattleEngine {
               if (enemy.hp <= 0) {
                 this.logCallback(`${enemy.name} is defeated by swarm damage!`);
                 this.battlefield[targetY][targetX] = '.';
-                this.enemies = this.enemies.filter((e) => e !== enemy);
+                this.enemies = this.enemies.filter(e => e !== enemy);
               }
             }
           }
@@ -379,11 +365,14 @@ export class BattleEngine {
 
   enemyTurn() {
     if (this.transitioningLevel) return;
-    this.enemies.forEach((enemy) => {
+    this.enemies.forEach(enemy => {
+      // Move enemy based on its agility.
       for (let moves = 0; moves < enemy.agility; moves++) {
         this.moveEnemy(enemy);
       }
+      // Enemy attacks adjacent heroes.
       this.enemyAttackAdjacent(enemy);
+      // Trigger enemy dialogue if defined.
       if (Array.isArray(enemy.dialogue) && enemy.dialogue.length > 0) {
         const randomIndex = Math.floor(Math.random() * enemy.dialogue.length);
         this.logCallback(`${enemy.name} says: "${enemy.dialogue[randomIndex]}"`);
@@ -408,7 +397,10 @@ export class BattleEngine {
       if (stepX !== 0 && this.canMove(enemy.x, enemy.y + Math.sign(dy))) {
         stepY = dy > 0 ? 1 : -1;
         stepX = 0;
-      } else if (stepY !== 0 && this.canMove(enemy.x + Math.sign(dx), enemy.y)) {
+      } else if (
+        stepY !== 0 &&
+        this.canMove(enemy.x + Math.sign(dx), enemy.y)
+      ) {
         stepX = dx > 0 ? 1 : -1;
         stepY = 0;
       }
@@ -449,7 +441,7 @@ export class BattleEngine {
       const tx = enemy.x + dx;
       const ty = enemy.y + dy;
       const targetHero = this.party.find(
-        (hero) => hero.x === tx && hero.y === ty
+        hero => hero.x === tx && hero.y === ty
       );
       if (targetHero) {
         targetHero.hp -= enemy.attack;
@@ -459,7 +451,7 @@ export class BattleEngine {
         if (targetHero.hp <= 0) {
           this.logCallback(`${targetHero.name} is defeated!`);
           this.battlefield[targetHero.y][targetHero.x] = '.';
-          this.party = this.party.filter((h) => h !== targetHero);
+          this.party = this.party.filter(h => h !== targetHero);
           if (this.currentUnit >= this.party.length) {
             this.currentUnit = 0;
           }
@@ -470,18 +462,21 @@ export class BattleEngine {
 
   nextTurn() {
     if (this.transitioningLevel) return;
-
-    // Process status effects.
+    
+    // Process status effects first.
     this.applyStatusEffects();
-    // Apply swarm damage.
+
+    // Apply swarm damage from heroes like Mellitron.
     this.applySwarmDamage();
-    // Check if all heroes have been defeated.
+
+    // If after status effects no heroes remain, the game is over.
     if (this.party.length === 0) {
       this.logCallback('All heroes have been defeated! Game Over.');
       if (typeof this.onGameOver === 'function') this.onGameOver();
       return;
     }
 
+    // Ensure currentUnit is valid, especially if the party size changed.
     if (this.currentUnit >= this.party.length) {
       this.currentUnit = 0;
     }
@@ -504,7 +499,7 @@ export class BattleEngine {
   }
 
   applyStatusEffects() {
-    this.party.forEach((hero) => {
+    this.party.forEach(hero => {
       if (hero.statusEffects.burn && hero.statusEffects.burn.duration > 0) {
         this.logCallback(
           `${hero.name} is burned and takes ${hero.statusEffects.burn.damage} damage!`
@@ -517,9 +512,9 @@ export class BattleEngine {
         }
       }
     });
-    this.party = this.party.filter((hero) => hero.hp > 0);
+    this.party = this.party.filter(hero => hero.hp > 0);
 
-    this.enemies.forEach((enemy) => {
+    this.enemies.forEach(enemy => {
       if (enemy.statusEffects.burn && enemy.statusEffects.burn.duration > 0) {
         this.logCallback(
           `${enemy.name} is burned and takes ${enemy.statusEffects.burn.damage} damage!`
@@ -566,10 +561,10 @@ export class BattleEngine {
         }
       }
     });
-    this.enemies = this.enemies.filter((enemy) => enemy.hp > 0);
+    this.enemies = this.enemies.filter(enemy => enemy.hp > 0);
   }
 
   shortPause() {
-    return new Promise((resolve) => setTimeout(resolve, 300));
+    return new Promise(resolve => setTimeout(resolve, 300));
   }
 }
