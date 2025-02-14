@@ -231,8 +231,8 @@ export const levelSettings = [
       ];
       // Increase density by using the bottom three rows for a formation
       const formationRows = 3;
-      const startRow = rows - formationRows;
-      for (let r = startRow; r < rows; r++) {
+      const startRow = rows - formationRows - 1;
+      for (let r = startRow; r < rows - 1; r++) {
         for (let c = 0; c < cols; c++) {
           // Choose enemy type based on a cycling pattern to add variety
           const enemyType = enemyTypes[(r + c) % enemyTypes.length];
