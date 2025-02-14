@@ -12,6 +12,7 @@ Each level is defined by a set of properties. Here are the key properties you ne
 - `cols`: The number of columns in the level grid.
 - `wallHP`: The health points of the wall that players need to break through.
 - `enemies`: An array of enemy configurations.
+- `placeables`: An array of placeable entity configurations.
 
 ## Enemy Configuration
 
@@ -25,6 +26,16 @@ Each enemy is defined by a set of properties. Here are the key properties you ne
 - `agility`: The agility of the enemy, which determines how many moves they can make per turn.
 - `x`: The x-coordinate of the enemy's starting position.
 - `y`: The y-coordinate of the enemy's starting position.
+
+## Placeable Entity Configuration
+
+Each placeable entity is defined by a set of properties. Here are the key properties you need to define:
+
+- `name`: The name of the placeable entity.
+- `symbol`: The symbol representing the placeable entity on the grid.
+- `x`: The x-coordinate of the placeable entity's starting position.
+- `y`: The y-coordinate of the placeable entity's starting position.
+- `hp`: The health points of the placeable entity (for breakable entities).
 
 ## Dynamic Enemy Generation
 
@@ -131,6 +142,34 @@ Here are some examples of level configurations:
     }
     return enemies;
   }
+}
+```
+
+### Example 4: Level with Placeable Entities
+
+```javascript
+{
+  level: 5,
+  title: "Level 5: Gratt ߁‎",
+  rows: 10,
+  cols: 8,
+  wallHP: 50,
+  enemies: [
+    { name: "Brigand", symbol: "Җ", attack: 3, range: 1, hp: 12, agility: 2, x: 1, y: 4 },
+    { name: "Brigand", symbol: "Җ", attack: 3, range: 1, hp: 12, agility: 2, x: 2, y: 4 },
+    { name: "Buckleman", symbol: "⛨", attack: 1, range: 1, hp: 20, agility: 1, x: 3, y: 4 },
+    { name: "Getter", symbol: "∴", attack: 5, range: 1, hp: 50, agility: 5, x: 4, y: 6 },
+    { name: "Stonch Hogan", symbol: "酉", attack: 7, range: 1, hp: 100, agility: 3, x: 5, y: 6 },
+    { name: "Taker", symbol: "∵", attack: 1, range: 5, hp: 50, agility: 5, x: 6, y: 6 }
+  ],
+  placeables: [
+    { name: "Static Wall", symbol: "█", x: 1, y: 5, hp: 50 },
+    { name: "Static Wall", symbol: "█", x: 2, y: 5, hp: 50 },
+    { name: "Static Wall", symbol: "█", x: 3, y: 5, hp: 50 },
+    { name: "Static Wall", symbol: "█", x: 4, y: 5, hp: 50 },
+    { name: "Static Wall", symbol: "█", x: 5, y: 5, hp: 50 },
+    { name: "Static Wall", symbol: "█", x: 6, y: 5, hp: 50 }
+  ]
 }
 ```
 

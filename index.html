@@ -146,13 +146,14 @@
           sluj: hero.sluj !== undefined ? hero.sluj : 0,
           ghis: hero.ghis !== undefined ? hero.ghis : 0,
           yeet: hero.yeet !== undefined ? hero.yeet : 0,
-          swarm: hero.swarm !== undefined ? hero.swarm : 0
+          swarm: hero.swarm !== undefined ? hero.swarm : 0,
+          spore: hero.spore !== undefined ? hero.spore : 0
         };
       }
 
       /**
        * Update the hero display in the party selection screen.
-       * All stats are displayed, including the yeet and swarm stats.
+       * All stats are displayed, including the yeet, swarm, and spore stats.
        */
       async function updateHeroDisplay() {
         const hero = allHeroes[heroIndex];
@@ -177,7 +178,7 @@
           const reaction = await getGriotReaction();
           display += `<p>${reaction}</p>`;
         }
-        // Get complete stats for the hero, including yeet and swarm
+        // Get complete stats for the hero, including yeet, swarm, and spore
         const stats = getCompleteStats(hero);
         display += `<p>
           Attack: ${stats.attack} | 
@@ -189,7 +190,8 @@
           Slüj: ${stats.sluj} | 
           Ghïs: ${stats.ghis} | 
           Yeet: ${stats.yeet} | 
-          Swarm: ${stats.swarm}
+          Swarm: ${stats.swarm} | 
+          Spore: ${stats.spore}
         </p>`;
         // Indicate selection status
         display += `<p>${
@@ -250,7 +252,7 @@
 
       /**
        * Update the Mode Up display for the currently selected hero.
-       * The display now shows the yeet and swarm stats along with a buff preview.
+       * The display now shows the yeet, swarm, and spore stats along with a buff preview.
        */
       function updateModeUpHeroDisplay() {
         const hero = livingHeroes[modeUpIndex];
@@ -258,7 +260,7 @@
         const buff = getModeUpBuff(hero, level);
         const lines = [];
         lines.push(`<p class="highlight">${hero.name} (${hero.symbol})</p>`);
-        // Display current stats with buff preview for each stat, including yeet and swarm
+        // Display current stats with buff preview for each stat, including yeet, swarm, and spore
         const stats = getCompleteStats(hero);
         lines.push(
           `<p>HP: ${stats.hp} ${
@@ -308,6 +310,11 @@
         lines.push(
           `<p>Swarm: ${stats.swarm} ${
             buff.swarm ? `<span class="stat-up">+${buff.swarm}</span>` : ""
+          }</p>`
+        );
+        lines.push(
+          `<p>Spore: ${stats.spore} ${
+            buff.spore ? `<span class="stat-up">+${buff.spore}</span>` : ""
           }</p>`
         );
         document.getElementById("mode-up-hero-display").innerHTML =

@@ -1,3 +1,5 @@
+import { Mushroom, Vittle } from './entities.js';
+
 /**
  * levels.js
  *
@@ -10,8 +12,6 @@
  * - Each level is defined by properties like `level`, `title`, `rows`, `cols`, `wallHP`, and `enemies`.
  * - Levels can use an `enemyGenerator` function to dynamically generate enemies.
  * - Special properties like `generateEnemies`, `waveNumber`, and `restPhase` can be used for advanced level configurations.
- * - Levels can include multiple floors or levels within the same grid.
- * - Stairs or ladders can be used to connect different levels, allowing players to navigate vertically.
  */
 
 // Helper function to generate a random integer within a range
@@ -67,35 +67,6 @@ function generateLevelLayout(rows, cols, minRoomSize, maxRoomSize, numRooms, wal
     return { layout, rooms };
 }
 
-// Function to generate a multi-level layout with stairs or ladders
-function generateMultiLevelLayout(rows, cols, minRoomSize, maxRoomSize, numRooms, wallHP, numFloors) {
-  const floors = [];
-  for (let i = 0; i < numFloors; i++) {
-    const floorLayout = generateLevelLayout(rows, cols, minRoomSize, maxRoomSize, numRooms, wallHP);
-    floors.push(floorLayout);
-  }
-
-  // Add stairs or ladders to connect floors
-  for (let i = 0; i < numFloors - 1; i++) {
-    const currentFloor = floors[i];
-    const nextFloor = floors[i + 1];
-
-    // Place stairs in a random room on the current floor
-    const currentRoom = currentFloor.rooms[getRandomInt(0, currentFloor.rooms.length - 1)];
-    const stairX = currentRoom.x + getRandomInt(1, currentRoom.width - 2);
-    const stairY = currentRoom.y + getRandomInt(1, currentRoom.height - 2);
-    currentFloor.layout[stairY][stairX] = { type: "stairs", toFloor: i + 1 };
-
-    // Place corresponding stairs in a random room on the next floor
-    const nextRoom = nextFloor.rooms[getRandomInt(0, nextFloor.rooms.length - 1)];
-    const nextStairX = nextRoom.x + getRandomInt(1, nextRoom.width - 2);
-    const nextStairY = nextRoom.y + getRandomInt(1, nextRoom.height - 2);
-    nextFloor.layout[nextStairY][nextStairX] = { type: "stairs", toFloor: i };
-  }
-
-  return floors;
-}
-
 export const levelSettings = [
   {
     level: 1,
@@ -103,7 +74,13 @@ export const levelSettings = [
     rows: 5,
     cols: 10,
     wallHP: 20,
-    enemies: []
+    enemies: [],
+    placeables: [
+      new Mushroom("Mushroom", "ඉ", 2, 2, "random"),
+      new Mushroom("Mushroom", "ඉ", 4, 2, "random"),
+      new Mushroom("Mushroom", "ඉ", 6, 2, "random"),
+      new Vittle("Vittle", "𓎤", 1, 1, 10)
+    ]
   },
   {
     level: 2,
@@ -176,18 +153,20 @@ export const levelSettings = [
     cols: 8,
     wallHP: 50,
     enemies: [
-      { name: "Static Wall", symbol: "█", attack: 0, range: 0, hp: 50, agility: 0, x: 1, y: 5 },
-      { name: "Static Wall", symbol: "█", attack: 0, range: 0, hp: 50, agility: 0, x: 2, y: 5 },
-      { name: "Static Wall", symbol: "█", attack: 0, range: 0, hp: 50, agility: 0, x: 3, y: 5 },
-      { name: "Static Wall", symbol: "█", attack: 0, range: 0, hp: 50, agility: 0, x: 4, y: 5 },
-      { name: "Static Wall", symbol: "█", attack: 0, range: 0, hp: 50, agility: 0, x: 5, y: 5 },
-      { name: "Static Wall", symbol: "█", attack: 0, range: 0, hp: 50, agility: 0, x: 6, y: 5 },
       { name: "Brigand", symbol: "Җ", attack: 3, range: 1, hp: 12, agility: 2, x: 1, y: 4 },
       { name: "Brigand", symbol: "Җ", attack: 3, range: 1, hp: 12, agility: 2, x: 2, y: 4 },
       { name: "Buckleman", symbol: "⛨", attack: 1, range: 1, hp: 20, agility: 1, x: 3, y: 4 },
       { name: "Getter", symbol: "∴", attack: 5, range: 1, hp: 50, agility: 5, x: 4, y: 6 },
       { name: "Stonch Hogan", symbol: "酉", attack: 7, range: 1, hp: 100, agility: 3, x: 5, y: 6 },
       { name: "Taker", symbol: "∵", attack: 1, range: 5, hp: 50, agility: 5, x: 6, y: 6 }
+    ],
+    placeables: [
+      { name: "Static Wall", symbol: "█", x: 1, y: 5, hp: 50 },
+      { name: "Static Wall", symbol: "█", x: 2, y: 5, hp: 50 },
+      { name: "Static Wall", symbol: "█", x: 3, y: 5, hp: 50 },
+      { name: "Static Wall", symbol: "█", x: 4, y: 5, hp: 50 },
+      { name: "Static Wall", symbol: "█", x: 5, y: 5, hp: 50 },
+      { name: "Static Wall", symbol: "█", x: 6, y: 5, hp: 50 }
     ]
   },
   {
@@ -519,6 +498,7 @@ export function getLevel(levelNumber) {
     wallHP: level.wallHP,
     title: level.title,
     enemies,
+    placeables: level.placeables || [],
     onWaveComplete: level.onWaveComplete,
     getWaveStats: level.getWaveStats
   };
