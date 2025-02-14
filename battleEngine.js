@@ -21,29 +21,25 @@
  * - Special properties like `generateEnemies`, `waveNumber`, and `restPhase` can be used for advanced level configurations.
  */
 
-import { getLevel } from './levels.js'; // new import
-
 export class BattleEngine {
-  // Updated constructor: now accepts party, levelNumber, logCallback, onLevelComplete, onGameOver
   constructor(
     party,
-    levelNumber, // new parameter to load level
+    enemies,
+    fieldRows,
+    fieldCols,
+    wallHP,
     logCallback,
     onLevelComplete,
     onGameOver
   ) {
     // Filter out any heroes with 0 HP.
     this.party = party.filter(hero => hero.hp > 0);
-
-    // Load level data after heroes are selected.
-    const levelData = getLevel(levelNumber);
-    this.rows = levelData.rows;
-    this.cols = levelData.cols;
-    this.wallHP = levelData.wallHP;
-    this.enemies = levelData.enemies;
-    this.levelObjects = levelData.levelObjects || [];
-
+    this.enemies = enemies;
+    this.rows = fieldRows;
+    this.cols = fieldCols;
+    this.wallHP = wallHP;
     this.logCallback = logCallback;
+
     this.onLevelComplete = onLevelComplete;
     this.onGameOver = onGameOver;
 
@@ -77,10 +73,6 @@ export class BattleEngine {
     this.enemies.forEach(enemy => {
       enemy.statusEffects = {};
       field[enemy.y][enemy.x] = enemy.symbol;
-    });
-    // Place level objects (e.g., static walls)
-    this.levelObjects.forEach(obj => {
-      field[obj.y][obj.x] = obj.symbol;
     });
     // Create the wall along the bottom row.
     for (let i = 0; i < this.cols; i++) {
@@ -148,20 +140,13 @@ export class BattleEngine {
     }
   }
 
-  // Helper to fetch a level object at a given coordinate.
-  getLevelObjectAt(x, y) {
-    return this.levelObjects.find(obj => obj.x === x && obj.y === y);
-  }
-
   isValidMove(x, y) {
-    // Cannot move if the cell is not empty or has a level object.
     return (
       x >= 0 &&
       x < this.cols &&
       y >= 0 &&
       y < this.rows &&
-      this.battlefield[y][x] === '.' &&
-      !this.getLevelObjectAt(x, y)
+      this.battlefield[y][x] === '.'
     );
   }
 
@@ -255,36 +240,6 @@ export class BattleEngine {
         this.nextTurn();
         return;
       }
-
-      // Check for level objects (e.g., static wall)
-      const levelObj = this.getLevelObjectAt(targetX, targetY);
-      if (levelObj || this.battlefield[targetY][targetX] === 'ᚙ') {
-        // Damage the object or wall.
-        if (levelObj) {
-          levelObj.hp -= unit.attack;
-          this.logCallback(
-            `${unit.name} attacks the ${levelObj.name} for ${unit.attack} damage! (HP left: ${levelObj.hp})`
-          );
-          if (levelObj.hp <= 0) {
-            this.logCallback(`${levelObj.name} is destroyed!`);
-            this.battlefield[targetY][targetX] = '.';
-            this.levelObjects = this.levelObjects.filter(obj => obj !== levelObj);
-          }
-        } else {
-          this.wallHP -= unit.attack;
-          this.logCallback(
-            `${unit.name} attacks the wall for ${unit.attack} damage! (Wall HP: ${this.wallHP})`
-          );
-          if (this.wallHP <= 0 && !this.transitioningLevel) {
-            this.handleWallCollapse();
-            return;
-          }
-        }
-        this.awaitingAttackDirection = false;
-        await this.shortPause();
-        this.nextTurn();
-        return;
-      }
     }
     this.logCallback(`${unit.name} attacks, but there's nothing in range.`);
     this.awaitingAttackDirection = false;
@@ -311,7 +266,7 @@ export class BattleEngine {
         pathIsBlocked = true;
         break;
       }
-      if (this.battlefield[testY][testX] === 'ᚙ' || this.getLevelObjectAt(testX, testY)) {
+      if (this.battlefield[testY][testX] === 'ᚙ' || this.battlefield[testY][testX] === '█') {
         // Collision with the wall.
         pathIsBlocked = true;
         break;
