@@ -11,13 +11,6 @@ class Entity {
   }
 }
 
-class Enemy extends Entity {
-  constructor(name, symbol, attack, range, hp, agility, x, y, dialogue = []) {
-    super(name, symbol, attack, range, hp, agility, x, y);
-    this.dialogue = dialogue;
-  }
-}
-
 class Placeable extends Entity {
   constructor(name, symbol, x, y) {
     super(name, symbol, 0, 0, 0, 0, x, y);
