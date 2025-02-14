@@ -1,3 +1,5 @@
+import { Enemy } from './entities.js';
+
 /**
  * levels.js
  *
@@ -112,24 +114,8 @@ export const levelSettings = [
     cols: 12,
     wallHP: 40,
     enemies: [
-      {
-        name: "Brigand",
-        symbol: "Җ",
-        attack: 3,
-        range: 1,
-        hp: 12,
-        agility: 2,
-        enemyXOffset: 3
-      },
-      {
-        name: "Brigand",
-        symbol: "Җ",
-        attack: 3,
-        range: 1,
-        hp: 12,
-        agility: 2,
-        enemyXOffset: 5
-      }
+      new Enemy("Brigand", "Җ", 3, 1, 12, 2, 3, Math.floor(7 / 2)),
+      new Enemy("Brigand", "Җ", 3, 1, 12, 2, 5, Math.floor(7 / 2))
     ]
   },
   {
@@ -142,16 +128,7 @@ export const levelSettings = [
     enemyGenerator: (rows, cols) => {
       const enemies = [];
       for (let col = 0; col < cols; col++) {
-        enemies.push({
-          name: "Buckleman",
-          symbol: "⛨",
-          attack: 1,
-          range: 1,
-          hp: 20,
-          agility: 1,
-          x: col,
-          y: Math.floor(rows / 2)
-        });
+        enemies.push(new Enemy("Buckleman", "⛨", 1, 1, 20, 1, col, Math.floor(rows / 2)));
       }
       return enemies;
     }
@@ -163,10 +140,10 @@ export const levelSettings = [
     cols: 15,
     wallHP: 70,
     enemies: [
-      { name: "Brigand", symbol: "Җ", attack: 3, range: 1, hp: 12, agility: 2, x: 12, y: 0 },
-      { name: "Brigand", symbol: "Җ", attack: 3, range: 1, hp: 12, agility: 2, x: 11, y: 1 },
-      { name: "Buckleman", symbol: "⛨", attack: 1, range: 1, hp: 20, agility: 1, x: 8, y: 2 },
-      { name: "Brigand", symbol: "Җ", attack: 3, range: 1, hp: 12, agility: 2, x: 12, y: 2 }
+      new Enemy("Brigand", "Җ", 3, 1, 12, 2, 12, 0),
+      new Enemy("Brigand", "Җ", 3, 1, 12, 2, 11, 1),
+      new Enemy("Buckleman", "⛨", 1, 1, 20, 1, 8, 2),
+      new Enemy("Brigand", "Җ", 3, 1, 12, 2, 12, 2)
     ]
   },
   {
@@ -176,18 +153,18 @@ export const levelSettings = [
     cols: 8,
     wallHP: 50,
     enemies: [
-      { name: "Static Wall", symbol: "█", attack: 0, range: 0, hp: 50, agility: 0, x: 1, y: 5 },
-      { name: "Static Wall", symbol: "█", attack: 0, range: 0, hp: 50, agility: 0, x: 2, y: 5 },
-      { name: "Static Wall", symbol: "█", attack: 0, range: 0, hp: 50, agility: 0, x: 3, y: 5 },
-      { name: "Static Wall", symbol: "█", attack: 0, range: 0, hp: 50, agility: 0, x: 4, y: 5 },
-      { name: "Static Wall", symbol: "█", attack: 0, range: 0, hp: 50, agility: 0, x: 5, y: 5 },
-      { name: "Static Wall", symbol: "█", attack: 0, range: 0, hp: 50, agility: 0, x: 6, y: 5 },
-      { name: "Brigand", symbol: "Җ", attack: 3, range: 1, hp: 12, agility: 2, x: 1, y: 4 },
-      { name: "Brigand", symbol: "Җ", attack: 3, range: 1, hp: 12, agility: 2, x: 2, y: 4 },
-      { name: "Buckleman", symbol: "⛨", attack: 1, range: 1, hp: 20, agility: 1, x: 3, y: 4 },
-      { name: "Getter", symbol: "∴", attack: 5, range: 1, hp: 50, agility: 5, x: 4, y: 6 },
-      { name: "Stonch Hogan", symbol: "酉", attack: 7, range: 1, hp: 100, agility: 3, x: 5, y: 6 },
-      { name: "Taker", symbol: "∵", attack: 1, range: 5, hp: 50, agility: 5, x: 6, y: 6 }
+      new Enemy("Static Wall", "█", 0, 0, 50, 0, 1, 5),
+      new Enemy("Static Wall", "█", 0, 0, 50, 0, 2, 5),
+      new Enemy("Static Wall", "█", 0, 0, 50, 0, 3, 5),
+      new Enemy("Static Wall", "█", 0, 0, 50, 0, 4, 5),
+      new Enemy("Static Wall", "█", 0, 0, 50, 0, 5, 5),
+      new Enemy("Static Wall", "█", 0, 0, 50, 0, 6, 5),
+      new Enemy("Brigand", "Җ", 3, 1, 12, 2, 1, 4),
+      new Enemy("Brigand", "Җ", 3, 1, 12, 2, 2, 4),
+      new Enemy("Buckleman", "⛨", 1, 1, 20, 1, 3, 4),
+      new Enemy("Getter", "∴", 5, 1, 50, 5, 4, 6),
+      new Enemy("Stonch Hogan", "酉", 7, 1, 100, 3, 5, 6),
+      new Enemy("Taker", "∵", 1, 5, 50, 5, 6, 6)
     ]
   },
   {
@@ -201,33 +178,9 @@ export const levelSettings = [
       const enemies = [];
       // Define enemy types for a denser, more complex chessboard formation
       const enemyTypes = [
-        {
-          name: "Chess Pawn",
-          symbol: "♙",
-          attack: 2,
-          range: 1,
-          hp: 10,
-          agility: 2,
-          dialogue: ["Pawn advances with silent determination."]
-        },
-        {
-          name: "Chess Knight",
-          symbol: "♘",
-          attack: 4,
-          range: 2,
-          hp: 15,
-          agility: 3,
-          dialogue: ["Knight leaps into battle with tactical prowess."]
-        },
-        {
-          name: "Chess Bishop",
-          symbol: "♗",
-          attack: 3,
-          range: 3,
-          hp: 12,
-          agility: 2,
-          dialogue: ["Bishop glides, striking from afar with precision."]
-        }
+        new Enemy("Chess Pawn", "♙", 2, 1, 10, 2, 0, 0, ["Pawn advances with silent determination."]),
+        new Enemy("Chess Knight", "♘", 4, 2, 15, 3, 0, 0, ["Knight leaps into battle with tactical prowess."]),
+        new Enemy("Chess Bishop", "♗", 3, 3, 12, 2, 0, 0, ["Bishop glides, striking from afar with precision."])
       ];
       // Increase density by using the bottom three rows for a formation
       const formationRows = 3;
@@ -236,11 +189,7 @@ export const levelSettings = [
         for (let c = 0; c < cols; c++) {
           // Choose enemy type based on a cycling pattern to add variety
           const enemyType = enemyTypes[(r + c) % enemyTypes.length];
-          enemies.push({
-            ...enemyType,
-            x: c,
-            y: r
-          });
+          enemies.push(new Enemy(enemyType.name, enemyType.symbol, enemyType.attack, enemyType.range, enemyType.hp, enemyType.agility, c, r, enemyType.dialogue));
         }
       }
       return enemies;
@@ -255,71 +204,31 @@ export const levelSettings = [
     generateEnemies: true,
     enemyGenerator: (rows, cols) => {
       const loreKeepers = [
-        {
-          name: "Ancient Chronicler",
-          symbol: "ℜ",
-          attack: 0,
-          range: 1,
-          hp: 40,
-          agility: 2,
-          x: Math.floor(cols / 2),
-          y: Math.floor(rows / 2),
-          dialogue: [
-            "Welcome to the Chamber of Echoes, where truth and memory intertwine.",
-            "The walls you've broken, the battles you've fought... all reflections of greater struggles.",
-            "Our world was not always divided by walls. They rose when fear overcame wisdom.",
-            "Each symbol you see - they are more than mere characters. They are echoes of ancient powers."
-          ]
-        },
-        {
-          name: "Time Weaver",
-          symbol: "Ѯ",
-          attack: 3,
-          range: 3,
-          hp: 30,
-          agility: 5,
-          x: cols - 3,
-          y: rows - 3,
-          dialogue: [
-            "I have watched countless cycles of breaking and rebuilding.",
-            "The Griot's tales? Mere fragments of a vast tapestry.",
-            "Want to know about the first wall? Or perhaps... the last one?"
-          ]
-        },
-        {
-          name: "Reality Breaker",
-          symbol: "Ѭ",
-          attack: 4,
-          range: 2,
-          hp: 35,
-          agility: 3,
-          x: 2,
-          y: 2,
-          dialogue: [
-            "You think you're breaking walls? You're breaking reality itself.",
-            "Each level is a layer of truth. Each symbol a fragment of forgotten knowledge.",
-            "The Slüjier's power? A remnant of chaos from before the walls."
-          ]
-        }
+        new Enemy("Ancient Chronicler", "ℜ", 0, 1, 40, 2, Math.floor(cols / 2), Math.floor(rows / 2), [
+          "Welcome to the Chamber of Echoes, where truth and memory intertwine.",
+          "The walls you've broken, the battles you've fought... all reflections of greater struggles.",
+          "Our world was not always divided by walls. They rose when fear overcame wisdom.",
+          "Each symbol you see - they are more than mere characters. They are echoes of ancient powers."
+        ]),
+        new Enemy("Time Weaver", "Ѯ", 3, 3, 30, 5, cols - 3, rows - 3, [
+          "I have watched countless cycles of breaking and rebuilding.",
+          "The Griot's tales? Mere fragments of a vast tapestry.",
+          "Want to know about the first wall? Or perhaps... the last one?"
+        ]),
+        new Enemy("Reality Breaker", "Ѭ", 4, 2, 35, 3, 2, 2, [
+          "You think you're breaking walls? You're breaking reality itself.",
+          "Each level is a layer of truth. Each symbol a fragment of forgotten knowledge.",
+          "The Slüjier's power? A remnant of chaos from before the walls."
+        ])
       ];
 
       for (let i = 0; i < 4; i++) {
-        loreKeepers.push({
-          name: "Echo Spirit",
-          symbol: "Ԇ",
-          attack: 2,
-          range: 2,
-          hp: 20,
-          agility: 2,
-          x: Math.floor(Math.random() * (cols - 4)) + 2,
-          y: Math.floor(Math.random() * (rows - 4)) + 2,
-          dialogue: [
-            "Did you know the Knight's symbol represents more than just strength?",
-            "The Torcher's flames carry whispers of ancient purification rites.",
-            "Even the Jester's jokes hold fragments of forgotten wisdom.",
-            "The walls remember when they were mountains, before they were carved into barriers."
-          ]
-        });
+        loreKeepers.push(new Enemy("Echo Spirit", "Ԇ", 2, 2, 20, 2, Math.floor(Math.random() * (cols - 4)) + 2, Math.floor(Math.random() * (rows - 4)) + 2, [
+          "Did you know the Knight's symbol represents more than just strength?",
+          "The Torcher's flames carry whispers of ancient purification rites.",
+          "Even the Jester's jokes hold fragments of forgotten wisdom.",
+          "The walls remember when they were mountains, before they were carved into barriers."
+        ]));
       }
 
       return loreKeepers;
@@ -339,51 +248,17 @@ export const levelSettings = [
 
       if (waveNumber === 0) {
         initialEnemies.push(
-          {
-            name: "Healing Shrine",
-            symbol: "₪",
-            attack: 0,
-            range: 2,
-            hp: 999,
-            agility: 0,
-            x: Math.floor(cols / 2),
-            y: Math.floor(rows / 2),
-            healing: true,
-            healAmount: 15 + Math.floor(waveNumber / 5) * 5,
-            dialogue: [
-              "Rest, warriors. The cycle continues.",
-              "Your strength returns, but the wall endures.",
-              "The Gratt remembers those who persist."
-            ],
-            nonViolent: true,
-          },
-          {
-            name: "Gratt Keeper",
-            symbol: "Ψ",
-            attack: 0,
-            range: 1,
-            hp: 999,
-            agility: 1,
-            x: Math.floor(cols / 2) - 2,
-            y: Math.floor(rows / 2),
-            dialogue: [
-              "The wall has stood since time immemorial.",
-              "Each strike weakens its eternal vigil.",
-              "Wisdom may succeed where force fails."
-            ],
-            nonViolent: true,
-          },
-          {
-            name: "Catalyst",
-            symbol: "!",
-            attack: 0,
-            range: 0,
-            hp: 1,
-            agility: 0,
-            x: Math.floor(cols / 2) + 2,
-            y: Math.floor(rows / 2),
-            dialogue: ["The cycle must continue..."],
-          }
+          new Enemy("Healing Shrine", "₪", 0, 2, 999, 0, Math.floor(cols / 2), Math.floor(rows / 2), [
+            "Rest, warriors. The cycle continues.",
+            "Your strength returns, but the wall endures.",
+            "The Gratt remembers those who persist."
+          ]),
+          new Enemy("Gratt Keeper", "Ψ", 0, 1, 999, 1, Math.floor(cols / 2) - 2, Math.floor(rows / 2), [
+            "The wall has stood since time immemorial.",
+            "Each strike weakens its eternal vigil.",
+            "Wisdom may succeed where force fails."
+          ]),
+          new Enemy("Catalyst", "!", 0, 0, 1, 0, Math.floor(cols / 2) + 2, Math.floor(rows / 2), ["The cycle must continue..."])
         );
       }
 
@@ -396,62 +271,26 @@ export const levelSettings = [
       const waveStrength = Math.floor(waveNumber / 10);
 
       const enemyTypes = [
-        {
-          name: "Gratt Sentinel",
-          symbol: "Ѫ",
-          attack: 4 + waveStrength,
-          range: 2,
-          hp: 15 + waveStrength * 5,
-          agility: 2 + Math.floor(waveStrength / 2)
-        },
-        {
-          name: "Phase Striker",
-          symbol: "Ж",
-          attack: 6 + waveStrength * 2,
-          range: 1,
-          hp: 10 + waveStrength * 3,
-          agility: 4 + waveStrength
-        },
-        {
-          name: "Echo Mage",
-          symbol: "Ω",
-          attack: 3 + waveStrength,
-          range: 4 + Math.floor(waveStrength / 2),
-          hp: 8 + waveStrength * 2,
-          agility: 2
-        }
+        new Enemy("Gratt Sentinel", "Ѫ", 4 + waveStrength, 2, 15 + waveStrength * 5, 2 + Math.floor(waveStrength / 2), 0, 0),
+        new Enemy("Phase Striker", "Ж", 6 + waveStrength * 2, 1, 10 + waveStrength * 3, 4 + waveStrength, 0, 0),
+        new Enemy("Echo Mage", "Ω", 3 + waveStrength, 4 + Math.floor(waveStrength / 2), 8 + waveStrength * 2, 2, 0, 0)
       ];
 
       if (waveNumber >= 10) {
-        enemyTypes.push({
-          name: "Gratt Champion",
-          symbol: "Ԅ",
-          attack: 8 + waveStrength * 2,
-          range: 2,
-          hp: 30 + waveStrength * 8,
-          agility: 3 + Math.floor(waveStrength / 2)
-        });
+        enemyTypes.push(new Enemy("Gratt Champion", "Ԅ", 8 + waveStrength * 2, 2, 30 + waveStrength * 8, 3 + Math.floor(waveStrength / 2), 0, 0));
       }
 
       if (waveNumber >= 20) {
-        enemyTypes.push({
-          name: "Time Weaver Echo",
-          symbol: "Җ",
-          attack: 5 + waveStrength,
-          range: 3,
-          hp: 20 + waveStrength * 4,
-          agility: 5 + waveStrength,
-          dialogue: [
-            "Time flows differently here...",
-            "The wall remembers every assault.",
-            "Perhaps there is another way."
-          ]
-        });
+        enemyTypes.push(new Enemy("Time Weaver Echo", "Җ", 5 + waveStrength, 3, 20 + waveStrength * 4, 5 + waveStrength, 0, 0, [
+          "Time flows differently here...",
+          "The wall remembers every assault.",
+          "Perhaps there is another way."
+        ]));
       }
 
       for (let i = 0; i < baseEnemyCount; i++) {
         const enemyType = enemyTypes[Math.floor(Math.random() * enemyTypes.length)];
-        const enemy = { ...enemyType, x: 0, y: 0 };
+        const enemy = new Enemy(enemyType.name, enemyType.symbol, enemyType.attack, enemyType.range, enemyType.hp, enemyType.agility, 0, 0, enemyType.dialogue);
 
         let placed = false;
         while (!placed) {
@@ -503,13 +342,9 @@ export function getLevel(levelNumber) {
   } else {
     enemies = (level.enemies || []).map(enemy => {
       if (enemy.enemyXOffset !== undefined) {
-        return {
-          ...enemy,
-          x: level.cols - enemy.enemyXOffset,
-          y: Math.floor(level.rows / 2)
-        };
+        return new Enemy(enemy.name, enemy.symbol, enemy.attack, enemy.range, enemy.hp, enemy.agility, level.cols - enemy.enemyXOffset, Math.floor(level.rows / 2));
       }
-      return enemy;
+      return new Enemy(enemy.name, enemy.symbol, enemy.attack, enemy.range, enemy.hp, enemy.agility, enemy.x, enemy.y);
     });
   }
 
