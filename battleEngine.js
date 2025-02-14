@@ -25,7 +25,6 @@ export class BattleEngine {
   constructor(
     party,
     enemies,
-    levelObjects, // new parameter for level objects
     fieldRows,
     fieldCols,
     wallHP,
@@ -36,7 +35,6 @@ export class BattleEngine {
     // Filter out any heroes with 0 HP.
     this.party = party.filter(hero => hero.hp > 0);
     this.enemies = enemies;
-    this.levelObjects = levelObjects || []; // store level objects
     this.rows = fieldRows;
     this.cols = fieldCols;
     this.wallHP = wallHP;
@@ -75,10 +73,6 @@ export class BattleEngine {
     this.enemies.forEach(enemy => {
       enemy.statusEffects = {};
       field[enemy.y][enemy.x] = enemy.symbol;
-    });
-    // Place level objects (e.g., static walls)
-    this.levelObjects.forEach(obj => {
-      field[obj.y][obj.x] = obj.symbol;
     });
     // Create the wall along the bottom row.
     for (let i = 0; i < this.cols; i++) {
@@ -146,20 +140,13 @@ export class BattleEngine {
     }
   }
 
-  // Helper to fetch a level object at a given coordinate.
-  getLevelObjectAt(x, y) {
-    return this.levelObjects.find(obj => obj.x === x && obj.y === y);
-  }
-
   isValidMove(x, y) {
-    // Cannot move if the cell is not empty or has a level object.
     return (
       x >= 0 &&
       x < this.cols &&
       y >= 0 &&
       y < this.rows &&
-      this.battlefield[y][x] === '.' &&
-      !this.getLevelObjectAt(x, y)
+      this.battlefield[y][x] === '.'
     );
   }
 
@@ -253,36 +240,6 @@ export class BattleEngine {
         this.nextTurn();
         return;
       }
-
-      // Check for level objects (e.g., static wall)
-      const levelObj = this.getLevelObjectAt(targetX, targetY);
-      if (levelObj || this.battlefield[targetY][targetX] === 'ᚙ') {
-        // Damage the object or wall.
-        if (levelObj) {
-          levelObj.hp -= unit.attack;
-          this.logCallback(
-            `${unit.name} attacks the ${levelObj.name} for ${unit.attack} damage! (HP left: ${levelObj.hp})`
-          );
-          if (levelObj.hp <= 0) {
-            this.logCallback(`${levelObj.name} is destroyed!`);
-            this.battlefield[targetY][targetX] = '.';
-            this.levelObjects = this.levelObjects.filter(obj => obj !== levelObj);
-          }
-        } else {
-          this.wallHP -= unit.attack;
-          this.logCallback(
-            `${unit.name} attacks the wall for ${unit.attack} damage! (Wall HP: ${this.wallHP})`
-          );
-          if (this.wallHP <= 0 && !this.transitioningLevel) {
-            this.handleWallCollapse();
-            return;
-          }
-        }
-        this.awaitingAttackDirection = false;
-        await this.shortPause();
-        this.nextTurn();
-        return;
-      }
     }
     this.logCallback(`${unit.name} attacks, but there's nothing in range.`);
     this.awaitingAttackDirection = false;
@@ -309,7 +266,7 @@ export class BattleEngine {
         pathIsBlocked = true;
         break;
       }
-      if (this.battlefield[testY][testX] === 'ᚙ' || this.getLevelObjectAt(testX, testY)) {
+      if (this.battlefield[testY][testX] === 'ᚙ' || this.battlefield[testY][testX] === '█') {
         // Collision with the wall.
         pathIsBlocked = true;
         break;
@@ -541,58 +498,67 @@ export class BattleEngine {
     this.logCallback(`Now it's ${this.party[this.currentUnit].name}'s turn.`);
   }
 
-  processBurn(entity) {
-    if (entity.statusEffects.burn && entity.statusEffects.burn.duration > 0) {
-      this.logCallback(`${entity.name} is burned and takes ${entity.statusEffects.burn.damage} damage!`);
-      entity.hp -= entity.statusEffects.burn.damage;
-      entity.statusEffects.burn.duration--;
-    }
-  }
-
-  processSluj(enemy) {
-    if (enemy.statusEffects.sluj && enemy.statusEffects.sluj.duration > 0) {
-      enemy.statusEffects.sluj.counter++;
-      const level = enemy.statusEffects.sluj.level;
-      let trigger = false, damage = 0;
-      if (level === 1 && enemy.statusEffects.sluj.counter % 4 === 0) {
-        trigger = true; damage = 1;
-      } else if (level === 2 && enemy.statusEffects.sluj.counter % 3 === 0) {
-        trigger = true; damage = 1;
-      } else if (level === 3 && enemy.statusEffects.sluj.counter % 2 === 0) {
-        trigger = true; damage = 1;
-      } else if (level === 4) {
-        trigger = true; damage = 1;
-      } else if (level === 5) {
-        trigger = true; damage = 2;
-      } else if (level >= 6) {
-        trigger = true; damage = 3;
-      }
-      if (trigger) {
-        this.logCallback(`${enemy.name} takes ${damage} slüj damage!`);
-        enemy.hp -= damage;
-      }
-      enemy.statusEffects.sluj.duration--;
-    }
-  }
-
   applyStatusEffects() {
-    // Process heroes.
     this.party.forEach(hero => {
-      this.processBurn(hero);
-      if (hero.hp <= 0) {
-        this.logCallback(`${hero.name} was defeated by burn damage!`);
-        this.battlefield[hero.y][hero.x] = '.';
+      if (hero.statusEffects.burn && hero.statusEffects.burn.duration > 0) {
+        this.logCallback(
+          `${hero.name} is burned and takes ${hero.statusEffects.burn.damage} damage!`
+        );
+        hero.hp -= hero.statusEffects.burn.damage;
+        hero.statusEffects.burn.duration--;
+        if (hero.hp <= 0) {
+          this.logCallback(`${hero.name} was defeated by burn damage!`);
+          this.battlefield[hero.y][hero.x] = '.';
+        }
       }
     });
     this.party = this.party.filter(hero => hero.hp > 0);
 
-    // Process enemies.
     this.enemies.forEach(enemy => {
-      this.processBurn(enemy);
-      this.processSluj(enemy);
-      if (enemy.hp <= 0) {
-        this.logCallback(`${enemy.name} was defeated by status effects!`);
-        this.battlefield[enemy.y][enemy.x] = '.';
+      if (enemy.statusEffects.burn && enemy.statusEffects.burn.duration > 0) {
+        this.logCallback(
+          `${enemy.name} is burned and takes ${enemy.statusEffects.burn.damage} damage!`
+        );
+        enemy.hp -= enemy.statusEffects.burn.damage;
+        enemy.statusEffects.burn.duration--;
+        if (enemy.hp <= 0) {
+          this.logCallback(`${enemy.name} was defeated by burn damage!`);
+          this.battlefield[enemy.y][enemy.x] = '.';
+        }
+      }
+      if (enemy.statusEffects.sluj && enemy.statusEffects.sluj.duration > 0) {
+        enemy.statusEffects.sluj.counter++;
+        const level = enemy.statusEffects.sluj.level;
+        let trigger = false;
+        let damage = 0;
+        if (level === 1 && enemy.statusEffects.sluj.counter % 4 === 0) {
+          trigger = true;
+          damage = 1;
+        } else if (level === 2 && enemy.statusEffects.sluj.counter % 3 === 0) {
+          trigger = true;
+          damage = 1;
+        } else if (level === 3 && enemy.statusEffects.sluj.counter % 2 === 0) {
+          trigger = true;
+          damage = 1;
+        } else if (level === 4) {
+          trigger = true;
+          damage = 1;
+        } else if (level === 5) {
+          trigger = true;
+          damage = 2;
+        } else if (level >= 6) {
+          trigger = true;
+          damage = 3;
+        }
+        if (trigger) {
+          this.logCallback(`${enemy.name} takes ${damage} slüj damage!`);
+          enemy.hp -= damage;
+        }
+        enemy.statusEffects.sluj.duration--;
+        if (enemy.hp <= 0) {
+          this.logCallback(`${enemy.name} is defeated by slüj damage!`);
+          this.battlefield[enemy.y][enemy.x] = '.';
+        }
       }
     });
     this.enemies = this.enemies.filter(enemy => enemy.hp > 0);
