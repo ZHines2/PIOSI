@@ -513,23 +513,12 @@ export function getLevel(levelNumber) {
     });
   }
 
-  // Separate static walls from enemies and treat them as level objects.
-  let levelObjects = [];
-  enemies = enemies.filter(e => {
-    if (e.name === "Static Wall") {
-      levelObjects.push(e);
-      return false;
-    }
-    return true;
-  });
-
   return {
     rows: level.rows,
     cols: level.cols,
     wallHP: level.wallHP,
     title: level.title,
     enemies,
-    levelObjects, // include level objects
     onWaveComplete: level.onWaveComplete,
     getWaveStats: level.getWaveStats
   };
