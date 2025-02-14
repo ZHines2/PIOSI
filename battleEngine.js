@@ -21,6 +21,8 @@
  * - Special properties like `generateEnemies`, `waveNumber`, and `restPhase` can be used for advanced level configurations.
  */
 
+import { Placeable, Breakable, Mushroom, Vittle } from './entities.js';
+
 export class BattleEngine {
   constructor(
     party,
