@@ -159,5 +159,15 @@ export const heroes = [
     agility: 5,
     hp: 18,
     swarm: 2 // Swarm stat: indicates additional abilities when swarming.
+  },
+  // New hero "Mycelian" with spore stat.
+  {
+    name: "Mycelian",
+    symbol: "ৡ",
+    attack: 2,
+    range: 1,
+    agility: 3,
+    hp: 15,
+    spore: 1 // Spore stat: indicates the ability to gain random stats from mushrooms.
   }
 ];

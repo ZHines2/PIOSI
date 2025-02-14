@@ -51,6 +51,9 @@ export function getModeUpBuff(chosenHero, level) {
   } else if (chosenHero.name === "Mellitron") {
     // Mellitron's unique swarm ability increases.
     return { swarm: 1 * buffIncrement };
+  } else if (chosenHero.name === "Mycelian") {
+    // Mycelian's spore ability increases.
+    return { spore: 1 * buffIncrement };
   } else if (chosenHero.heal !== undefined) {
     // Generic heroes with a heal property get a minor heal increase.
     return { heal: 1 * buffIncrement };
@@ -75,6 +78,7 @@ export function applyModeUp(chosenHero, level, party, logCallback) {
   if (buff.ghis) messageParts.push(`+${buff.ghis} Ghïs`);
   if (buff.yeet) messageParts.push(`+${buff.yeet} Yeet`);
   if (buff.swarm) messageParts.push(`+${buff.swarm} Swarm`);
+  if (buff.spore) messageParts.push(`+${buff.spore} Spore`);
   
   // Create a log message indicating the hero's power-up and the buffs applied.
   const message = messageParts.length > 0

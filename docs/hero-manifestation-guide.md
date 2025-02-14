@@ -93,6 +93,21 @@ Here are some examples of hero configurations:
 }
 ```
 
+### Example 5: Mycelian
+
+```javascript
+{
+  name: "Mycelian",
+  symbol: "ৡ",
+  attack: 2,
+  range: 1,
+  agility: 3,
+  hp: 15,
+  spore: 1, // Spore stat: indicates the ability to gain random stats from mushrooms.
+  description: "Mycelian harnesses the power of spores to enhance its abilities. It thrives in the presence of mushrooms, gaining random stat boosts."
+}
+```
+
 ## Griot.js Integration
 
 The `griot.js` module handles API calls for special characters and generates narrative text using a Markov chain that’s refreshed with recent interactions. The Griot hero reacts uniquely when encountering historical events, and the module provides various special API calls for characters.
