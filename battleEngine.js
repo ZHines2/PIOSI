@@ -21,27 +21,29 @@
  * - Special properties like `generateEnemies`, `waveNumber`, and `restPhase` can be used for advanced level configurations.
  */
 
+import { getLevel } from './levels.js'; // new import
+
 export class BattleEngine {
+  // Updated constructor: now accepts party, levelNumber, logCallback, onLevelComplete, onGameOver
   constructor(
     party,
-    enemies,
-    levelObjects, // new parameter for level objects
-    fieldRows,
-    fieldCols,
-    wallHP,
+    levelNumber, // new parameter to load level
     logCallback,
     onLevelComplete,
     onGameOver
   ) {
     // Filter out any heroes with 0 HP.
     this.party = party.filter(hero => hero.hp > 0);
-    this.enemies = enemies;
-    this.levelObjects = levelObjects || []; // store level objects
-    this.rows = fieldRows;
-    this.cols = fieldCols;
-    this.wallHP = wallHP;
-    this.logCallback = logCallback;
 
+    // Load level data after heroes are selected.
+    const levelData = getLevel(levelNumber);
+    this.rows = levelData.rows;
+    this.cols = levelData.cols;
+    this.wallHP = levelData.wallHP;
+    this.enemies = levelData.enemies;
+    this.levelObjects = levelData.levelObjects || [];
+
+    this.logCallback = logCallback;
     this.onLevelComplete = onLevelComplete;
     this.onGameOver = onGameOver;
 
