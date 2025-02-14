@@ -14,6 +14,8 @@
  * - Stairs or ladders can be used to connect different levels, allowing players to navigate vertically.
  */
 
+import { Placeable, Breakable, Mushroom, Vittle } from './entities.js';
+
 // Helper function to generate a random integer within a range
 function getRandomInt(min, max) {
   min = Math.ceil(min);
@@ -103,7 +105,11 @@ export const levelSettings = [
     rows: 5,
     cols: 10,
     wallHP: 20,
-    enemies: []
+    enemies: [],
+    placeables: [
+      new Mushroom("Healing Mushroom", "🍄", 2, 2, "heal"),
+      new Vittle("Health Vittle", "🍖", 4, 4, 5)
+    ]
   },
   {
     level: 2,
@@ -130,6 +136,10 @@ export const levelSettings = [
         agility: 2,
         enemyXOffset: 5
       }
+    ],
+    placeables: [
+      new Breakable("Crate", "📦", 3, 3, 10),
+      new Mushroom("Speed Mushroom", "🍄", 5, 5, "agility")
     ]
   },
   {
@@ -154,7 +164,11 @@ export const levelSettings = [
         });
       }
       return enemies;
-    }
+    },
+    placeables: [
+      new Vittle("Energy Vittle", "🍏", 1, 1, 3),
+      new Breakable("Barrel", "🛢", 2, 2, 15)
+    ]
   },
   {
     level: 4,
@@ -167,6 +181,10 @@ export const levelSettings = [
       { name: "Brigand", symbol: "Җ", attack: 3, range: 1, hp: 12, agility: 2, x: 11, y: 1 },
       { name: "Buckleman", symbol: "⛨", attack: 1, range: 1, hp: 20, agility: 1, x: 8, y: 2 },
       { name: "Brigand", symbol: "Җ", attack: 3, range: 1, hp: 12, agility: 2, x: 12, y: 2 }
+    ],
+    placeables: [
+      new Mushroom("Strength Mushroom", "🍄", 6, 6, "attack"),
+      new Vittle("Stamina Vittle", "🍗", 7, 7, 4)
     ]
   },
   {
@@ -188,6 +206,10 @@ export const levelSettings = [
       { name: "Getter", symbol: "∴", attack: 5, range: 1, hp: 50, agility: 5, x: 4, y: 6 },
       { name: "Stonch Hogan", symbol: "酉", attack: 7, range: 1, hp: 100, agility: 3, x: 5, y: 6 },
       { name: "Taker", symbol: "∵", attack: 1, range: 5, hp: 50, agility: 5, x: 6, y: 6 }
+    ],
+    placeables: [
+      new Breakable("Wooden Crate", "📦", 2, 2, 10),
+      new Mushroom("Defense Mushroom", "🍄", 3, 3, "hp")
     ]
   },
   {
@@ -244,7 +266,11 @@ export const levelSettings = [
         }
       }
       return enemies;
-    }
+    },
+    placeables: [
+      new Vittle("Mystic Vittle", "🍇", 5, 5, 6),
+      new Breakable("Ancient Vase", "🏺", 6, 6, 20)
+    ]
   },
   {
     level: 100,
@@ -323,7 +349,11 @@ export const levelSettings = [
       }
 
       return loreKeepers;
-    }
+    },
+    placeables: [
+      new Mushroom("Wisdom Mushroom", "🍄", 8, 8, "range"),
+      new Vittle("Ancient Vittle", "🍞", 9, 9, 7)
+    ]
   },
   {
     level: 101,
@@ -489,7 +519,11 @@ export const levelSettings = [
     }),
     getWaveStats: (waveNumber) => ({
       enemyScale: 1 + (waveNumber * 0.1)
-    })
+    }),
+    placeables: [
+      new Breakable("Ancient Relic", "🗿", 10, 10, 50),
+      new Mushroom("Power Mushroom", "🍄", 11, 11, "attack")
+    ]
   }
 ];
 
@@ -519,6 +553,7 @@ export function getLevel(levelNumber) {
     wallHP: level.wallHP,
     title: level.title,
     enemies,
+    placeables: level.placeables || [],
     onWaveComplete: level.onWaveComplete,
     getWaveStats: level.getWaveStats
   };
