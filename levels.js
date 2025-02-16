@@ -103,11 +103,7 @@ export const levelSettings = [
     rows: 5,
     cols: 10,
     wallHP: 20,
-    enemies: [],
-    // Define level objects. Here a vittle is added as a level object.
-    levelObjects: [
-      { type: "vittle", x: 3, y: 2, symbol: "ౚ" }
-    ]
+    enemies: []
   },
   {
     level: 2,
@@ -523,7 +519,6 @@ export function getLevel(levelNumber) {
     wallHP: level.wallHP,
     title: level.title,
     enemies,
-    levelObjects: level.levelObjects,
     onWaveComplete: level.onWaveComplete,
     getWaveStats: level.getWaveStats
   };
