@@ -129,10 +129,13 @@ body {
   color: white; /* White text color */
 }
 
-/* Healing Item Styling */
-/* Mark healing items with a distinctive tan color */
-.healing-item {
-  color: tan;
+/* Level Object Styling */
+/* Updated styling for level objects (vittle) for clear visual distinction */
+.vittle {
+  color: tan; /* Tan color for vittle level objects */
+  font-size: 1.2rem; /* Slightly larger text */
+  font-weight: bold;
+  text-shadow: 1px 1px 2px black; /* Add a subtle shadow for readability */
 }
 
 /* Enemy cell style */
