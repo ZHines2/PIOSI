@@ -10,8 +10,8 @@
  * - Each level is defined by properties like `level`, `title`, `rows`, `cols`, `wallHP`, and `enemies`.
  * - Levels can use an `enemyGenerator` function to dynamically generate enemies.
  * - Special properties like `generateEnemies`, `waveNumber`, and `restPhase` can be used for advanced level configurations.
- * - Levels can include multiple floors or levels within the same grid.
- * - Stairs or ladders can be used to connect different levels, allowing players to navigate vertically.
+ * - Levels can include additional objects (level objects) such as "vittle" items.
+ *   For example, in level 1 a vittle can be defined that the player may interact with.
  */
 
 // Helper function to generate a random integer within a range
@@ -23,48 +23,48 @@ function getRandomInt(min, max) {
 
 // Function to generate a level layout with static "wall" enemies
 function generateLevelLayout(rows, cols, minRoomSize, maxRoomSize, numRooms, wallHP) {
-  const layout = []; // 2D array to hold level data
-  for (let y = 0; y < rows; y++) {
-    layout[y] = [];
-    for (let x = 0; x < cols; x++) {
-      layout[y][x] = null; // Initially empty
-    }
-  }
-
-  const rooms = [];
-
-  // Function to create a room
-  const createRoom = (x, y, width, height) => {
-    const room = { x, y, width, height };
-    rooms.push(room);
-  };
-
-  // Attempt to generate rooms (very simple for now - just places without collision)
-  for (let i = 0; i < numRooms; i++) {
-    let width = getRandomInt(minRoomSize, maxRoomSize);
-    let height = getRandomInt(minRoomSize, maxRoomSize);
-    let x = getRandomInt(1, cols - width - 1);
-    let y = getRandomInt(1, rows - height - 1);
-    createRoom(x, y, width, height);
-  }
-
-  // Place "wall" enemies around the rooms (very basic - needs improvement to connect rooms)
-  for (let y = 0; y < rows; y++) {
-    for (let x = 0; x < cols; x++) {
-      let isWall = true;
-      for (const room of rooms) {
-        if (x >= room.x && x < room.x + room.width && y >= room.y && y < room.y + room.height) {
-          isWall = false; // Inside a room
-          break;
+    const layout = []; // 2D array to hold level data
+    for (let y = 0; y < rows; y++) {
+        layout[y] = [];
+        for (let x = 0; x < cols; x++) {
+            layout[y][x] = null; // Initially empty
         }
-      }
-      if (isWall) {
-        layout[y][x] = { type: "wall", hp: wallHP }; // Mark as a "wall"
-      }
     }
-  }
 
-  return { layout, rooms };
+    const rooms = [];
+
+    // Function to create a room
+    const createRoom = (x, y, width, height) => {
+        const room = { x, y, width, height };
+        rooms.push(room);
+    };
+
+    // Attempt to generate rooms (very simple for now - just places without collision)
+    for (let i = 0; i < numRooms; i++) {
+        let width = getRandomInt(minRoomSize, maxRoomSize);
+        let height = getRandomInt(minRoomSize, maxRoomSize);
+        let x = getRandomInt(1, cols - width - 1);
+        let y = getRandomInt(1, rows - height - 1);
+        createRoom(x, y, width, height);
+    }
+
+    // Place "wall" enemies around the rooms (very basic - needs improvement to connect rooms)
+    for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+            let isWall = true;
+            for (const room of rooms) {
+                if (x >= room.x && x < room.x + room.width && y >= room.y && y < room.y + room.height) {
+                    isWall = false; // Inside a room
+                    break;
+                }
+            }
+            if (isWall) {
+                layout[y][x] = { type: "wall", hp: wallHP }; // Mark as a "wall"
+            }
+        }
+    }
+
+    return { layout, rooms };
 }
 
 // Function to generate a multi-level layout with stairs or ladders
@@ -103,20 +103,10 @@ export const levelSettings = [
     rows: 5,
     cols: 10,
     wallHP: 20,
-    enemies: [
-      {
-        name: "vittle",
-        symbol: "ౚ",
-        attack: 0,
-        range: 0,
-        hp: 1,
-        agility: 0,
-        x: 5,
-        y: 2,
-        healing: true,
-        healAmount: 1,
-        nonViolent: true
-      }
+    enemies: [],
+    // Define level objects. Here a vittle is added as a level object.
+    levelObjects: [
+      { type: "vittle", x: 3, y: 2, symbol: "ౚ" }
     ]
   },
   {
@@ -533,6 +523,7 @@ export function getLevel(levelNumber) {
     wallHP: level.wallHP,
     title: level.title,
     enemies,
+    levelObjects: level.levelObjects,
     onWaveComplete: level.onWaveComplete,
     getWaveStats: level.getWaveStats
   };
