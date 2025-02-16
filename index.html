@@ -238,7 +238,7 @@
             heroSelectMusic.volume = 1; // Reset volume for future use
             backgroundMusic.play().catch(() => {});
           }
-        }, 100);
+        }, 100); // Adjust timing as needed
 
         // Clone selected heroes so that changes do not affect base definitions
         party = selectedHeroes.map((i) => Object.assign({}, allHeroes[i]));
@@ -342,8 +342,6 @@
 
       /**
        * Initialize a battle based on the current level settings.
-       * Explicitly passing an empty array for non-enemy interactive entities
-       * since we don't assume they are handled as usual if omitted.
        */
       function initializeBattle() {
         const settings = getLevel(level);
@@ -357,11 +355,9 @@
         const { rows, cols, wallHP, title, enemies: levelEnemies } = settings;
         document.getElementById("level-title").textContent = title;
         enemies = levelEnemies;
-        // Pass an explicit empty array for non-enemy interactive entities.
         battleEngine = new BattleEngine(
           party,
           enemies,
-          [],
           rows,
           cols,
           wallHP,
