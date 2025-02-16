@@ -24,6 +24,16 @@ Some heroes have special properties that give them unique abilities. Here are so
 - `yeet`: The hero can knock back enemies.
 - `swarm`: The hero can deal turn-based damage to adjacent enemies.
 
+## Item Properties
+
+Items in the game can have various properties and effects. Here are some examples:
+
+- `item`: Indicates that the object is an item.
+- `collectible`: Indicates that the item can be collected by heroes.
+- `staticwall`: Indicates that the item is a static wall and cannot be moved.
+- `effect`: A function that defines the effect of the item when collected.
+- `message`: A message to be logged when the item is collected.
+
 ## Best Practices
 
 - **Balance**: Ensure that the hero is balanced in terms of abilities and stats. Avoid making heroes too powerful or too weak.
@@ -90,6 +100,27 @@ Here are some examples of hero configurations:
   hp: 18,
   swarm: 2, // Swarm ability.
   description: "Mellitron commands a swarm of bees that deal turn-based damage to any enemy in an adjacent tile. His bees sting with relentless fury, and his enemies are left in agony."
+}
+```
+
+### Example 5: Hero Interacting with Debug Pickup Item "Vittle"
+
+```javascript
+{
+  name: "Hero",
+  symbol: "H",
+  attack: 3,
+  range: 2,
+  agility: 4,
+  hp: 14,
+  description: "The Hero finds a Vittle on the battlefield. Upon collecting it, the Hero gains +1 HP.",
+  interaction: {
+    item: "Vittle",
+    effect: (hero) => {
+      hero.hp += 1;
+    },
+    message: "You found a Vittle! +1 HP"
+  }
 }
 ```
 

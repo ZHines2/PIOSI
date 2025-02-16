@@ -12,6 +12,7 @@ Each level is defined by a set of properties. Here are the key properties you ne
 - `cols`: The number of columns in the level grid.
 - `wallHP`: The health points of the wall that players need to break through.
 - `enemies`: An array of enemy configurations.
+- `items`: An array of item configurations.
 
 ## Enemy Configuration
 
@@ -25,6 +26,15 @@ Each enemy is defined by a set of properties. Here are the key properties you ne
 - `agility`: The agility of the enemy, which determines how many moves they can make per turn.
 - `x`: The x-coordinate of the enemy's starting position.
 - `y`: The y-coordinate of the enemy's starting position.
+
+## Item Configuration
+
+Each item is defined by a set of properties. Here are the key properties you need to define:
+
+- `name`: The name of the item.
+- `symbol`: The symbol representing the item on the grid.
+- `effect`: A function that defines the effect of the item when collected.
+- `message`: A message to be logged when the item is collected.
 
 ## Dynamic Enemy Generation
 
@@ -103,7 +113,17 @@ Here are some examples of level configurations:
   rows: 5,
   cols: 10,
   wallHP: 20,
-  enemies: []
+  enemies: [],
+  items: [
+    {
+      name: "Vittle",
+      symbol: "ౚ",
+      effect: (hero) => {
+        hero.hp += 1;
+      },
+      message: "You found a Vittle! +1 HP"
+    }
+  ]
 }
 ```
 

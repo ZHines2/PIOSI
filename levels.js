@@ -96,6 +96,19 @@ function generateMultiLevelLayout(rows, cols, minRoomSize, maxRoomSize, numRooms
   return floors;
 }
 
+// Unified configuration object for items
+const itemConfig = {
+  vittle: {
+    item: true,
+    collectible: true,
+    staticwall: false,
+    effect: (hero) => {
+      hero.hp += 1;
+    },
+    message: "You found a Vittle! +1 HP"
+  }
+};
+
 export const levelSettings = [
   {
     level: 1,
@@ -103,7 +116,17 @@ export const levelSettings = [
     rows: 5,
     cols: 10,
     wallHP: 20,
-    enemies: []
+    enemies: [],
+    items: [
+      {
+        name: "Vittle",
+        symbol: "ౚ",
+        effect: (hero) => {
+          hero.hp += 1;
+        },
+        message: "You found a Vittle! +1 HP"
+      }
+    ]
   },
   {
     level: 2,
@@ -520,7 +543,8 @@ export function getLevel(levelNumber) {
     title: level.title,
     enemies,
     onWaveComplete: level.onWaveComplete,
-    getWaveStats: level.getWaveStats
+    getWaveStats: level.getWaveStats,
+    items: level.items || []
   };
 }
 
@@ -532,3 +556,13 @@ export function getRandomDialogue(entity) {
   if (!hasDialogue(entity)) return null;
   return entity.dialogue[Math.floor(Math.random() * entity.dialogue.length)];
 }
+
+// Add a new debug pickup item called "Vittle" with symbol "ౚ"
+export const debugPickupItem = {
+  name: "Vittle",
+  symbol: "ౚ",
+  effect: (hero) => {
+    hero.hp += 1; // Define the effect of the pickup item to raise 1HP
+  },
+  message: "You found a Vittle! +1 HP" // Add a message to be logged when the pickup item is collected
+};
