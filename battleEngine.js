@@ -68,6 +68,7 @@ export class BattleEngine {
     );
     this.placeHeroes(field);
     this.placeEnemies(field);
+    this.placeItems(field); // Place items on the battlefield grid
     this.createWall(field);
     return field;
   }
@@ -85,6 +86,16 @@ export class BattleEngine {
       enemy.statusEffects = {};
       field[enemy.y][enemy.x] = enemy.symbol;
     });
+  }
+
+  placeItems(field) {
+    const currentLevel = levelSettings.find(level => level.enemies === this.enemies);
+    if (currentLevel) {
+      currentLevel.items.forEach(item => {
+        const { x, y, symbol } = item;
+        field[y][x] = symbol;
+      });
+    }
   }
 
   createWall(field) {
