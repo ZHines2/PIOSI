@@ -7,7 +7,7 @@
  * For detailed guidelines on creating new levels, refer to the Level Creation Rubric in docs/level-creation.md.
  * 
  * Overview of Level Creation:
- * - Each level is defined by properties like `level`, `title`, `rows`, `cols`, `wallHP`, and `enemies`.
+ * - Each level is defined by properties like `level`, `title`, `rows`, `cols`, `wallHP`, and optionally, `enemies` and `nonEnemies`.
  * - Levels can use an `enemyGenerator` function to dynamically generate enemies.
  * - Special properties like `generateEnemies`, `waveNumber`, and `restPhase` can be used for advanced level configurations.
  * - Levels can include multiple floors or levels within the same grid.
@@ -103,7 +103,19 @@ export const levelSettings = [
     rows: 5,
     cols: 10,
     wallHP: 20,
-    enemies: []
+    // No combat enemies on this level.
+    enemies: [],
+    // Instead, we include non-combat interactive entities.
+    nonEnemies: [
+      {
+        name: "Tutorial Marker",
+        symbol: "✦",
+        description: "This marker gives you hints about game controls and mechanics.",
+        // Place the marker roughly in the center of the grid.
+        x: Math.floor(10 / 2),
+        y: Math.floor(5 / 2)
+      }
+    ]
   },
   {
     level: 2,
@@ -355,7 +367,7 @@ export const levelSettings = [
               "Your strength returns, but the wall endures.",
               "The Gratt remembers those who persist."
             ],
-            nonViolent: true,
+            nonViolent: true
           },
           {
             name: "Gratt Keeper",
@@ -371,7 +383,7 @@ export const levelSettings = [
               "Each strike weakens its eternal vigil.",
               "Wisdom may succeed where force fails."
             ],
-            nonViolent: true,
+            nonViolent: true
           },
           {
             name: "Catalyst",
@@ -382,7 +394,7 @@ export const levelSettings = [
             agility: 0,
             x: Math.floor(cols / 2) + 2,
             y: Math.floor(rows / 2),
-            dialogue: ["The cycle must continue..."],
+            dialogue: ["The cycle must continue..."]
           }
         );
       }
@@ -519,6 +531,10 @@ export function getLevel(levelNumber) {
     wallHP: level.wallHP,
     title: level.title,
     enemies,
+    // Pass along non-enemy entities so the game can render them separately.
+    nonEnemies: level.nonEnemies || [],
+    generateEnemies: level.generateEnemies,
+    enemyGenerator: level.enemyGenerator,
     onWaveComplete: level.onWaveComplete,
     getWaveStats: level.getWaveStats
   };
