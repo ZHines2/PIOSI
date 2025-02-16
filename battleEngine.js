@@ -10,9 +10,10 @@
  * The damage dealt is equal to Mellitron's current swarm stat.
  *
  * New in this version:
- * - Healing item (vittle) functionality has been added.
- *   Healing items are represented by the symbol 'v' on the battlefield.
- *   If a hero moves onto a cell containing a vittle, the hero consumes it and
+ * - Level objects functionality has been added.
+ *   Instead of auto-generating a healing item, the battle engine now looks for level objects
+ *   (such as a vittle) provided in the level configuration. For vittle objects, the default symbol
+ *   is set to 'ౚ'. When a hero moves onto a cell containing a vittle, the hero consumes it and
  *   recovers a fixed amount of HP.
  *
  * For detailed guidelines on creating new levels, refer to the Level Creation Rubric in docs/level-creation.md.
@@ -20,12 +21,26 @@
  * Overview of Level Creation:
  * - Each level is defined by properties like `level`, `title`, `rows`, `cols`, `wallHP`, and `enemies`.
  * - Levels can use an `enemyGenerator` function to dynamically generate enemies.
- * - Special properties like `generateEnemies`, `waveNumber`, and `restPhase` can be used for advanced level configurations.
+ * - Special properties like `generateEnemies`, `waveNumber`, `restPhase`, and now `levelObjects`
+ *   can be used for advanced level configurations.
  */
 
 import { applyKnockback } from './applyKnockback.js';
 
 export class BattleEngine {
+  /**
+   * @param {Array} party The heroes participating in battle.
+   * @param {Array} enemies The enemies in this battle.
+   * @param {number} fieldRows The number of rows in the battlefield.
+   * @param {number} fieldCols The number of columns in the battlefield.
+   * @param {number} wallHP The wall's hit points.
+   * @param {Function} logCallback A function to log battle events.
+   * @param {Function} onLevelComplete Callback when the level is complete.
+   * @param {Function} onGameOver Callback when the game is over.
+   * @param {Object} [levelConfig] Optional level configuration.
+   *                   This can include:
+   *                   - levelObjects: an array of objects (e.g., vittle) to be placed on the battlefield.
+   */
   constructor(
     party,
     enemies,
@@ -34,7 +49,8 @@ export class BattleEngine {
     wallHP,
     logCallback,
     onLevelComplete,
-    onGameOver
+    onGameOver,
+    levelConfig = {}
   ) {
     // Filter out any heroes with 0 HP.
     this.party = party.filter(hero => hero.hp > 0);
@@ -60,6 +76,19 @@ export class BattleEngine {
       enemy.statusEffects = {};
     });
 
+    // Level objects provided via the level configuration.
+    // For now, level objects might include a healing item of type "vittle".
+    this.levelObjects = levelConfig.levelObjects || [];
+    // Compute a set of level object symbols for checking traversable cells.
+    this.levelObjectSymbols = new Set(
+      this.levelObjects.map(obj => {
+        if (obj.type === 'vittle') {
+          return obj.symbol || 'ౚ'; 
+        }
+        return obj.symbol || '?';
+      })
+    );
+
     this.battlefield = this.initializeBattlefield();
   }
 
@@ -70,7 +99,8 @@ export class BattleEngine {
     this.placeHeroes(field);
     this.placeEnemies(field);
     this.createWall(field);
-    this.placeHealingItem(field); // Place healing item (vittle) on the battlefield.
+    // Instead of auto-placing a healing item, we place level objects defined in the level configuration.
+    this.placeLevelObjects(field);
     return field;
   }
 
@@ -100,22 +130,31 @@ export class BattleEngine {
     });
   }
 
-  // Place a healing item (vittle) on a random empty cell.
-  placeHealingItem(field) {
-    let emptyCells = [];
-    // Exclude the last row since it is occupied by the wall.
-    for (let y = 0; y < this.rows - 1; y++) {
-      for (let x = 0; x < this.cols; x++) {
-        if (field[y][x] === '.') {
-          emptyCells.push({ x, y });
+  /**
+   * Place level objects (such as a vittle) on the battlefield.
+   * Each object in levelObjects should specify at least:
+   * - type (e.g., "vittle")
+   * - x and y coordinates.
+   * Optionally, an object can define its own symbol.
+   */
+  placeLevelObjects(field) {
+    this.levelObjects.forEach(obj => {
+      if (
+        obj.x >= 0 &&
+        obj.x < this.cols &&
+        obj.y >= 0 &&
+        obj.y < this.rows - 1 && // exclude last row reserved for the wall
+        field[obj.y][obj.x] === '.'
+      ) {
+        let symbol;
+        if (obj.type === 'vittle') {
+          symbol = obj.symbol || 'ౚ';
+        } else {
+          symbol = obj.symbol || '?';
         }
+        field[obj.y][obj.x] = symbol;
       }
-    }
-    if (emptyCells.length) {
-      const index = Math.floor(Math.random() * emptyCells.length);
-      const cell = emptyCells[index];
-      field[cell.y][cell.x] = 'v'; // 'v' represents the healing item (vittle).
-    }
+    });
   }
 
   drawBattlefield() {
@@ -126,8 +165,13 @@ export class BattleEngine {
         const cellContent = this.battlefield[y][x];
         let cellClass = '';
         // Add class based on cell content.
-        if (cellContent === 'v') {
-          cellClass += ' healing-item';
+        if (this.levelObjectSymbols.has(cellContent)) {
+          // Add a specific class for level objects (ex: vittle)
+          cellClass += ' level-object';
+          // Optionally, you might add a sub-class if you wish to distinguish types.
+          if (cellContent === 'ౚ') {
+            cellClass += ' vittle';
+          }
         }
 
         // Dynamically check if the cell content matches any enemy symbol.
@@ -166,15 +210,21 @@ export class BattleEngine {
     const newY = unit.y + dy;
     if (!this.isValidMove(newX, newY)) return;
 
-    // Check if moving onto a healing item (vittle).
-    if (this.battlefield[newY][newX] === 'v') {
-      const healingValue = 10; // Fixed healing value for the vittle.
-      unit.hp += healingValue;
-      this.logCallback(
-        `${unit.name} picks up a vittle and heals for ${healingValue} HP! (New HP: ${unit.hp})`
-      );
-      // Remove the healing item from the battlefield.
+    // Check if moving onto a level object (e.g., a vittle).
+    if (this.levelObjectSymbols.has(this.battlefield[newY][newX])) {
+      // For a vittle, we assume a fixed healing value.
+      // In the future you can check for object type to change behavior.
+      if (this.battlefield[newY][newX] === 'ౚ') {
+        const healingValue = 10; // Fixed healing value for the vittle.
+        unit.hp += healingValue;
+        this.logCallback(
+          `${unit.name} consumes a vittle and heals for ${healingValue} HP! (New HP: ${unit.hp})`
+        );
+      }
+      // Remove the level object from the battlefield.
+      this.battlefield[newY][newX] = '.';
     }
+
     // Update the battlefield.
     this.battlefield[unit.y][unit.x] = '.';
     unit.x = newX;
@@ -186,18 +236,17 @@ export class BattleEngine {
     }
   }
 
-  // Allow movement onto empty cells or cells with a healing item.
+  // Allow movement onto empty cells or cells with level objects.
   isValidMove(x, y) {
     return (
       x >= 0 &&
       x < this.cols &&
       y >= 0 &&
       y < this.rows &&
-      (this.battlefield[y][x] === '.' || this.battlefield[y][x] === 'v')
+      (this.battlefield[y][x] === '.' || this.levelObjectSymbols.has(this.battlefield[y][x]))
     );
   }
 
-  // Attack (or heal) logic: if an ally is targeted, interpret as healing if the attacker has a heal stat.
   async attackInDirection(dx, dy, unit, recordAttackCallback) {
     if (this.transitioningLevel) return;
     await recordAttackCallback(
@@ -423,7 +472,7 @@ export class BattleEngine {
   }
 
   canMove(x, y) {
-    return this.isWithinBounds(x, y) && (this.battlefield[y][x] === '.' || this.battlefield[y][x] === 'v');
+    return this.isWithinBounds(x, y) && (this.battlefield[y][x] === '.' || this.levelObjectSymbols.has(this.battlefield[y][x]));
   }
 
   enemyAttackAdjacent(enemy) {
