@@ -121,6 +121,8 @@ export const levelSettings = [
       {
         name: "Vittle",
         symbol: "ౚ",
+        x: 2,
+        y: 3,
         effect: (hero) => {
           hero.hp += 1;
         },
