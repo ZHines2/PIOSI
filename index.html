@@ -352,7 +352,7 @@
             return;
           }
         }
-        const { rows, cols, wallHP, title, enemies: levelEnemies } = settings;
+        const { rows, cols, wallHP, title, enemies: levelEnemies, items } = settings;
         document.getElementById("level-title").textContent = title;
         enemies = levelEnemies;
         battleEngine = new BattleEngine(
@@ -365,6 +365,7 @@
           onLevelComplete,
           onGameOver
         );
+        battleEngine.items = items; // Include items in the battlefield
         renderBattlefield();
       }
 

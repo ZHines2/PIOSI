@@ -125,7 +125,8 @@ export const levelSettings = [
           hero.hp += 1;
         },
         message: "You found a Vittle! +1 HP"
-      }
+      },
+      debugPickupItem // Pc767
     ]
   },
   {
@@ -153,6 +154,9 @@ export const levelSettings = [
         agility: 2,
         enemyXOffset: 5
       }
+    ],
+    items: [
+      debugPickupItem // Pded7
     ]
   },
   {
@@ -177,7 +181,10 @@ export const levelSettings = [
         });
       }
       return enemies;
-    }
+    },
+    items: [
+      debugPickupItem // Pded7
+    ]
   },
   {
     level: 4,
@@ -190,6 +197,9 @@ export const levelSettings = [
       { name: "Brigand", symbol: "Җ", attack: 3, range: 1, hp: 12, agility: 2, x: 11, y: 1 },
       { name: "Buckleman", symbol: "⛨", attack: 1, range: 1, hp: 20, agility: 1, x: 8, y: 2 },
       { name: "Brigand", symbol: "Җ", attack: 3, range: 1, hp: 12, agility: 2, x: 12, y: 2 }
+    ],
+    items: [
+      debugPickupItem // Pded7
     ]
   },
   {
@@ -211,6 +221,9 @@ export const levelSettings = [
       { name: "Getter", symbol: "∴", attack: 5, range: 1, hp: 50, agility: 5, x: 4, y: 6 },
       { name: "Stonch Hogan", symbol: "酉", attack: 7, range: 1, hp: 100, agility: 3, x: 5, y: 6 },
       { name: "Taker", symbol: "∵", attack: 1, range: 5, hp: 50, agility: 5, x: 6, y: 6 }
+    ],
+    items: [
+      debugPickupItem // Pded7
     ]
   },
   {
@@ -267,7 +280,10 @@ export const levelSettings = [
         }
       }
       return enemies;
-    }
+    },
+    items: [
+      debugPickupItem // Pded7
+    ]
   },
   {
     level: 100,
@@ -346,7 +362,10 @@ export const levelSettings = [
       }
 
       return loreKeepers;
-    }
+    },
+    items: [
+      debugPickupItem // Pded7
+    ]
   },
   {
     level: 101,
@@ -512,7 +531,10 @@ export const levelSettings = [
     }),
     getWaveStats: (waveNumber) => ({
       enemyScale: 1 + (waveNumber * 0.1)
-    })
+    }),
+    items: [
+      debugPickupItem // Pded7
+    ]
   }
 ];
 
