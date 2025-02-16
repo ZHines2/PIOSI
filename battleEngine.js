@@ -114,7 +114,7 @@ export class BattleEngine {
     if (emptyCells.length) {
       const index = Math.floor(Math.random() * emptyCells.length);
       const cell = emptyCells[index];
-      field[cell.y][cell.x] = 'v'; // 'v' represents the healing item (vittle).
+      field[cell.y][cell.x] = 'ౚ'; // 'ౚ' represents the healing item (vittle).
     }
   }
 
@@ -126,7 +126,7 @@ export class BattleEngine {
         const cellContent = this.battlefield[y][x];
         let cellClass = '';
         // Add class based on cell content.
-        if (cellContent === 'v') {
+        if (cellContent === 'ౚ') {
           cellClass += ' healing-item';
         }
 
@@ -167,7 +167,7 @@ export class BattleEngine {
     if (!this.isValidMove(newX, newY)) return;
 
     // Check if moving onto a healing item (vittle).
-    if (this.battlefield[newY][newX] === 'v') {
+    if (this.battlefield[newY][newX] === 'ౚ') {
       const healingValue = 10; // Fixed healing value for the vittle.
       unit.hp += healingValue;
       this.logCallback(
@@ -193,7 +193,7 @@ export class BattleEngine {
       x < this.cols &&
       y >= 0 &&
       y < this.rows &&
-      (this.battlefield[y][x] === '.' || this.battlefield[y][x] === 'v')
+      (this.battlefield[y][x] === '.' || this.battlefield[y][x] === 'ౚ')
     );
   }
 
@@ -423,7 +423,7 @@ export class BattleEngine {
   }
 
   canMove(x, y) {
-    return this.isWithinBounds(x, y) && (this.battlefield[y][x] === '.' || this.battlefield[y][x] === 'v');
+    return this.isWithinBounds(x, y) && (this.battlefield[y][x] === '.' || this.battlefield[y][x] === 'ౚ');
   }
 
   enemyAttackAdjacent(enemy) {
