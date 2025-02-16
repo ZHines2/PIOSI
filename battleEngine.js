@@ -22,6 +22,7 @@
  */
 
 import { applyKnockback } from './applyKnockback.js';
+import { levelSettings } from './levels.js'; // Import the level settings
 
 export class BattleEngine {
   constructor(
@@ -145,6 +146,17 @@ export class BattleEngine {
     unit.y = newY;
     this.battlefield[newY][newX] = unit.symbol;
     this.movePoints--;
+
+    // Check if the unit has collected any item
+    const currentLevel = levelSettings.find(level => level.enemies === this.enemies);
+    if (currentLevel) {
+      const item = currentLevel.items.find(item => item.symbol === this.battlefield[newY][newX]);
+      if (item) {
+        item.effect(unit); // Apply the effect of the item
+        this.logCallback(item.message); // Log the message when the item is collected
+      }
+    }
+
     if (this.movePoints === 0) {
       this.nextTurn();
     }
@@ -281,11 +293,11 @@ export class BattleEngine {
       { x: -1, y: 0 },
       { x: 1, y: 0 },
       { x: 0, y: -1 },
-      { x: 0, y: 1 },
-      { x: -1, y: -1 },
-      { x: -1, y: 1 },
-      { x: 1, y: -1 },
-      { x: 1, y: 1 }
+      { x: 0, 1 },
+      { x: -1, y: -1 }, // Diagonal top-left
+      { x: 1, y: -1 },  // Diagonal top-right
+      { x: -1, y: 1 },  // Diagonal bottom-left
+      { x: 1, y: 1 }    // Diagonal bottom-right
     ];
 
     this.party.forEach(hero => {
