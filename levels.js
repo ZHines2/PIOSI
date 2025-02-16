@@ -111,9 +111,9 @@ export const levelSettings = [
         name: "Tutorial Marker",
         symbol: "✦",
         description: "This marker gives you hints about game controls and mechanics.",
-        // Place the marker roughly in the center of the grid.
-        x: Math.floor(10 / 2),
-        y: Math.floor(5 / 2)
+        // Place the marker at coordinates (5, 2).
+        x: 5,
+        y: 2
       }
     ]
   },
