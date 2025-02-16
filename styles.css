@@ -129,6 +129,12 @@ body {
   color: white; /* White text color */
 }
 
+/* Healing Item Styling */
+/* Mark healing items with a distinctive tan color */
+.healing-item {
+  color: tan;
+}
+
 /* Enemy cell style */
 /* Highlight enemy cells with distinctive color and bold text */
 .enemy {
@@ -139,112 +145,112 @@ body {
 /* Non-violent cell style */
 /* Mark cells that are non-violent with light green text */
 .non-violent {
-  color: lightgreen; /* Light green text color for non-violent cells */
+  color: lightgreen;
 }
 
 /* Highlighted Cell */
 /* Add a yellow border to highlight certain elements */
 .highlight {
-  border: 2px solid yellow; /* Yellow border for highlighting */
+  border: 2px solid yellow;
 }
 
 /* Button Styles */
 /* Style for interactive buttons */
 button {
-  padding: 10px; /* Add space within the button */
-  margin: 5px; /* Space around buttons */
-  font-size: 18px; /* Font size for button text */
+  padding: 10px;
+  margin: 5px;
+  font-size: 18px;
 }
 
 /* Overlays */
 /* Styles for the game over overlay screen */
 #game-over {
-  display: none; /* Hidden by default */
-  position: fixed; /* Fixed position to cover the entire viewport */
+  display: none;
+  position: fixed;
   top: 0;
   left: 0;
-  width: 100vw; /* Full viewport width */
-  height: 100vh; /* Full viewport height */
-  background: rgba(0, 0, 0, 0.90); /* Semi-transparent black background */
-  z-index: 999; /* High z-index to appear on top of other elements */
-  flex-direction: column; /* Stack overlay content vertically */
-  align-items: center; /* Center content horizontally */
-  justify-content: center; /* Center content vertically */
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.90);
+  z-index: 999;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Style for the main title in the game over overlay */
 #game-over h1 {
-  font-size: 3em; /* Large font size for the game over message */
-  margin-bottom: 20px; /* Space below the heading */
+  font-size: 3em;
+  margin-bottom: 20px;
 }
 
 /* Style for text in the game over overlay */
 #game-over p {
-  font-size: 1.5em; /* Increased font size for readability */
+  font-size: 1.5em;
 }
 
 /* Mode Up Window Overlay */
 /* Styles for the level-up or mode-up window that overlays the game screen */
 #mode-up-window {
-  display: none; /* Hidden by default */
-  position: fixed; /* Fixed position to cover the viewport */
+  display: none;
+  position: fixed;
   top: 0;
   left: 0;
-  width: 100vw; /* Cover full viewport width */
-  height: 100vh; /* Cover full viewport height */
-  background: rgba(0, 0, 0, 0.8); /* Semi-transparent black background */
-  z-index: 1000; /* Higher z-index to appear above game elements */
-  flex-direction: column; /* Stack children vertically */
-  align-items: center; /* Center children horizontally */
-  justify-content: flex-start; /* Start aligning children from the top */
-  color: white; /* White text color */
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 1000;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  color: white;
 }
 
 /* Style for headings in mode up window */
 #mode-up-window h2 {
-  margin-top: 20px; /* Space above the heading */
-  margin-bottom: 20px; /* Space below the heading */
+  margin-top: 20px;
+  margin-bottom: 20px;
 }
 
 /* Style for hero display in mode up window */
 #mode-up-hero-display {
-  margin: 10px; /* Space around the hero display area */
-  font-size: 1.2em; /* Slightly larger font for hero details */
+  margin: 10px;
+  font-size: 1.2em;
 }
 
 /* Instructions text for mode up window */
 #mode-up-instructions {
-  margin-top: 10px; /* Space above the instruction text */
+  margin-top: 10px;
 }
 
 /* Stat Up Highlight */
 /* Style for highlighting stat increases */
 .stat-up {
-  color: #32cd32; /* Bright green color for stat boosts */
-  font-weight: bold; /* Bold text for emphasis */
+  color: #32cd32;
+  font-weight: bold;
 }
 
 /* Dead Hero Styling */
 /* Style for showing heroes that are no longer active */
 .dead-hero {
-  color: #aaa; /* Gray text for dead heroes */
-  text-decoration: line-through; /* Strike-through effect */
+  color: #aaa;
+  text-decoration: line-through;
 }
 
 /* Log Area */
 /* Styles for the area displaying log messages and game events */
 #log {
-  height: 200px; /* Increased height for more log content visibility */
-  overflow-y: auto; /* Enable vertical scrolling */
-  background-color: #111; /* Dark background for contrast */
-  padding: 10px; /* Padding inside the log area */
-  border: 1px solid white; /* White border around the log area */
-  text-align: left; /* Left align text for readability */
-  font-size: 0.8rem; /* Smaller font size to show more text */
+  height: 200px;
+  overflow-y: auto;
+  background-color: #111;
+  padding: 10px;
+  border: 1px solid white;
+  text-align: left;
+  font-size: 0.8rem;
 }
 
 /* Log Paragraph Styles */
 /* Margins for each paragraph inside the log area for spacing */
 #log p {
-  margin: 0.5rem 0; /* Vertical margin for each paragraph */
+  margin: 0.5rem 0;
 }
