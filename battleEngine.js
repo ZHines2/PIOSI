@@ -9,9 +9,11 @@
  * Mellitron's swarm deals turn-based damage to any enemy in an adjacent tile.
  * The damage dealt is equal to Mellitron's current swarm stat.
  *
- * Updated: Enemy dialogue is now triggered during their turn.
- * When an enemy takes their turn, if they have dialogue defined, a random dialogue
- * line will be logged.
+ * New in this version:
+ * - Healing item (vittle) functionality has been added.
+ *   Healing items are represented by the symbol 'v' on the battlefield.
+ *   If a hero moves onto a cell containing a vittle, the hero consumes it and
+ *   recovers a fixed amount of HP.
  *
  * For detailed guidelines on creating new levels, refer to the Level Creation Rubric in docs/level-creation.md.
  * 
@@ -68,6 +70,7 @@ export class BattleEngine {
     this.placeHeroes(field);
     this.placeEnemies(field);
     this.createWall(field);
+    this.placeHealingItem(field); // Place healing item (vittle) on the battlefield.
     return field;
   }
 
@@ -97,6 +100,24 @@ export class BattleEngine {
     });
   }
 
+  // Place a healing item (vittle) on a random empty cell.
+  placeHealingItem(field) {
+    let emptyCells = [];
+    // Exclude the last row since it is occupied by the wall.
+    for (let y = 0; y < this.rows - 1; y++) {
+      for (let x = 0; x < this.cols; x++) {
+        if (field[y][x] === '.') {
+          emptyCells.push({ x, y });
+        }
+      }
+    }
+    if (emptyCells.length) {
+      const index = Math.floor(Math.random() * emptyCells.length);
+      const cell = emptyCells[index];
+      field[cell.y][cell.x] = 'v'; // 'v' represents the healing item (vittle).
+    }
+  }
+
   drawBattlefield() {
     let html = '';
     for (let y = 0; y < this.rows; y++) {
@@ -104,8 +125,12 @@ export class BattleEngine {
       for (let x = 0; x < this.cols; x++) {
         const cellContent = this.battlefield[y][x];
         let cellClass = '';
+        // Add class based on cell content.
+        if (cellContent === 'v') {
+          cellClass += ' healing-item';
+        }
 
-        // Dynamically check if the cell content matches any enemy symbol
+        // Dynamically check if the cell content matches any enemy symbol.
         const isEnemy = this.enemies.some(
           enemy => enemy.symbol === cellContent
         );
@@ -140,6 +165,17 @@ export class BattleEngine {
     const newX = unit.x + dx;
     const newY = unit.y + dy;
     if (!this.isValidMove(newX, newY)) return;
+
+    // Check if moving onto a healing item (vittle).
+    if (this.battlefield[newY][newX] === 'v') {
+      const healingValue = 10; // Fixed healing value for the vittle.
+      unit.hp += healingValue;
+      this.logCallback(
+        `${unit.name} picks up a vittle and heals for ${healingValue} HP! (New HP: ${unit.hp})`
+      );
+      // Remove the healing item from the battlefield.
+    }
+    // Update the battlefield.
     this.battlefield[unit.y][unit.x] = '.';
     unit.x = newX;
     unit.y = newY;
@@ -150,13 +186,14 @@ export class BattleEngine {
     }
   }
 
+  // Allow movement onto empty cells or cells with a healing item.
   isValidMove(x, y) {
     return (
       x >= 0 &&
       x < this.cols &&
       y >= 0 &&
       y < this.rows &&
-      this.battlefield[y][x] === '.'
+      (this.battlefield[y][x] === '.' || this.battlefield[y][x] === 'v')
     );
   }
 
@@ -223,7 +260,16 @@ export class BattleEngine {
 
         // Apply knockback if the attacking hero has the yeet stat.
         if (unit.yeet && unit.yeet > 0) {
-          applyKnockback(enemy, dx, dy, unit.yeet, unit.attack, this.battlefield, this.logCallback, this.isWithinBounds.bind(this));
+          applyKnockback(
+            enemy,
+            dx,
+            dy,
+            unit.yeet,
+            unit.attack,
+            this.battlefield,
+            this.logCallback,
+            this.isWithinBounds.bind(this)
+          );
         }
         if (enemy.hp <= 0) {
           this.logCallback(`${enemy.name} is defeated!`);
@@ -236,7 +282,10 @@ export class BattleEngine {
         return;
       }
       // Check for the wall.
-      if (this.battlefield[targetY][targetX] === 'ᚙ' || this.battlefield[targetY][targetX] === '█') {
+      if (
+        this.battlefield[targetY][targetX] === 'ᚙ' ||
+        this.battlefield[targetY][targetX] === '█'
+      ) {
         this.wallHP -= unit.attack;
         this.logCallback(
           `${unit.name} attacks the wall for ${unit.attack} damage! (Wall HP: ${this.wallHP})`
@@ -347,10 +396,7 @@ export class BattleEngine {
       if (stepX !== 0 && this.canMove(enemy.x, enemy.y + Math.sign(dy))) {
         stepY = dy > 0 ? 1 : -1;
         stepX = 0;
-      } else if (
-        stepY !== 0 &&
-        this.canMove(enemy.x + Math.sign(dx), enemy.y)
-      ) {
+      } else if (stepY !== 0 && this.canMove(enemy.x + Math.sign(dx), enemy.y)) {
         stepX = dx > 0 ? 1 : -1;
         stepY = 0;
       }
@@ -377,7 +423,7 @@ export class BattleEngine {
   }
 
   canMove(x, y) {
-    return this.isWithinBounds(x, y) && this.battlefield[y][x] === '.';
+    return this.isWithinBounds(x, y) && (this.battlefield[y][x] === '.' || this.battlefield[y][x] === 'v');
   }
 
   enemyAttackAdjacent(enemy) {
