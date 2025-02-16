@@ -21,6 +21,8 @@
  * - Special properties like `generateEnemies`, `waveNumber`, and `restPhase` can be used for advanced level configurations.
  */
 
+import { applyKnockback } from './applyKnockback.js';
+
 export class BattleEngine {
   constructor(
     party,
@@ -63,28 +65,36 @@ export class BattleEngine {
     const field = Array.from({ length: this.rows }, () =>
       Array(this.cols).fill('.')
     );
-    // Place heroes on the top row.
+    this.placeHeroes(field);
+    this.placeEnemies(field);
+    this.createWall(field);
+    return field;
+  }
+
+  placeHeroes(field) {
     this.party.forEach((hero, index) => {
       hero.x = Math.min(index, this.cols - 1);
       hero.y = 0;
       field[hero.y][hero.x] = hero.symbol;
     });
-    // Place enemies.
+  }
+
+  placeEnemies(field) {
     this.enemies.forEach(enemy => {
       enemy.statusEffects = {};
       field[enemy.y][enemy.x] = enemy.symbol;
     });
-    // Create the wall along the bottom row.
+  }
+
+  createWall(field) {
     for (let i = 0; i < this.cols; i++) {
       field[this.rows - 1][i] = 'ᚙ';
     }
-    // Place static wall enemies using Unicode block symbol '█'.
     this.enemies.forEach(enemy => {
       if (enemy.symbol === '█') {
         field[enemy.y][enemy.x] = enemy.symbol;
       }
     });
-    return field;
   }
 
   drawBattlefield() {
@@ -213,7 +223,7 @@ export class BattleEngine {
 
         // Apply knockback if the attacking hero has the yeet stat.
         if (unit.yeet && unit.yeet > 0) {
-          this.applyKnockback(enemy, dx, dy, unit.yeet, unit.attack);
+          applyKnockback(enemy, dx, dy, unit.yeet, unit.attack, this.battlefield, this.logCallback, this.isWithinBounds.bind(this));
         }
         if (enemy.hp <= 0) {
           this.logCallback(`${enemy.name} is defeated!`);
@@ -245,66 +255,6 @@ export class BattleEngine {
     this.awaitingAttackDirection = false;
     await this.shortPause();
     this.nextTurn();
-  }
-
-  /**
-   * Updated method to apply knockback to an enemy.
-   * - If collision with the wall (ᚙ) or any obstacle happens,
-   *   the enemy takes extra damage or dies as intended.
-   * - If the enemy cannot move past the obstacle, they take the hero's attack damage a second time.
-   */
-  applyKnockback(enemy, dx, dy, knockbackPower, yeetDamage) {
-    let newX = enemy.x;
-    let newY = enemy.y;
-    let pathIsBlocked = false;
-    // Check each intermediate cell for obstacles.
-    for (let i = 1; i <= knockbackPower; i++) {
-      const testX = enemy.x + dx * i;
-      const testY = enemy.y + dy * i;
-      if (!this.isWithinBounds(testX, testY)) {
-        // Out of bounds means a collision with the map edge.
-        pathIsBlocked = true;
-        break;
-      }
-      if (this.battlefield[testY][testX] === 'ᚙ' || this.battlefield[testY][testX] === '█') {
-        // Collision with the wall.
-        pathIsBlocked = true;
-        break;
-      }
-      if (this.battlefield[testY][testX] !== '.') {
-        // Some other obstacle.
-        pathIsBlocked = true;
-        break;
-      }
-      // If clear, update newX and newY.
-      newX = testX;
-      newY = testY;
-    }
-
-    // Move enemy if path is clear.
-    if (!pathIsBlocked) {
-      this.battlefield[enemy.y][enemy.x] = '.';
-      enemy.x = newX;
-      enemy.y = newY;
-      this.battlefield[newY][newX] = enemy.symbol;
-      this.logCallback(
-        `${enemy.name} is knocked back to (${newX}, ${newY}) by yeet!`
-      );
-    } else {
-      // If knockback is blocked, apply collision damage.
-      this.logCallback(
-        `${enemy.name} collides with the wall or an obstacle during yeet!`
-      );
-      enemy.hp -= yeetDamage;
-      this.logCallback(
-        `${enemy.name} takes ${yeetDamage} collision damage! (HP left: ${enemy.hp})`
-      );
-      if (enemy.hp <= 0) {
-        this.logCallback(`${enemy.name} is defeated by the collision!`);
-        this.battlefield[enemy.y][enemy.x] = '.';
-        this.enemies = this.enemies.filter(e => e !== enemy);
-      }
-    }
   }
 
   isWithinBounds(x, y) {
