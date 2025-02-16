@@ -293,11 +293,11 @@ export class BattleEngine {
       { x: -1, y: 0 },
       { x: 1, y: 0 },
       { x: 0, y: -1 },
-      { x: 0, 1 },
-      { x: -1, y: -1 }, // Diagonal top-left
-      { x: 1, y: -1 },  // Diagonal top-right
-      { x: -1, y: 1 },  // Diagonal bottom-left
-      { x: 1, y: 1 }    // Diagonal bottom-right
+      { x: 0, y: 1 },
+      { x: -1, y: -1 },
+      { x: -1, y: 1 },
+      { x: 1, y: -1 },
+      { x: 1, y: 1 }
     ];
 
     this.party.forEach(hero => {
