@@ -128,4 +128,15 @@ Here are some examples of hero configurations:
 
 The `griot.js` module handles API calls for special characters and generates narrative text using a Markov chain that’s refreshed with recent interactions. The Griot hero reacts uniquely when encountering historical events, and the module provides various special API calls for characters.
 
+## Integrating `debugPickupItem` into Hero Interactions
+
+To integrate the `debugPickupItem` into hero interactions, follow these steps:
+
+1. Define the `debugPickupItem` in the `levels.js` file with the desired properties and effects.
+2. Ensure that the `debugPickupItem` is included in the `items` array for the relevant levels.
+3. Modify the `moveUnit` method in the `BattleEngine` class to check for the `debugPickupItem` when a unit moves.
+4. Add logic to apply the effect of the `debugPickupItem` when collected.
+5. Update the `initializeBattle` function in the `index.html` file to include the `debugPickupItem` in the battlefield.
+6. Ensure the `renderBattlefield` function in the `index.html` file displays the `debugPickupItem` correctly.
+
 By following these guidelines and best practices, you can create heroes that are balanced, engaging, and fun for players. Happy hero designing!
