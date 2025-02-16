@@ -148,6 +148,14 @@ body {
   border: 2px solid yellow; /* Yellow border for highlighting */
 }
 
+/* Interactive cell style */
+/* Style for non-enemy interactive objects */
+.interactive {
+  background-color: #ffeb3b; /* Background color for interactive objects */
+  color: #000; /* Text color */
+  border: 1px solid #000; /* Border style */
+}
+
 /* Button Styles */
 /* Style for interactive buttons */
 button {
