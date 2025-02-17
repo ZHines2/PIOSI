@@ -407,43 +407,13 @@
           showScreen("victory");
           }
         }
-
-        // Fade out level-5-music when level is completed
-        if (level === 5) {
-          const level5Music = document.getElementById("level-5-music");
-          let volume = level5Music.volume;
-          const fadeInterval = setInterval(() => {
-            if (volume > 0) {
-              volume -= 0.1;
-              level5Music.volume = volume;
-            } else {
-              clearInterval(fadeInterval);
-              level5Music.pause();
-              level5Music.volume = 1; // Reset volume for future use
-            }
-          }, 100); // Adjust timing as needed
-        }
-      }
+      
 
       /**
        * Called when the game detects a game over condition.
        */
       function onGameOver() {
         document.getElementById("game-over").style.display = "flex";
-
-        // Fade out level-5-music on game over
-        const level5Music = document.getElementById("level-5-music");
-        let volume = level5Music.volume;
-        const fadeInterval = setInterval(() => {
-          if (volume > 0) {
-            volume -= 0.1;
-            level5Music.volume = volume;
-          } else {
-            clearInterval(fadeInterval);
-            level5Music.pause();
-            level5Music.volume = 1; // Reset volume for future use
-          }
-        }, 100); // Adjust timing as needed
       }
 
       /**
@@ -514,11 +484,6 @@
         const backgroundMusic = document.getElementById("background-music");
         backgroundMusic.pause();
         backgroundMusic.currentTime = 0;
-
-        // Stop level-5-music
-        const level5Music = document.getElementById("level-5-music");
-        level5Music.pause();
-        level5Music.currentTime = 0;
 
         // Start Hero Select music (WoodenPath.mp3)
         const heroSelectMusic = document.getElementById("hero-select-music");
