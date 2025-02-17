@@ -69,6 +69,7 @@
     <!-- Audio elements -->
     <audio id="background-music" src="DarkAnoid.mp3" loop></audio>
     <audio id="hero-select-music" src="WoodenPath.mp3" loop></audio>
+    <audio id="level-5-music" src="5GiMaxVision.mp3" loop></audio>
 
     <script type="module">
       // Import necessary modules with ample comments
@@ -326,6 +327,22 @@
         modeUpIndex = 0;
         showScreen("modeUp");
         updateModeUpHeroDisplay();
+
+        // Fade out background music if current level is 4
+        if (level === 4) {
+          const backgroundMusic = document.getElementById("background-music");
+          let volume = backgroundMusic.volume;
+          const fadeInterval = setInterval(() => {
+            if (volume > 0) {
+              volume -= 0.1;
+              backgroundMusic.volume = volume;
+            } else {
+              clearInterval(fadeInterval);
+              backgroundMusic.pause();
+              backgroundMusic.volume = 1; // Reset volume for future use
+            }
+          }, 100); // Adjust timing as needed
+        }
       }
 
       /**
@@ -366,6 +383,12 @@
           onGameOver
         );
         renderBattlefield();
+
+        // Play new song if current level is 5
+        if (level === 5) {
+          const level5Music = document.getElementById("level-5-music");
+          level5Music.play().catch(() => {});
+        }
       }
 
       /**

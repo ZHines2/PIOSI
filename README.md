@@ -12,3 +12,21 @@ The Level Creation Rubric provides comprehensive guidelines for defining level p
 The Hero Manifestation Guide now includes new hero stats `yeet` and `swarm`, which are used by the new heroes "Yeetrian" and "Mellitron" respectively. These stats add new dimensions to hero abilities and strategies in the game.
 
 The Level Creation Rubric has been updated to include guidelines for creating multi-level layouts with stairs or ladders, allowing for more complex and engaging level designs.
+
+## New Aesthetic Features
+
+### Background Music for Level 5
+
+A new song has been added to enhance the excitement of playing Level 5. The background music transitions smoothly from the usual background music (DarkAnoid) to the new song when the player begins Level 5.
+
+### Implementation Details
+
+1. **New Audio Element**: A new `<audio>` element for the new song has been added to `index.html`.
+2. **Initialize Battle Function**: The `initializeBattle` function in `index.html` has been updated to check if the current level is 5 and play the new song.
+3. **Mode Up Window Function**: The `showModeUpWindow` function in `index.html` has been updated to fade out the `background-music` when the current level is 4.
+
+## Credits
+
+### Music
+
+* "5GiMaxVision.mp3" by Skinnyy Hendrixx
