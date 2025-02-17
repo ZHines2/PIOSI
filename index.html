@@ -380,23 +380,11 @@
           showScreen("victory");
         } else if (level === 99) {
           logMessage("The veil of introspection lifts...");
-          level = 100;
-          setTimeout(initializeBattle, 2000);
-        } else if (level === 100) {
-          logMessage("The echoes fade, revealing the final challenge...");
-          level = 101;
-          setTimeout(initializeBattle, 2000);
-        } else if (level === 101) {
-          const currentWave = battleEngine.waveNumber || 0;
-          if (battleEngine.wallHP <= 0) {
-            logMessage("You've broken through! The eternal wall falls!");
-            showScreen("victory");
-          } else {
-            logMessage(`Wave ${currentWave + 1} complete!`);
-            setTimeout(initializeBattle, 2000);
+          logMessage("You've broken through! The eternal wall falls!");
+          showScreen("victory");
           }
         }
-      }
+      
 
       /**
        * Called when the game detects a game over condition.
