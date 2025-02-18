@@ -159,5 +159,15 @@ export const heroes = [
     agility: 5,
     hp: 18,
     swarm: 2 // Swarm stat: indicates additional abilities when swarming.
+  },
+  // New hero "Gastronomer" with a spicy stat.
+  {
+    name: "Gastronomer",
+    symbol: "𑍐",
+    attack: 2,
+    range: 1,
+    agility: 3,
+    hp: 15,
+    spicy: 1 // Spicy stat: increases the amount the vittle heals for.
   }
 ];
