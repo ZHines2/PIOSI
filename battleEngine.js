@@ -168,7 +168,9 @@ export class BattleEngine {
 
     // Check if moving onto a healing item (vittle).
     if (this.battlefield[newY][newX] === 'ౚ') {
-      const healingValue = 10; // Fixed healing value for the vittle.
+      const baseHealingValue = 10; // Base healing value for the vittle.
+      const spicyBonus = unit.spicy ? unit.spicy * 2 : 0; // Calculate spicy bonus.
+      const healingValue = baseHealingValue + spicyBonus; // Total healing value.
       unit.hp += healingValue;
       this.logCallback(
         `${unit.name} picks up a vittle and heals for ${healingValue} HP! (New HP: ${unit.hp})`

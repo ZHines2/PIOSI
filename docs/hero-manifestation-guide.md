@@ -23,6 +23,7 @@ Some heroes have special properties that give them unique abilities. Here are so
 - `sluj`: The hero can inflict sluj damage on enemies.
 - `yeet`: The hero can knock back enemies.
 - `swarm`: The hero can deal turn-based damage to adjacent enemies.
+- `spicy`: Each "spicy" stat raises the amount the vittle heals for.
 
 ## Best Practices
 
@@ -90,6 +91,21 @@ Here are some examples of hero configurations:
   hp: 18,
   swarm: 2, // Swarm ability.
   description: "Mellitron commands a swarm of bees that deal turn-based damage to any enemy in an adjacent tile. His bees sting with relentless fury, and his enemies are left in agony."
+}
+```
+
+### Example 5: Gastronomer
+
+```javascript
+{
+  name: "Gastronomer",
+  symbol: "𑍐",
+  attack: 2,
+  range: 1,
+  agility: 3,
+  hp: 15,
+  spicy: 1, // Spicy stat: increases the amount the vittle heals for.
+  description: "The Gastronomer uses his culinary skills to enhance the healing properties of vittles. Each 'spicy' stat raises the amount the vittle heals for, making him a valuable asset in prolonged battles."
 }
 ```
 
