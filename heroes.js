@@ -160,13 +160,4 @@ export const heroes = [
     hp: 18,
     swarm: 2 // Swarm stat: indicates additional abilities when swarming.
   }
-  {
-    name: "Hypnogog",
-    symbol: "༗",
-    attack: 2,
-    range: 3,
-    agility: 3,
-    hp: 15,
-    charm: 2 // Charm power: makes enemies attack each other for 2 turns
-  }
 ];
