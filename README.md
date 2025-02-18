@@ -29,4 +29,6 @@ A new song has been added to enhance the excitement of playing Level 5. The back
 
 ### Music
 
-* "5GiMaxVision.mp3" by Skinnyy Hendrixx
+* "WoodenPath" by Zachary Hines, II
+* "DarkAnoid" by PHIctitious5
+* "5GiMaxVision" by Skinnyy Hendrixx
