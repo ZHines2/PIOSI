@@ -11,7 +11,7 @@
  *
  * New in this version:
  * - Healing item (vittle) functionality has been added.
- *   Healing items are represented by the symbol 'v' on the battlefield.
+ *   Healing items are represented by the symbol 'ౚ' on the battlefield.
  *   If a hero moves onto a cell containing a vittle, the hero consumes it and
  *   recovers a fixed amount of HP.
  *
