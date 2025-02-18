@@ -21,7 +21,7 @@ export const heroes = [
     attack: 3,
     range: 5,
     agility: 4,
-    hp: 12
+    hp: 12,
   },
   {
     name: "Wizard",
@@ -29,7 +29,7 @@ export const heroes = [
     attack: 2,
     range: 7,
     agility: 2,
-    hp: 10
+    hp: 10,
   },
   {
     name: "Berserker",
@@ -37,7 +37,7 @@ export const heroes = [
     attack: 6,
     range: 1,
     agility: 3,
-    hp: 20
+    hp: 20,
   },
   {
     name: "Rogue",
@@ -45,7 +45,7 @@ export const heroes = [
     attack: 4,
     range: 2,
     agility: 6,
-    hp: 12
+    hp: 12,
   },
   {
     name: "Cleric",
@@ -168,6 +168,7 @@ export const heroes = [
     range: 1,
     agility: 3,
     hp: 15,
-    spicy: 1 // Spicy stat: increases the amount the vittle heals for.
+    spicy: 1, // Spicy stat: increases the amount the vittle heals for.
+    recipe: true // Indicates recipe-related interactions.
   }
 ];
