@@ -11,16 +11,12 @@
  *
  * New in this version:
  * - Healing item (vittle) functionality has been added.
- *   Healing items are represented by the symbol 'ౚ' on the battlefield.
+ *   Healing items are represented by the symbol 'v' on the battlefield.
  *   If a hero moves onto a cell containing a vittle, the hero consumes it and
  *   recovers a fixed amount of HP.
  *
- * - Charm ability integration: Heroes with a charm stat (e.g., Hypnogog) will
- *   charm enemies when attacking them. Charmed enemies target other enemies
- *   instead of heroes for the duration of the charm effect.
- *
  * For detailed guidelines on creating new levels, refer to the Level Creation Rubric in docs/level-creation.md.
- *
+ * 
  * Overview of Level Creation:
  * - Each level is defined by properties like `level`, `title`, `rows`, `cols`, `wallHP`, and `enemies`.
  * - Levels can use an `enemyGenerator` function to dynamically generate enemies.
@@ -177,7 +173,7 @@ export class BattleEngine {
       this.logCallback(
         `${unit.name} picks up a vittle and heals for ${healingValue} HP! (New HP: ${unit.hp})`
       );
-      // Optionally remove the healing item from the battlefield here.
+      // Remove the healing item from the battlefield.
     }
     // Update the battlefield.
     this.battlefield[unit.y][unit.x] = '.';
@@ -275,12 +271,6 @@ export class BattleEngine {
             this.isWithinBounds.bind(this)
           );
         }
-
-        // Apply charm effect if the hero has a charm stat.
-        if (unit.charm && unit.charm > 0) {
-          this.applyCharmEffect(enemy, unit);
-        }
-
         if (enemy.hp <= 0) {
           this.logCallback(`${enemy.name} is defeated!`);
           this.battlefield[targetY][targetX] = '.';
@@ -372,108 +362,15 @@ export class BattleEngine {
     });
   }
 
-  // NEW: Apply charm effect to an enemy.
-  applyCharmEffect(enemy, source) {
-    if (!enemy.statusEffects.charm) {
-      enemy.statusEffects.charm = {
-        duration: source.charm,
-        source: source
-      };
-      this.logCallback(
-        `${enemy.name} is charmed by ${source.name} for ${source.charm} turns!`
-      );
-    }
-  }
-
-  // NEW: Handle the turn for a charmed enemy.
-  handleCharmedEnemyTurn(charmedEnemy) {
-    // Move enemy towards the closest other enemy.
-    const targetEnemy = this.findClosestEnemy(charmedEnemy);
-    if (!targetEnemy) return;
-
-    // Move towards target enemy based on charmed enemy's agility.
-    for (let moves = 0; moves < charmedEnemy.agility; moves++) {
-      const dx = targetEnemy.x - charmedEnemy.x;
-      const dy = targetEnemy.y - charmedEnemy.y;
-      let stepX = 0, stepY = 0;
-      if (Math.abs(dx) >= Math.abs(dy)) {
-        stepX = dx > 0 ? 1 : dx < 0 ? -1 : 0;
-      } else {
-        stepY = dy > 0 ? 1 : dy < 0 ? -1 : 0;
-      }
-      const newX = charmedEnemy.x + stepX;
-      const newY = charmedEnemy.y + stepY;
-      if (this.canMove(newX, newY)) {
-        this.battlefield[charmedEnemy.y][charmedEnemy.x] = '.';
-        charmedEnemy.x = newX;
-        charmedEnemy.y = newY;
-        this.battlefield[newY][newX] = charmedEnemy.symbol;
-      }
-    }
-
-    // Attack adjacent enemy instead of a hero.
-    const directions = [
-      [0, -1],
-      [0, 1],
-      [-1, 0],
-      [1, 0],
-    ];
-    
-    for (const [dx, dy] of directions) {
-      const tx = charmedEnemy.x + dx;
-      const ty = charmedEnemy.y + dy;
-      const target = this.enemies.find(
-        e => e !== charmedEnemy && e.x === tx && e.y === ty
-      );
-      if (target) {
-        target.hp -= charmedEnemy.attack;
-        this.logCallback(
-          `Charmed ${charmedEnemy.name} attacks ${target.name} for ${charmedEnemy.attack} damage! (Enemy HP: ${target.hp})`
-        );
-        if (target.hp <= 0) {
-          this.logCallback(`${target.name} is defeated!`);
-          this.battlefield[target.y][target.x] = '.';
-          this.enemies = this.enemies.filter(e => e !== target);
-        }
-        break;
-      }
-    }
-  }
-
-  // NEW: Find the closest enemy to a charmed enemy.
-  findClosestEnemy(charmedEnemy) {
-    let closest = null;
-    let closestDistance = Infinity;
-    this.enemies.forEach(enemy => {
-      if (enemy !== charmedEnemy) {
-        const distance = Math.abs(enemy.x - charmedEnemy.x) + Math.abs(enemy.y - charmedEnemy.y);
-        if (distance < closestDistance) {
-          closest = enemy;
-          closestDistance = distance;
-        }
-      }
-    });
-    return closest;
-  }
-
   enemyTurn() {
     if (this.transitioningLevel) return;
     this.enemies.forEach(enemy => {
-      // If enemy is charmed, execute charmed behavior.
-      if (enemy.statusEffects.charm && enemy.statusEffects.charm.duration > 0) {
-        this.handleCharmedEnemyTurn(enemy);
-        enemy.statusEffects.charm.duration--;
-        if (enemy.statusEffects.charm.duration <= 0) {
-          this.logCallback(`${enemy.name} breaks free from the charm!`);
-          delete enemy.statusEffects.charm;
-        }
-      } else {
-        // Normal enemy behavior: move and attack.
-        for (let moves = 0; moves < enemy.agility; moves++) {
-          this.moveEnemy(enemy);
-        }
-        this.enemyAttackAdjacent(enemy);
+      // Move enemy based on its agility.
+      for (let moves = 0; moves < enemy.agility; moves++) {
+        this.moveEnemy(enemy);
       }
+      // Enemy attacks adjacent heroes.
+      this.enemyAttackAdjacent(enemy);
       // Trigger enemy dialogue if defined.
       if (Array.isArray(enemy.dialogue) && enemy.dialogue.length > 0) {
         const randomIndex = Math.floor(Math.random() * enemy.dialogue.length);
