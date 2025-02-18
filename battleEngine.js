@@ -1,22 +1,16 @@
 /**
  * battleEngine.js
  *
- * This version includes updated "yeet" logic so that if an enemy is knocked back
- * (yeeted) into the wall and cannot move past it, they take damage or die as intended.
- * It also applies damage if they collide with the wall during a yeet attempt.
+ * This version includes updated "yeet" logic, healing items (vittle), Mellitron's swarm ability,
+ * and a simplified charm ability.
  *
- * Additionally, we've integrated Mellitron's swarm ability.
- * Mellitron's swarm deals turn-based damage to any enemy in an adjacent tile.
- * The damage dealt is equal to Mellitron's current swarm stat.
- *
- * New in this version:
- * - Healing item (vittle) functionality has been added.
- *   Healing items are represented by the symbol 'v' on the battlefield.
- *   If a hero moves onto a cell containing a vittle, the hero consumes it and
- *   recovers a fixed amount of HP.
+ * A hero possessing a charm stat will apply a charm to an enemy on a successful attack.
+ * Charmed enemies have a "charmDuration" property. During enemyTurn, if an enemy is charmed 
+ * (charmDuration > 0), it executes a streamlined charmed behavior (attacking adjacent enemies)
+ * and its charm duration is decremented.
  *
  * For detailed guidelines on creating new levels, refer to the Level Creation Rubric in docs/level-creation.md.
- * 
+ *
  * Overview of Level Creation:
  * - Each level is defined by properties like `level`, `title`, `rows`, `cols`, `wallHP`, and `enemies`.
  * - Levels can use an `enemyGenerator` function to dynamically generate enemies.
@@ -43,7 +37,6 @@ export class BattleEngine {
     this.cols = fieldCols;
     this.wallHP = wallHP;
     this.logCallback = logCallback;
-
     this.onLevelComplete = onLevelComplete;
     this.onGameOver = onGameOver;
 
@@ -53,20 +46,21 @@ export class BattleEngine {
     this.awaitingAttackDirection = false;
     this.transitioningLevel = false;
 
+    // Initialize statusEffects for heroes and enemies.
     this.party.forEach(hero => {
       hero.statusEffects = hero.statusEffects || {};
     });
     this.enemies.forEach(enemy => {
-      enemy.statusEffects = {};
+      enemy.statusEffects = enemy.statusEffects || {};
+      // Initialize charmDuration property
+      enemy.charmDuration = 0;
     });
 
     this.battlefield = this.initializeBattlefield();
   }
 
   initializeBattlefield() {
-    const field = Array.from({ length: this.rows }, () =>
-      Array(this.cols).fill('.')
-    );
+    const field = Array.from({ length: this.rows }, () => Array(this.cols).fill('.'));
     this.placeHeroes(field);
     this.placeEnemies(field);
     this.createWall(field);
@@ -84,7 +78,8 @@ export class BattleEngine {
 
   placeEnemies(field) {
     this.enemies.forEach(enemy => {
-      enemy.statusEffects = {};
+      enemy.statusEffects = enemy.statusEffects || {};
+      enemy.charmDuration = enemy.charmDuration || 0;
       field[enemy.y][enemy.x] = enemy.symbol;
     });
   }
@@ -125,27 +120,20 @@ export class BattleEngine {
       for (let x = 0; x < this.cols; x++) {
         const cellContent = this.battlefield[y][x];
         let cellClass = '';
-        // Add class based on cell content.
+        // Mark healing items and enemies.
         if (cellContent === 'ౚ') {
           cellClass += ' healing-item';
         }
-
-        // Dynamically check if the cell content matches any enemy symbol.
-        const isEnemy = this.enemies.some(
-          enemy => enemy.symbol === cellContent
-        );
-        if (isEnemy) {
+        if (this.enemies.some(enemy => enemy.symbol === cellContent)) {
           cellClass += ' enemy';
         }
-
+        // Highlight the active hero's cell.
         if (
           this.party[this.currentUnit] &&
           this.party[this.currentUnit].x === x &&
           this.party[this.currentUnit].y === y
         ) {
-          cellClass += this.awaitingAttackDirection
-            ? ' attack-mode'
-            : ' active';
+          cellClass += this.awaitingAttackDirection ? ' attack-mode' : ' active';
         }
         html += `<div class="cell ${cellClass}">${cellContent}</div>`;
       }
@@ -155,27 +143,19 @@ export class BattleEngine {
   }
 
   moveUnit(dx, dy) {
-    if (
-      this.awaitingAttackDirection ||
-      this.movePoints <= 0 ||
-      this.transitioningLevel
-    )
-      return;
+    if (this.awaitingAttackDirection || this.movePoints <= 0 || this.transitioningLevel) return;
     const unit = this.party[this.currentUnit];
     const newX = unit.x + dx;
     const newY = unit.y + dy;
     if (!this.isValidMove(newX, newY)) return;
 
-    // Check if moving onto a healing item (vittle).
+    // Check if moving onto a healing item (vittle)
     if (this.battlefield[newY][newX] === 'ౚ') {
-      const healingValue = 10; // Fixed healing value for the vittle.
+      const healingValue = 10;
       unit.hp += healingValue;
-      this.logCallback(
-        `${unit.name} picks up a vittle and heals for ${healingValue} HP! (New HP: ${unit.hp})`
-      );
-      // Remove the healing item from the battlefield.
+      this.logCallback(`${unit.name} picks up a vittle and heals for ${healingValue} HP! (New HP: ${unit.hp})`);
     }
-    // Update the battlefield.
+    // Update battlefield positions.
     this.battlefield[unit.y][unit.x] = '.';
     unit.x = newX;
     unit.y = newY;
@@ -186,7 +166,6 @@ export class BattleEngine {
     }
   }
 
-  // Allow movement onto empty cells or cells with a healing item.
   isValidMove(x, y) {
     return (
       x >= 0 &&
@@ -197,31 +176,23 @@ export class BattleEngine {
     );
   }
 
-  // Attack (or heal) logic: if an ally is targeted, interpret as healing if the attacker has a heal stat.
+  // In attackInDirection, if the attacker has a charm stat, apply charm by setting enemy.charmDuration.
   async attackInDirection(dx, dy, unit, recordAttackCallback) {
     if (this.transitioningLevel) return;
-    await recordAttackCallback(
-      `${unit.name} attacked in direction (${dx}, ${dy}).`
-    );
+    await recordAttackCallback(`${unit.name} attacked in direction (${dx}, ${dy}).`);
     for (let i = 1; i <= unit.range; i++) {
       const targetX = unit.x + dx * i;
       const targetY = unit.y + dy * i;
       if (!this.isWithinBounds(targetX, targetY)) break;
 
-      // Check for an ally (different from the attacker).
-      const ally = this.party.find(
-        h => h.x === targetX && h.y === targetY && h !== unit
-      );
+      // If an ally (other than the attacker) is found, treat this as a healing attempt.
+      const ally = this.party.find(h => h.x === targetX && h.y === targetY && h !== unit);
       if (ally) {
         if (unit.heal && unit.heal > 0) {
           ally.hp += unit.heal;
-          this.logCallback(
-            `${unit.name} heals ${ally.name} for ${unit.heal} HP! (New HP: ${ally.hp})`
-          );
+          this.logCallback(`${unit.name} heals ${ally.name} for ${unit.heal} HP! (New HP: ${ally.hp})`);
         } else {
-          this.logCallback(
-            `${unit.name} attacks ${ally.name} but nothing happens.`
-          );
+          this.logCallback(`${unit.name} attacks ${ally.name} but nothing happens.`);
         }
         this.awaitingAttackDirection = false;
         await this.shortPause();
@@ -229,47 +200,34 @@ export class BattleEngine {
         return;
       }
 
-      // Check for an enemy.
+      // If an enemy is found, apply damage.
       const enemy = this.enemies.find(e => e.x === targetX && e.y === targetY);
       if (enemy) {
         enemy.hp -= unit.attack;
-        this.logCallback(
-          `${unit.name} attacks ${enemy.name} for ${unit.attack} damage! (HP left: ${enemy.hp})`
-        );
+        this.logCallback(`${unit.name} attacks ${enemy.name} for ${unit.attack} damage! (HP left: ${enemy.hp})`);
+        // Apply burn or sluj status if applicable (existing logic)
         if (unit.burn) {
           enemy.statusEffects.burn = { damage: unit.burn, duration: 3 };
-          this.logCallback(
-            `${enemy.name} is now burning for ${unit.burn} damage per turn for 3 turns!`
-          );
+          this.logCallback(`${enemy.name} is now burning for ${unit.burn} damage for 3 turns!`);
         }
         if (unit.sluj) {
           if (!enemy.statusEffects.sluj) {
-            enemy.statusEffects.sluj = {
-              level: unit.sluj,
-              duration: 4,
-              counter: 0,
-            };
+            enemy.statusEffects.sluj = { level: unit.sluj, duration: 4, counter: 0 };
           } else {
             enemy.statusEffects.sluj.level += unit.sluj;
             enemy.statusEffects.sluj.duration = 4;
           }
-          this.logCallback(
-            `${enemy.name} is afflicted with slüj (level ${enemy.statusEffects.sluj.level}) for 4 turns!`
-          );
+          this.logCallback(`${enemy.name} is afflicted with slüj (level ${enemy.statusEffects.sluj.level}) for 4 turns!`);
         }
-
-        // Apply knockback if the attacking hero has the yeet stat.
+        // Apply knockback if applicable.
         if (unit.yeet && unit.yeet > 0) {
-          applyKnockback(
-            enemy,
-            dx,
-            dy,
-            unit.yeet,
-            unit.attack,
-            this.battlefield,
-            this.logCallback,
-            this.isWithinBounds.bind(this)
-          );
+          applyKnockback(enemy, dx, dy, unit.yeet, unit.attack, this.battlefield, this.logCallback, this.isWithinBounds.bind(this));
+        }
+        // Streamlined charm integration:
+        // If the attacker has a charm stat, simply set enemy.charmDuration (overwriting previous value).
+        if (unit.charm && unit.charm > 0) {
+          enemy.charmDuration = unit.charm;
+          this.logCallback(`${enemy.name} is charmed by ${unit.name} for ${unit.charm} turns!`);
         }
         if (enemy.hp <= 0) {
           this.logCallback(`${enemy.name} is defeated!`);
@@ -281,15 +239,10 @@ export class BattleEngine {
         this.nextTurn();
         return;
       }
-      // Check for the wall.
-      if (
-        this.battlefield[targetY][targetX] === 'ᚙ' ||
-        this.battlefield[targetY][targetX] === '█'
-      ) {
+      // If a wall is encountered, apply damage to it.
+      if (this.battlefield[targetY][targetX] === 'ᚙ' || this.battlefield[targetY][targetX] === '█') {
         this.wallHP -= unit.attack;
-        this.logCallback(
-          `${unit.name} attacks the wall for ${unit.attack} damage! (Wall HP: ${this.wallHP})`
-        );
+        this.logCallback(`${unit.name} attacks the wall for ${unit.attack} damage! (Wall HP: ${this.wallHP})`);
         this.awaitingAttackDirection = false;
         if (this.wallHP <= 0 && !this.transitioningLevel) {
           this.handleWallCollapse();
@@ -322,21 +275,14 @@ export class BattleEngine {
 
   /**
    * Applies Mellitron's swarm damage.
-   * For each hero with a swarm ability (e.g., Mellitron), any enemy occupying
-   * an adjacent cell takes damage equal to the hero's current swarm stat.
    */
   applySwarmDamage() {
     const adjacentOffsets = [
-      { x: -1, y: 0 },
-      { x: 1, y: 0 },
-      { x: 0, y: -1 },
-      { x: 0, y: 1 },
-      { x: -1, y: -1 },
-      { x: -1, y: 1 },
-      { x: 1, y: -1 },
-      { x: 1, y: 1 }
+      { x: -1, y: 0 }, { x: 1, y: 0 },
+      { x: 0, y: -1 }, { x: 0, y: 1 },
+      { x: -1, y: -1 }, { x: -1, y: 1 },
+      { x: 1, y: -1 }, { x: 1, y: 1 }
     ];
-
     this.party.forEach(hero => {
       if (hero.swarm && typeof hero.swarm === 'number') {
         adjacentOffsets.forEach(offset => {
@@ -347,9 +293,7 @@ export class BattleEngine {
             if (enemy) {
               const damage = hero.swarm;
               enemy.hp -= damage;
-              this.logCallback(
-                `${hero.name}'s swarm deals ${damage} damage to ${enemy.name} at (${targetX},${targetY})! (HP left: ${enemy.hp})`
-              );
+              this.logCallback(`${hero.name}'s swarm deals ${damage} damage to ${enemy.name} at (${targetX},${targetY})! (HP left: ${enemy.hp})`);
               if (enemy.hp <= 0) {
                 this.logCallback(`${enemy.name} is defeated by swarm damage!`);
                 this.battlefield[targetY][targetX] = '.';
@@ -362,16 +306,24 @@ export class BattleEngine {
     });
   }
 
+  // Simplified enemyTurn: if an enemy is charmed (charmDuration > 0), execute a charmed action.
   enemyTurn() {
     if (this.transitioningLevel) return;
     this.enemies.forEach(enemy => {
-      // Move enemy based on its agility.
-      for (let moves = 0; moves < enemy.agility; moves++) {
-        this.moveEnemy(enemy);
+      if (enemy.charmDuration > 0) {
+        this.handleCharmedEnemy(enemy);
+        enemy.charmDuration--;
+        if (enemy.charmDuration <= 0) {
+          this.logCallback(`${enemy.name} is no longer charmed.`);
+        }
+      } else {
+        // Normal behavior: move and attack.
+        for (let moves = 0; moves < enemy.agility; moves++) {
+          this.moveEnemy(enemy);
+        }
+        this.enemyAttackAdjacent(enemy);
       }
-      // Enemy attacks adjacent heroes.
-      this.enemyAttackAdjacent(enemy);
-      // Trigger enemy dialogue if defined.
+      // Optionally log enemy dialogue.
       if (Array.isArray(enemy.dialogue) && enemy.dialogue.length > 0) {
         const randomIndex = Math.floor(Math.random() * enemy.dialogue.length);
         this.logCallback(`${enemy.name} says: "${enemy.dialogue[randomIndex]}"`);
@@ -380,13 +332,34 @@ export class BattleEngine {
     this.logCallback('Enemy turn completed.');
   }
 
+  // If enemy is charmed, have it target an adjacent enemy instead of a hero.
+  handleCharmedEnemy(enemy) {
+    const directions = [[0, -1], [0, 1], [-1, 0], [1, 0]];
+    for (const [dx, dy] of directions) {
+      const tx = enemy.x + dx;
+      const ty = enemy.y + dy;
+      const target = this.enemies.find(e => e !== enemy && e.x === tx && e.y === ty);
+      if (target) {
+        target.hp -= enemy.attack;
+        this.logCallback(`Charmed ${enemy.name} attacks ${target.name} for ${enemy.attack} damage! (HP left: ${target.hp})`);
+        if (target.hp <= 0) {
+          this.logCallback(`${target.name} is defeated!`);
+          this.battlefield[target.y][target.x] = '.';
+          this.enemies = this.enemies.filter(e => e !== target);
+        }
+        return;
+      }
+    }
+    // If no adjacent enemy is found, fall back to normal movement.
+    this.moveEnemy(enemy);
+  }
+
   moveEnemy(enemy) {
     const targetHero = this.findClosestHero(enemy);
     if (!targetHero) return;
     const dx = targetHero.x - enemy.x;
     const dy = targetHero.y - enemy.y;
-    let stepX = 0,
-      stepY = 0;
+    let stepX = 0, stepY = 0;
     if (Math.abs(dx) >= Math.abs(dy)) {
       stepX = dx > 0 ? 1 : dx < 0 ? -1 : 0;
     } else {
@@ -414,10 +387,8 @@ export class BattleEngine {
   findClosestHero(enemy) {
     if (this.party.length === 0) return null;
     return this.party.reduce((closest, hero) => {
-      const currentDistance =
-        Math.abs(closest.x - enemy.x) + Math.abs(closest.y - enemy.y);
-      const heroDistance =
-        Math.abs(hero.x - enemy.x) + Math.abs(hero.y - enemy.y);
+      const currentDistance = Math.abs(closest.x - enemy.x) + Math.abs(closest.y - enemy.y);
+      const heroDistance = Math.abs(hero.x - enemy.x) + Math.abs(hero.y - enemy.y);
       return heroDistance < currentDistance ? hero : closest;
     });
   }
@@ -427,23 +398,14 @@ export class BattleEngine {
   }
 
   enemyAttackAdjacent(enemy) {
-    const directions = [
-      [0, -1],
-      [0, 1],
-      [-1, 0],
-      [1, 0],
-    ];
+    const directions = [[0, -1], [0, 1], [-1, 0], [1, 0]];
     directions.forEach(([dx, dy]) => {
       const tx = enemy.x + dx;
       const ty = enemy.y + dy;
-      const targetHero = this.party.find(
-        hero => hero.x === tx && hero.y === ty
-      );
+      const targetHero = this.party.find(hero => hero.x === tx && hero.y === ty);
       if (targetHero) {
         targetHero.hp -= enemy.attack;
-        this.logCallback(
-          `${enemy.name} attacks ${targetHero.name} for ${enemy.attack} damage! (Hero HP: ${targetHero.hp})`
-        );
+        this.logCallback(`${enemy.name} attacks ${targetHero.name} for ${enemy.attack} damage! (Hero HP: ${targetHero.hp})`);
         if (targetHero.hp <= 0) {
           this.logCallback(`${targetHero.name} is defeated!`);
           this.battlefield[targetHero.y][targetHero.x] = '.';
@@ -458,25 +420,20 @@ export class BattleEngine {
 
   nextTurn() {
     if (this.transitioningLevel) return;
-    
-    // Process status effects first.
+    // Process status effects.
     this.applyStatusEffects();
-
-    // Apply swarm damage from heroes like Mellitron.
+    // Apply swarm damage.
     this.applySwarmDamage();
-
-    // If after status effects no heroes remain, the game is over.
+    // Check for game over.
     if (this.party.length === 0) {
       this.logCallback('All heroes have been defeated! Game Over.');
       if (typeof this.onGameOver === 'function') this.onGameOver();
       return;
     }
-
-    // Ensure currentUnit is valid, especially if the party size changed.
+    // Update currentUnit and movePoints.
     if (this.currentUnit >= this.party.length) {
       this.currentUnit = 0;
     }
-
     this.awaitingAttackDirection = false;
     this.currentUnit++;
     if (this.currentUnit >= this.party.length) {
@@ -497,9 +454,7 @@ export class BattleEngine {
   applyStatusEffects() {
     this.party.forEach(hero => {
       if (hero.statusEffects.burn && hero.statusEffects.burn.duration > 0) {
-        this.logCallback(
-          `${hero.name} is burned and takes ${hero.statusEffects.burn.damage} damage!`
-        );
+        this.logCallback(`${hero.name} is burned and takes ${hero.statusEffects.burn.damage} damage!`);
         hero.hp -= hero.statusEffects.burn.damage;
         hero.statusEffects.burn.duration--;
         if (hero.hp <= 0) {
@@ -512,9 +467,7 @@ export class BattleEngine {
 
     this.enemies.forEach(enemy => {
       if (enemy.statusEffects.burn && enemy.statusEffects.burn.duration > 0) {
-        this.logCallback(
-          `${enemy.name} is burned and takes ${enemy.statusEffects.burn.damage} damage!`
-        );
+        this.logCallback(`${enemy.name} is burned and takes ${enemy.statusEffects.burn.damage} damage!`);
         enemy.hp -= enemy.statusEffects.burn.damage;
         enemy.statusEffects.burn.duration--;
         if (enemy.hp <= 0) {
