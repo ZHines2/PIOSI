@@ -79,6 +79,7 @@
         fetchTarotCard,
         fetchNonseqFact,
         fetchShrinkAdvice,
+        fetchRandomRecipe,
         getGriotReaction,
         initializeGriot,
         recordInteraction,
@@ -176,6 +177,9 @@
         } else if (hero.shrink) {
           const advice = await fetchShrinkAdvice();
           display += `<p>Advice: ${advice}</p>`;
+        } else if (hero.recipe) {
+          const recipe = await fetchRandomRecipe();
+          display += `<p>${recipe}</p>`;
         } else if (hero.reactsToHistory) {
           const reaction = await getGriotReaction();
           display += `<p>${reaction}</p>`;
@@ -475,6 +479,9 @@
         } else if (hero.shrink) {
           const advice = await fetchShrinkAdvice();
           logMessage(`Advice: ${advice}`);
+        } else if (hero.recipe) {
+          const recipe = await fetchRandomRecipe();
+          logMessage(recipe);
         } else if (hero.reactsToHistory) {
           const reaction = await getGriotReaction();
           logMessage(reaction);
@@ -485,7 +492,7 @@
        * Restart the game and reset all global variables.
        */
       function restartGame() {
-      level = 1;
+        level = 1;
         selectedHeroes = [];
         party = [];
         heroIndex = 0;
