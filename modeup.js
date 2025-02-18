@@ -6,7 +6,7 @@
  *  - getModeUpBuff: Computes the buff values based on the selected hero and level.
  *  - applyModeUp: Applies the computed buff values to the entire party and logs a message.
  *
- * Updated to define explicit modeup logic for all heroes, including Yeetrian and Mellitron.
+ * Updated to define explicit modeup logic for all heroes, including Yeetrian, Mellitron, and Hypnogog.
  */
 
 export function getModeUpBuff(chosenHero, level) {
@@ -51,6 +51,9 @@ export function getModeUpBuff(chosenHero, level) {
   } else if (chosenHero.name === "Mellitron") {
     // Mellitron's unique swarm ability increases.
     return { swarm: 1 * buffIncrement };
+  } else if (chosenHero.name === "Hypnogog") {
+    // Hypnogog's charm ability increases.
+    return { charm: 1 * buffIncrement };
   } else if (chosenHero.heal !== undefined) {
     // Generic heroes with a heal property get a minor heal increase.
     return { heal: 1 * buffIncrement };
@@ -75,6 +78,7 @@ export function applyModeUp(chosenHero, level, party, logCallback) {
   if (buff.ghis) messageParts.push(`+${buff.ghis} Ghïs`);
   if (buff.yeet) messageParts.push(`+${buff.yeet} Yeet`);
   if (buff.swarm) messageParts.push(`+${buff.swarm} Swarm`);
+  if (buff.charm) messageParts.push(`+${buff.charm} Charm`);
   
   // Create a log message indicating the hero's power-up and the buffs applied.
   const message = messageParts.length > 0
