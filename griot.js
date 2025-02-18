@@ -1,6 +1,6 @@
 // griot.js
 // This module handles API calls for special characters and generates 
-// narrative text using a Markov chain that’s refreshed with recent interactions.
+// narrative text using a Markov chain that's refreshed with recent interactions.
 
 let trainingCorpus = "";
 const markovChain = {};
@@ -132,6 +132,23 @@ export async function fetchShrinkAdvice() {
   } catch (error) {
     console.error("Error fetching shrink advice:", error);
     return "No advice available at the moment.";
+  }
+}
+
+// New: Fetch a random recipe for the Gastronomer hero using a free API.
+export async function fetchRandomRecipe() {
+  try {
+    const response = await fetch("https://www.themealdb.com/api/json/v1/1/random.php");
+    const data = await response.json();
+    if (data.meals && data.meals.length > 0) {
+      const meal = data.meals[0];
+      return `Recipe: ${meal.strMeal} - Category: ${meal.strCategory} - Region: ${meal.strArea}`;
+    } else {
+      return "No recipe available at the moment.";
+    }
+  } catch (error) {
+    console.error("Error fetching recipe:", error);
+    return "No recipe available right now.";
   }
 }
 
