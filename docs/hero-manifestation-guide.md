@@ -115,7 +115,7 @@ Here are some examples of hero configurations:
 ```javascript
 {
   name: "Palisade",
-  symbol: "𑍐",
+  symbol: "ᱟ",
   attack: 3,
   range: 1,
   agility: 2,
