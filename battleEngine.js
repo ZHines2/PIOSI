@@ -76,9 +76,17 @@ export class BattleEngine {
 
   placeHeroes(field) {
     this.party.forEach((hero, index) => {
-      hero.x = Math.min(index, this.cols - 1);
-      hero.y = 0;
-      field[hero.y][hero.x] = hero.symbol;
+      let placed = false;
+      for (let y = 0; y < this.rows && !placed; y++) {
+        for (let x = 0; x < this.cols && !placed; x++) {
+          if (field[y][x] === '.') {
+            hero.x = x;
+            hero.y = y;
+            field[hero.y][hero.x] = hero.symbol;
+            placed = true;
+          }
+        }
+      }
     });
   }
 
@@ -147,6 +155,11 @@ export class BattleEngine {
             ? ' attack-mode'
             : ' active';
         }
+
+        if (cellContent === '.wall') {
+          cellClass += ' wall';
+        }
+
         html += `<div class="cell ${cellClass}">${cellContent}</div>`;
       }
       html += '</div>';

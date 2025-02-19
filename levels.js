@@ -162,6 +162,81 @@ export const levelSettings = [
     ]
   },
   {
+    level: 6,
+    title: "Level 6: Gratt ߁‎ Antefoyer",
+    rows: 6,
+    cols: 6,
+    wallHP: 30,
+    enemies: [
+      { name: "New Enemy 1", symbol: "N1", attack: 4, range: 1, hp: 20, agility: 2, x: 1, y: 1 },
+      { name: "New Enemy 2", symbol: "N2", attack: 5, range: 2, hp: 25, agility: 3, x: 4, y: 4 }
+    ],
+    layout: [
+      ['.', '.', '.', '.', '.wall', '.wall'],
+      ['.', '.', '.', '.', '.', '.wall'],
+      ['.', '.', '.wall', '.wall', '.', '.wall'],
+      ['.wall', '.', '.wall', '.wall', '.', '.wall'],
+      ['.wall', '.', '.', '.', '.', '.wall'],
+      ['.wall', '.wall', '.wall', '.wall', '.wall', '.wall']
+    ]
+  },
+  {
+    level: 7,
+    title: "Level 7: Dynamic Challenge",
+    rows: 8,
+    cols: 8,
+    wallHP: 40,
+    generateEnemies: true,
+    enemyGenerator: (rows, cols) => {
+      const enemies = [];
+      for (let i = 0; i < 5; i++) {
+        enemies.push({
+          name: "Dynamic Enemy",
+          symbol: "D",
+          attack: 3,
+          range: 1,
+          hp: 15,
+          agility: 2,
+          x: getRandomInt(0, cols - 1),
+          y: getRandomInt(0, rows - 1)
+        });
+      }
+      return enemies;
+    }
+  },
+  {
+    level: 8,
+    title: "Level 8: Strengthened Foes",
+    rows: 10,
+    cols: 10,
+    wallHP: 50,
+    enemies: [
+      { name: "Strong Enemy 1", symbol: "S1", attack: 6, range: 1, hp: 30, agility: 3, x: 2, y: 2 },
+      { name: "Strong Enemy 2", symbol: "S2", attack: 7, range: 2, hp: 35, agility: 4, x: 7, y: 7 }
+    ]
+  },
+  {
+    level: 9,
+    title: "Level 9: Advanced Mechanics",
+    rows: 12,
+    cols: 12,
+    wallHP: 60,
+    enemies: [
+      { name: "Advanced Enemy 1", symbol: "A1", attack: 8, range: 1, hp: 40, agility: 3, x: 3, y: 3 },
+      { name: "Advanced Enemy 2", symbol: "A2", attack: 9, range: 2, hp: 45, agility: 4, x: 8, y: 8 }
+    ]
+  },
+  {
+    level: 10,
+    title: "Level 10: Final Showdown",
+    rows: 14,
+    cols: 14,
+    wallHP: 70,
+    enemies: [
+      { name: "Final Boss", symbol: "FB", attack: 10, range: 3, hp: 100, agility: 5, x: 6, y: 6 }
+    ]
+  },
+  {
     level: 99,
     title: "Level ௧: Further Introspection",
     rows: 15,
