@@ -54,6 +54,9 @@ export function getModeUpBuff(chosenHero, level) {
   } else if (chosenHero.name === "Gastronomer") {
     // Gastronomer's spicy stat increases.
     return { spicy: 1 * buffIncrement };
+  } else if (chosenHero.name === "Palisade") {
+    // Palisade's armor stat increases.
+    return { armor: 1 * buffIncrement };
   } else if (chosenHero.heal !== undefined) {
     // Generic heroes with a heal property get a minor heal increase.
     return { heal: 1 * buffIncrement };
@@ -79,6 +82,7 @@ export function applyModeUp(chosenHero, level, party, logCallback) {
   if (buff.yeet) messageParts.push(`+${buff.yeet} Yeet`);
   if (buff.swarm) messageParts.push(`+${buff.swarm} Swarm`);
   if (buff.spicy) messageParts.push(`+${buff.spicy} Spicy`);
+  if (buff.armor) messageParts.push(`+${buff.armor} Armor`);
   
   // Create a log message indicating the hero's power-up and the buffs applied.
   const message = messageParts.length > 0

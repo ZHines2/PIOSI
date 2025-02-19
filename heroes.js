@@ -170,5 +170,16 @@ export const heroes = [
     hp: 15,
     spicy: 1, // Spicy stat: increases the amount the vittle heals for.
     recipe: true // Indicates recipe-related interactions.
+  },
+  // New hero "Palisade" with armor stat.
+  {
+    name: "Palisade",
+    symbol: "ᱟ",
+    attack: 3,
+    range: 1,
+    agility: 2,
+    hp: 20,
+    armor: 5, // Armor stat: absorbs damage before HP is affected.
+    description: "Palisade stands as a bulwark against all attacks, his armor absorbing the brunt of enemy blows."
   }
 ];
