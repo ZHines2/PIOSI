@@ -321,7 +321,8 @@ export function getLevel(levelNumber) {
     title: level.title,
     enemies,
     onWaveComplete: level.onWaveComplete,
-    getWaveStats: level.getWaveStats
+    getWaveStats: level.getWaveStats,
+    layout: level.layout // Ensure layout property is included in the returned level object
   };
 }
 

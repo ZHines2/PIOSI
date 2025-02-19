@@ -71,6 +71,18 @@ export class BattleEngine {
     this.placeEnemies(field);
     this.createWall(field);
     this.placeHealingItem(field); // Place healing item (vittle) on the battlefield.
+
+    // Check if the current level has a layout property and set the battlefield grid accordingly.
+    if (this.levelSettings && this.levelSettings.layout) {
+      for (let y = 0; y < this.levelSettings.layout.length; y++) {
+        for (let x = 0; x < this.levelSettings.layout[y].length; x++) {
+          if (this.levelSettings.layout[y][x] === '.wall') {
+            field[y][x] = '.wall';
+          }
+        }
+      }
+    }
+
     return field;
   }
 
