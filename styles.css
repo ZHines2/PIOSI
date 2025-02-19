@@ -254,10 +254,3 @@ button {
 #log p {
   margin: 0.5rem 0;
 }
-
-/* Wall cell style */
-.wall {
-  background-color: gray;
-  color: white;
-  font-weight: bold;
-}
