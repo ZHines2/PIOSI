@@ -12,6 +12,7 @@ Each hero is defined by a set of properties. Here are the key properties you nee
 - `range`: The attack range of the hero.
 - `agility`: The agility of the hero, which determines how many moves they can make per turn.
 - `hp`: The health points of the hero.
+- `armor`: The armor points of the hero, which absorb damage before HP is affected.
 - `special abilities`: Any special abilities the hero possesses.
 
 ## Special Properties
@@ -106,6 +107,21 @@ Here are some examples of hero configurations:
   hp: 15,
   spicy: 1, // Spicy stat: increases the amount the vittle heals for.
   description: "The Gastronomer uses his culinary skills to enhance the healing properties of vittles. Each 'spicy' stat raises the amount the vittle heals for, making him a valuable asset in prolonged battles."
+}
+```
+
+### Example 6: Palisade
+
+```javascript
+{
+  name: "Palisade",
+  symbol: "𑍐",
+  attack: 3,
+  range: 1,
+  agility: 2,
+  hp: 20,
+  armor: 5, // Armor stat: absorbs damage before HP is affected.
+  description: "Palisade is a stalwart defender, his armor absorbing the brunt of enemy attacks. He stands as a bulwark against the forces of darkness, his resolve unshakable."
 }
 ```
 

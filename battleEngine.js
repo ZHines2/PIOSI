@@ -442,10 +442,19 @@ export class BattleEngine {
         hero => hero.x === tx && hero.y === ty
       );
       if (targetHero) {
-        targetHero.hp -= enemy.attack;
-        this.logCallback(
-          `${enemy.name} attacks ${targetHero.name} for ${enemy.attack} damage! (Hero HP: ${targetHero.hp})`
-        );
+        // Check for armor before applying damage.
+        if (targetHero.armor && targetHero.armor > 0) {
+          targetHero.armor--; // Armor absorbs the hit.
+          this.logCallback(
+            `${enemy.name} attacks ${targetHero.name}, but the armor absorbs the damage! (Remaining Armor: ${targetHero.armor})`
+          );
+        } else {
+          targetHero.hp -= enemy.attack;
+          this.logCallback(
+            `${enemy.name} attacks ${targetHero.name} for ${enemy.attack} damage! (HP left: ${targetHero.hp})`
+          );
+        }
+        // Check if the hero is defeated.
         if (targetHero.hp <= 0) {
           this.logCallback(`${targetHero.name} is defeated!`);
           this.battlefield[targetHero.y][targetHero.x] = '.';
