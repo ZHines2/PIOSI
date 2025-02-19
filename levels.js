@@ -164,12 +164,12 @@ export const levelSettings = [
   {
     level: 6,
     title: "Level 6: Gratt ߁‎ Antefoyer",
-    rows: 6,
+    rows: 7,
     cols: 6,
-    wallHP: 30,
+    wallHP: 100,
     enemies: [
-      { name: "New Enemy 1", symbol: "N1", attack: 4, range: 1, hp: 20, agility: 2, x: 1, y: 1 },
-      { name: "New Enemy 2", symbol: "N2", attack: 5, range: 2, hp: 25, agility: 3, x: 4, y: 4 },
+      { name: "Tsortuf Hōsse", symbol: "ꁽ", attack: 8, range: 1, hp: 40, agility: 2, x: 1, y: 1 },
+      { name: "Zoot Alorre", symbol: "ꍕ", attack: 5, range: 1, hp: 60, agility: 10, x: 4, y: 4 },
       { name: "Wall", symbol: "█", attack: 0, range: 0, hp: 50, agility: 0, x: 4, y: 0 },
       { name: "Wall", symbol: "█", attack: 0, range: 0, hp: 50, agility: 0, x: 5, y: 0 },
       { name: "Wall", symbol: "█", attack: 0, range: 0, hp: 50, agility: 0, x: 5, y: 1 },
@@ -192,7 +192,7 @@ export const levelSettings = [
   },
   {
     level: 7,
-    title: "Level 7: Dynamic Challenge",
+    title: "Level 7: Vestibule",
     rows: 8,
     cols: 8,
     wallHP: 40,
@@ -201,12 +201,12 @@ export const levelSettings = [
       const enemies = [];
       for (let i = 0; i < 5; i++) {
         enemies.push({
-          name: "Dynamic Enemy",
-          symbol: "D",
-          attack: 3,
-          range: 1,
-          hp: 15,
-          agility: 2,
+          name: "Intender",
+          symbol: "ꘐ",
+          attack: 10,
+          range: 10,
+          hp: 40,
+          agility: 10,
           x: getRandomInt(0, cols - 1),
           y: getRandomInt(0, rows - 1)
         });
