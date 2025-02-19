@@ -174,7 +174,7 @@ export const heroes = [
   // New hero "Palisade" with armor stat.
   {
     name: "Palisade",
-    symbol: "𑍐",
+    symbol: "ᱟ",
     attack: 3,
     range: 1,
     agility: 2,
