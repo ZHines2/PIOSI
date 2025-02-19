@@ -25,7 +25,7 @@ export function applyKnockback(enemy, dx, dy, yeet, attack, battlefield, logCall
       enemy.hp -= attack;
       break;
     }
-    if (battlefield[newY][newX] === 'ᚙ' || battlefield[newY][newX] === '█' || battlefield[newY][newX] === '.wall') {
+    if (battlefield[newY][newX] === 'ᚙ' || battlefield[newY][newX] === '█') {
       logCallback(`${enemy.name} collides with the wall during knockback and takes ${attack} damage!`);
       enemy.hp -= attack;
       break;

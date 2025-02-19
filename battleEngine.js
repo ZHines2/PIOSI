@@ -168,10 +168,6 @@ export class BattleEngine {
             : ' active';
         }
 
-        if (cellContent === '.wall') {
-          cellClass += ' wall';
-        }
-
         html += `<div class="cell ${cellClass}">${cellContent}</div>`;
       }
       html += '</div>';

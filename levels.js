@@ -169,15 +169,25 @@ export const levelSettings = [
     wallHP: 30,
     enemies: [
       { name: "New Enemy 1", symbol: "N1", attack: 4, range: 1, hp: 20, agility: 2, x: 1, y: 1 },
-      { name: "New Enemy 2", symbol: "N2", attack: 5, range: 2, hp: 25, agility: 3, x: 4, y: 4 }
-    ],
-    layout: [
-      ['.', '.', '.', '.', '.wall', '.wall'],
-      ['.', '.', '.', '.', '.', '.wall'],
-      ['.', '.', '.wall', '.wall', '.', '.wall'],
-      ['.wall', '.', '.wall', '.wall', '.', '.wall'],
-      ['.wall', '.', '.', '.', '.', '.wall'],
-      ['.wall', '.wall', '.wall', '.wall', '.wall', '.wall']
+      { name: "New Enemy 2", symbol: "N2", attack: 5, range: 2, hp: 25, agility: 3, x: 4, y: 4 },
+      { name: "Wall", symbol: "█", attack: 0, range: 0, hp: 50, agility: 0, x: 4, y: 0 },
+      { name: "Wall", symbol: "█", attack: 0, range: 0, hp: 50, agility: 0, x: 5, y: 0 },
+      { name: "Wall", symbol: "█", attack: 0, range: 0, hp: 50, agility: 0, x: 5, y: 1 },
+      { name: "Wall", symbol: "█", attack: 0, range: 0, hp: 50, agility: 0, x: 2, y: 2 },
+      { name: "Wall", symbol: "█", attack: 0, range: 0, hp: 50, agility: 0, x: 3, y: 2 },
+      { name: "Wall", symbol: "█", attack: 0, range: 0, hp: 50, agility: 0, x: 5, y: 2 },
+      { name: "Wall", symbol: "█", attack: 0, range: 0, hp: 50, agility: 0, x: 0, y: 3 },
+      { name: "Wall", symbol: "█", attack: 0, range: 0, hp: 50, agility: 0, x: 2, y: 3 },
+      { name: "Wall", symbol: "█", attack: 0, range: 0, hp: 50, agility: 0, x: 3, y: 3 },
+      { name: "Wall", symbol: "█", attack: 0, range: 0, hp: 50, agility: 0, x: 5, y: 3 },
+      { name: "Wall", symbol: "█", attack: 0, range: 0, hp: 50, agility: 0, x: 0, y: 4 },
+      { name: "Wall", symbol: "█", attack: 0, range: 0, hp: 50, agility: 0, x: 5, y: 4 },
+      { name: "Wall", symbol: "█", attack: 0, range: 0, hp: 50, agility: 0, x: 0, y: 5 },
+      { name: "Wall", symbol: "█", attack: 0, range: 0, hp: 50, agility: 0, x: 1, y: 5 },
+      { name: "Wall", symbol: "█", attack: 0, range: 0, hp: 50, agility: 0, x: 2, y: 5 },
+      { name: "Wall", symbol: "█", attack: 0, range: 0, hp: 50, agility: 0, x: 3, y: 5 },
+      { name: "Wall", symbol: "█", attack: 0, range: 0, hp: 50, agility: 0, x: 4, y: 5 },
+      { name: "Wall", symbol: "█", attack: 0, range: 0, hp: 50, agility: 0, x: 5, y: 5 }
     ]
   },
   {
