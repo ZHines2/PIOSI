@@ -418,13 +418,15 @@
 
       /**
        * Called when a level is completed and determines the next action.
+       * Levels 1 to 9 trigger the Mode Up window, and level 10 completes the game.
+       * Secret level (level 99) remains unchanged.
        */
       function onLevelComplete() {
-        if (level >= 1 && level <= 4) {
+        if (level >= 1 && level <= 9) {
           logMessage(`Level ${level} complete!`);
           showModeUpWindow();
-        } else if (level === 5) {
-          logMessage("The normal path is complete!");
+        } else if (level === 10) {
+          logMessage("The final path is complete!");
           showScreen("victory");
         } else if (level === 99) {
           logMessage("The veil of introspection lifts...");
