@@ -47,40 +47,8 @@ function enemyGenerator(rows, cols) {
   }
   return enemies;
 }
-```
 
-## Multi-Level Layouts
 
-Levels can include multiple floors or levels within the same grid. Stairs or ladders can be used to connect different levels, allowing players to navigate vertically. Here is an example of a function to generate a multi-level layout:
-
-```javascript
-function generateMultiLevelLayout(rows, cols, minRoomSize, maxRoomSize, numRooms, wallHP, numFloors) {
-  const floors = [];
-  for (let i = 0; i < numFloors; i++) {
-    const floorLayout = generateLevelLayout(rows, cols, minRoomSize, maxRoomSize, numRooms, wallHP);
-    floors.push(floorLayout);
-  }
-
-  // Add stairs or ladders to connect floors
-  for (let i = 0; i < numFloors - 1; i++) {
-    const currentFloor = floors[i];
-    const nextFloor = floors[i + 1];
-
-    // Place stairs in a random room on the current floor
-    const currentRoom = currentFloor.rooms[getRandomInt(0, currentFloor.rooms.length - 1)];
-    const stairX = currentRoom.x + getRandomInt(1, currentRoom.width - 2);
-    const stairY = currentRoom.y + getRandomInt(1, currentRoom.height - 2);
-    currentFloor.layout[stairY][stairX] = { type: "stairs", toFloor: i + 1 };
-
-    // Place corresponding stairs in a random room on the next floor
-    const nextRoom = nextFloor.rooms[getRandomInt(0, nextFloor.rooms.length - 1)];
-    const nextStairX = nextRoom.x + getRandomInt(1, nextRoom.width - 2);
-    const nextStairY = nextRoom.y + getRandomInt(1, nextRoom.height - 2);
-    nextFloor.layout[nextStairY][nextStairX] = { type: "stairs", toFloor: i };
-  }
-
-  return floors;
-}
 ```
 
 ## Best Practices
