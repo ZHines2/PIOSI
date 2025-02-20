@@ -107,19 +107,19 @@ export const levelSettings = [
     level: 3,
     title: "Level 3: The Vertical Corridor",
     rows: 14,
-    cols: 3,
+    cols: 4,
     wallHP: 60,
     generateEnemies: true,
     enemyGenerator: (rows, cols) => {
       const enemies = [];
       for (let col = 0; col < cols; col++) {
         enemies.push({
-          name: "Buckleman",
-          symbol: "⛨",
+          name: "Coterian",
+          symbol: "ꕥ",
           attack: 1,
           range: 1,
-          hp: 20,
-          agility: 1,
+          hp: 55,
+          agility: 22,
           x: col,
           y: Math.floor(rows / 2)
         });
@@ -136,7 +136,7 @@ export const levelSettings = [
     enemies: [
       { name: "Brigand", symbol: "Җ", attack: 3, range: 1, hp: 12, agility: 2, x: 12, y: 0 },
       { name: "Brigand", symbol: "Җ", attack: 3, range: 1, hp: 12, agility: 2, x: 11, y: 1 },
-      { name: "Buckleman", symbol: "⛨", attack: 1, range: 1, hp: 20, agility: 1, x: 8, y: 2 },
+      { name: "Buckleman", symbol: "⛨", attack: 1, range: 1, hp: 25, agility: 1, x: 8, y: 2 },
       { name: "Brigand", symbol: "Җ", attack: 3, range: 1, hp: 12, agility: 2, x: 12, y: 2 }
     ]
   },
@@ -156,9 +156,9 @@ export const levelSettings = [
       { name: "Brigand", symbol: "Җ", attack: 3, range: 1, hp: 12, agility: 2, x: 1, y: 4 },
       { name: "Brigand", symbol: "Җ", attack: 3, range: 1, hp: 12, agility: 2, x: 2, y: 4 },
       { name: "Buckleman", symbol: "⛨", attack: 1, range: 1, hp: 20, agility: 1, x: 3, y: 4 },
-      { name: "Getter", symbol: "∴", attack: 5, range: 1, hp: 50, agility: 5, x: 4, y: 6 },
-      { name: "Stonch Hogan", symbol: "酉", attack: 7, range: 1, hp: 100, agility: 3, x: 5, y: 6 },
-      { name: "Taker", symbol: "∵", attack: 1, range: 5, hp: 50, agility: 5, x: 6, y: 6 }
+      { name: "Getter", symbol: "∴", attack: 5, range: 1, hp: 55, agility: 5, x: 4, y: 6 },
+      { name: "Stonch Hogan", symbol: "酉", attack: 8, range: 1, hp: 150, agility: 3, x: 5, y: 6 },
+      { name: "Taker", symbol: "∵", attack: 1, range: 5, hp: 55, agility: 5, x: 6, y: 6 }
     ]
   },
   {
@@ -168,8 +168,8 @@ export const levelSettings = [
     cols: 6,
     wallHP: 100,
     enemies: [
-      { name: "Tsortuf Hōsse", symbol: "ꁽ", attack: 8, range: 1, hp: 40, agility: 2, x: 1, y: 1 },
-      { name: "Zoot Alorre", symbol: "ꍕ", attack: 5, range: 1, hp: 60, agility: 10, x: 4, y: 4 },
+      { name: "Tsortuf Hōsse", symbol: "ꁽ", attack: 10, range: 1, hp: 100, agility: 2, x: 1, y: 1 },
+      { name: "Zoot Alorre", symbol: "ꍕ", attack: 5, range: 1, hp: 100, agility: 19, x: 4, y: 4 },
       { name: "Wall", symbol: "█", attack: 0, range: 0, hp: 50, agility: 0, x: 4, y: 0 },
       { name: "Wall", symbol: "█", attack: 0, range: 0, hp: 50, agility: 0, x: 5, y: 0 },
       { name: "Wall", symbol: "█", attack: 0, range: 0, hp: 50, agility: 0, x: 5, y: 1 },
@@ -195,7 +195,7 @@ export const levelSettings = [
     title: "Level 7: Vestibule",
     rows: 8,
     cols: 8,
-    wallHP: 40,
+    wallHP: 75,
     generateEnemies: true,
     enemyGenerator: (rows, cols) => {
       const enemies = [];
@@ -205,7 +205,7 @@ export const levelSettings = [
           symbol: "ꘐ",
           attack: 10,
           range: 10,
-          hp: 40,
+          hp: 75,
           agility: 10,
           x: getRandomInt(0, cols - 1),
           y: getRandomInt(0, rows - 1)
@@ -217,33 +217,37 @@ export const levelSettings = [
   {
     level: 8,
     title: "Level 8: Strengthened Foes",
-    rows: 10,
-    cols: 10,
-    wallHP: 50,
+    rows: 9,
+    cols: 8,
+    wallHP: 100,
     enemies: [
-      { name: "Strong Enemy 1", symbol: "S1", attack: 6, range: 1, hp: 30, agility: 3, x: 2, y: 2 },
-      { name: "Strong Enemy 2", symbol: "S2", attack: 7, range: 2, hp: 35, agility: 4, x: 7, y: 7 }
+      { name: "Əkaisee", symbol: "ੴ", attack: 10, range: 1, hp: 88, agility: 10, x: 2, y: 2 },
+      { name: "Duppie Zero", symbol: "ਔ", attack: 10, range: 10, hp: 99, agility: 1, x: 7, y: 7 }
     ]
   },
   {
     level: 9,
-    title: "Level 9: Advanced Mechanics",
+    title: "Level 9: Further Discussion",
     rows: 12,
     cols: 12,
-    wallHP: 60,
+    wallHP: 200,
     enemies: [
-      { name: "Advanced Enemy 1", symbol: "A1", attack: 8, range: 1, hp: 40, agility: 3, x: 3, y: 3 },
-      { name: "Advanced Enemy 2", symbol: "A2", attack: 9, range: 2, hp: 45, agility: 4, x: 8, y: 8 }
+      { name: "Steelgaze", symbol: "Ⳃ", attack: 15, range: 1, hp: 200, agility: 4, x: 3, y: 3 },
+      { name: "Steelgaze", symbol: "Ⳃ", attack: 15, range: 1, hp: 200, agility: 4, x: 4, y: 4 },
+      { name: "Steelgaze", symbol: "Ⳃ", attack: 15, range: 1, hp: 200, agility: 4, x: 5, y: 5 },
+      { name: "Boughsplitter", symbol: "⳧", attack: 20, range: 2, hp: 200, agility: 2, x: 8, y: 8 },
+      { name: "Boughsplitter", symbol: "⳧", attack: 20, range: 2, hp: 200, agility: 2, x: 9, y: 9 },
+      { name: "Boughsplitter", symbol: "⳧", attack: 20, range: 2, hp: 200, agility: 2, x: 10, y: 10 }
     ]
   },
   {
     level: 10,
-    title: "Level 10: Final Showdown",
-    rows: 14,
-    cols: 14,
-    wallHP: 70,
+    title: "Level 10: Introspections of ߁‎",
+    rows: 10,
+    cols: 10,
+    wallHP: 250,
     enemies: [
-      { name: "Final Boss", symbol: "FB", attack: 10, range: 3, hp: 100, agility: 5, x: 6, y: 6 }
+      { name: "Ge'umdaïƨe", symbol: "⅌", attack: 100, range: 5, hp: 1000, agility: 3, x: 6, y: 6 }
     ]
   },
   {
@@ -262,27 +266,27 @@ export const levelSettings = [
           symbol: "♙",
           attack: 2,
           range: 1,
-          hp: 10,
+          hp: 50,
           agility: 2,
-          dialogue: ["Pawn advances with silent determination."]
+          dialogue: ["advance - with silent determination."]
         },
         {
           name: "Chess Knight",
           symbol: "♘",
           attack: 4,
           range: 2,
-          hp: 15,
-          agility: 3,
-          dialogue: ["Knight leaps into battle with tactical prowess."]
+          hp: 55,
+          agility: 5,
+          dialogue: ["leap - into battle with tactical prowess."]
         },
         {
           name: "Chess Bishop",
           symbol: "♗",
           attack: 3,
           range: 3,
-          hp: 12,
-          agility: 2,
-          dialogue: ["Bishop glides, striking from afar with precision."]
+          hp: 120,
+          agility: 10,
+          dialogue: ["glide - strike from afar with precision."]
         }
       ];
       // Increase density by using the bottom three rows for a formation
