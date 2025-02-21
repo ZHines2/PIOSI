@@ -17,9 +17,12 @@
  * @param {Function} isWithinBounds - The function to check if a position is within bounds.
  */
 export function applyKnockback(enemy, dx, dy, yeet, attack, battlefield, logCallback, isWithinBounds) {
+  // Store the enemy's original position for relative movement.
+  const originalX = enemy.x;
+  const originalY = enemy.y;
   for (let i = 1; i <= yeet; i++) {
-    const newX = enemy.x + dx * i;
-    const newY = enemy.y + dy * i;
+    const newX = originalX + dx * i;
+    const newY = originalY + dy * i;
     if (!isWithinBounds(newX, newY)) {
       logCallback(`${enemy.name} is knocked back into the wall and takes ${attack} damage!`);
       enemy.hp -= attack;
@@ -31,7 +34,9 @@ export function applyKnockback(enemy, dx, dy, yeet, attack, battlefield, logCall
       break;
     }
     if (battlefield[newY][newX] === '.') {
+      // Clear the enemy's previous position.
       battlefield[enemy.y][enemy.x] = '.';
+      // Update enemy's position.
       enemy.x = newX;
       enemy.y = newY;
       battlefield[newY][newX] = enemy.symbol;

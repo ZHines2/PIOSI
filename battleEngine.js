@@ -71,14 +71,34 @@ export class BattleEngine {
     this.placeEnemies(field);
     this.createWall(field);
     this.placeHealingItem(field); // Place healing item (vittle) on the battlefield.
+
+    // Check if the current level has a layout property and set the battlefield grid accordingly.
+    if (this.levelSettings && this.levelSettings.layout) {
+      for (let y = 0; y < this.levelSettings.layout.length; y++) {
+        for (let x = 0; x < this.levelSettings.layout[y].length; x++) {
+          if (this.levelSettings.layout[y][x] === '.wall') {
+            field[y][x] = '.wall';
+          }
+        }
+      }
+    }
+
     return field;
   }
 
   placeHeroes(field) {
     this.party.forEach((hero, index) => {
-      hero.x = Math.min(index, this.cols - 1);
-      hero.y = 0;
-      field[hero.y][hero.x] = hero.symbol;
+      let placed = false;
+      for (let y = 0; y < this.rows && !placed; y++) {
+        for (let x = 0; x < this.cols && !placed; x++) {
+          if (field[y][x] === '.') {
+            hero.x = x;
+            hero.y = y;
+            field[hero.y][hero.x] = hero.symbol;
+            placed = true;
+          }
+        }
+      }
     });
   }
 
@@ -147,6 +167,7 @@ export class BattleEngine {
             ? ' attack-mode'
             : ' active';
         }
+
         html += `<div class="cell ${cellClass}">${cellContent}</div>`;
       }
       html += '</div>';
