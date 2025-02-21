@@ -216,7 +216,7 @@ export const levelSettings = [
   },
   {
     level: 8,
-    title: "Level 8: Strengthened Foes",
+    title: "Level 8: Shaded Yod",
     rows: 9,
     cols: 8,
     wallHP: 100,
