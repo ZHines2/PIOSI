@@ -85,7 +85,7 @@ export class BattleEngine {
   }
 
   placeHeroes(field) {
-    this.party.forEach((hero, index) => {
+    this.party.forEach((hero) => {
       let placed = false;
       for (let y = 0; y < this.rows && !placed; y++) {
         for (let x = 0; x < this.cols && !placed; x++) {
@@ -216,6 +216,25 @@ export class BattleEngine {
     const newY = unit.y + dy;
     if (!this.isWithinBounds(newX, newY)) return;
 
+    // If the target cell is a wall cell, attack the wall instead of moving.
+    if (this.battlefield[newY][newX] === 'ᚙ' || this.battlefield[newY][newX] === '█') {
+      this.wallHP -= unit.attack;
+      this.logCallback(
+        `${unit.name} attacks the wall for ${unit.attack} damage! (Wall HP: ${this.wallHP})`
+      );
+      // If the wall is destroyed, transition to the next level.
+      if (this.wallHP <= 0 && !this.transitioningLevel) {
+        this.handleWallCollapse();
+        return;
+      }
+      // Consume move points even if the hero does not change cells.
+      this.movePoints--;
+      if (this.movePoints === 0) {
+        this.nextTurn();
+      }
+      return;
+    }
+
     // Process healing items while still preventing movement into an occupied cell.
     if (this.battlefield[newY][newX] === 'ౚ') {
       const baseHealingValue = 10; // Base healing value for the vittle.
@@ -236,7 +255,6 @@ export class BattleEngine {
       );
       // Remove the healing item from the battlefield.
       this.battlefield[newY][newX] = '.';
-
       // If the hero has the spore stat, randomly boost one of their stats.
       if (unit.spore && unit.spore > 0) {
         const stats = ['attack', 'range', 'agility', 'hp'];
