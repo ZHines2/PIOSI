@@ -125,6 +125,30 @@ Here are some examples of hero configurations:
 }
 ```
 
+### Example 7: Pæg
+
+```javascript
+{
+  name: "Pæg",
+  symbol: "ꚤ",
+  attack: 1,
+  range: 1,
+  agility: 1,
+  hp: 1,
+  heal: 1,
+  burn: 1,
+  sluj: 1,
+  ghis: 1,
+  yeet: 1,
+  swarm: 1,
+  charm: 1,
+  spicy: 1,
+  armor: 1,
+  spore: 1,
+  description: "Pæg is a versatile hero with 1 in every stat, making him a jack-of-all-trades but master of none."
+}
+```
+
 ## Griot.js Integration
 
 The `griot.js` module handles API calls for special characters and generates narrative text using a Markov chain that’s refreshed with recent interactions. The Griot hero reacts uniquely when encountering historical events, and the module provides various special API calls for characters.
