@@ -411,8 +411,7 @@ export class BattleEngine {
     if (!targetHero) return;
     const dx = targetHero.x - enemy.x;
     const dy = targetHero.y - enemy.y;
-    let stepX = 0,
-      stepY = 0;
+    let stepX = 0, stepY = 0;
     if (Math.abs(dx) >= Math.abs(dy)) {
       stepX = dx > 0 ? 1 : dx < 0 ? -1 : 0;
     } else {
@@ -632,5 +631,17 @@ export class BattleEngine {
 
   shortPause() {
     return new Promise(resolve => setTimeout(resolve, 300));
+  }
+  
+  // New method to handle wall collapse and level transition.
+  handleWallCollapse() {
+    this.logCallback('The Wall Collapses!');
+    this.transitioningLevel = true;
+    // Delay before transitioning to allow any animations or logs to be visible.
+    setTimeout(() => {
+      if (typeof this.onLevelComplete === 'function') {
+        this.onLevelComplete();
+      }
+    }, 1500);
   }
 }
