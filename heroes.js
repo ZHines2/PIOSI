@@ -191,5 +191,24 @@ export const heroes = [
     agility: 3,
     hp: 15,
     spore: 1 // Spore stat: indicates the ability to gain random stats from mushrooms.
+  },
+  // New hero "Pæg" with 1 in every stat.
+  {
+    name: "Pæg",
+    symbol: "ꚤ",
+    attack: 1,
+    range: 1,
+    agility: 1,
+    hp: 1,
+    heal: 1,
+    burn: 1,
+    sluj: 1,
+    ghis: 1,
+    yeet: 1,
+    swarm: 1,
+    charm: 1,
+    spicy: 1,
+    armor: 1,
+    spore: 1
   }
 ];
