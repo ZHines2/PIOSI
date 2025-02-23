@@ -152,7 +152,8 @@
           swarm: hero.swarm !== undefined ? hero.swarm : 0,
           charm: hero.charm !== undefined ? hero.charm : 0,
           spicy: hero.spicy !== undefined ? hero.spicy : 0,
-          armor: hero.armor !== undefined ? hero.armor : 0
+          armor: hero.armor !== undefined ? hero.armor : 0,
+          spore: hero.spore !== undefined ? hero.spore : 0
         };
       }
 
@@ -201,7 +202,8 @@
           Swarm: ${stats.swarm} | 
           Charm: ${stats.charm} | 
           Spicy: ${stats.spicy} | 
-          Armor: ${stats.armor}
+          Armor: ${stats.armor} | 
+          Spore: ${stats.spore}
         </p>`;
         // Indicate selection status
         display += `<p>${
@@ -335,6 +337,11 @@
         lines.push(
           `<p>Armor: ${stats.armor} ${
             buff.armor ? `<span class="stat-up">+${buff.armor}</span>` : ""
+          }</p>`
+        );
+        lines.push(
+          `<p>Spore: ${stats.spore} ${
+            buff.spore ? `<span class="stat-up">+${buff.spore}</span>` : ""
           }</p>`
         );
         document.getElementById("mode-up-hero-display").innerHTML =

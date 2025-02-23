@@ -181,5 +181,15 @@ export const heroes = [
     hp: 20,
     armor: 5, // Armor stat: absorbs damage before HP is affected.
     description: "Palisade stands as a bulwark against all attacks, his armor absorbing the brunt of enemy blows."
+  },
+  // New hero "Mycelian" with spore stat.
+  {
+    name: "Mycelian",
+    symbol: "ৡ",
+    attack: 2,
+    range: 1,
+    agility: 3,
+    hp: 15,
+    spore: 1 // Spore stat: indicates the ability to gain random stats from mushrooms.
   }
 ];
