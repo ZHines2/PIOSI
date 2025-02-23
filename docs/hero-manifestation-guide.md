@@ -129,4 +129,18 @@ Here are some examples of hero configurations:
 
 The `griot.js` module handles API calls for special characters and generates narrative text using a Markov chain that’s refreshed with recent interactions. The Griot hero reacts uniquely when encountering historical events, and the module provides various special API calls for characters.
 
+## Healing Items
+
+### Vittle (ౚ)
+
+- **Symbol**: ౚ
+- **Healing Amount**: 10 HP
+- **Description**: A nourishing item that heals the hero for 10 health points when picked up.
+
+### Mushroom (ඉ)
+
+- **Symbol**: ඉ
+- **Healing Amount**: 5 HP
+- **Description**: A healing item that restores 5 health points to the hero when picked up.
+
 By following these guidelines and best practices, you can create heroes that are balanced, engaging, and fun for players. Happy hero designing!

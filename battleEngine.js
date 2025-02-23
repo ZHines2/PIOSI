@@ -71,6 +71,7 @@ export class BattleEngine {
     this.placeEnemies(field);
     this.createWall(field);
     this.placeHealingItem(field); // Place healing item (vittle) on the battlefield.
+    this.placeMushroom(field); // Place mushroom on the battlefield.
 
     // Check if the current level has a layout property and set the battlefield grid accordingly.
     if (this.levelSettings && this.levelSettings.layout) {
@@ -138,6 +139,24 @@ export class BattleEngine {
     }
   }
 
+  // Place a mushroom ('ඉ') on a random empty cell.
+  placeMushroom(field) {
+    let emptyCells = [];
+    // Exclude the last row since it is occupied by the wall.
+    for (let y = 0; y < this.rows - 1; y++) {
+      for (let x = 0; x < this.cols; x++) {
+        if (field[y][x] === '.') {
+          emptyCells.push({ x, y });
+        }
+      }
+    }
+    if (emptyCells.length) {
+      const index = Math.floor(Math.random() * emptyCells.length);
+      const cell = emptyCells[index];
+      field[cell.y][cell.x] = 'ඉ'; // 'ඉ' represents the healing item (mushroom).
+    }
+  }
+
   drawBattlefield() {
     let html = '';
     for (let y = 0; y < this.rows; y++) {
@@ -146,7 +165,7 @@ export class BattleEngine {
         const cellContent = this.battlefield[y][x];
         let cellClass = '';
         // Add class based on cell content.
-        if (cellContent === 'ౚ') {
+        if (cellContent === 'ౚ' || cellContent === 'ඉ') {
           cellClass += ' healing-item';
         }
 
@@ -198,6 +217,30 @@ export class BattleEngine {
       );
       // Remove the healing item from the battlefield.
     }
+
+    // Check if moving onto a healing item (mushroom).
+    if (this.battlefield[newY][newX] === 'ඉ') {
+      const healingValue = 5; // Fixed healing value for the mushroom.
+      unit.hp += healingValue;
+      this.logCallback(
+        `${unit.name} picks up a mushroom and heals for ${healingValue} HP! (New HP: ${unit.hp})`
+      );
+      // Remove the healing item from the battlefield.
+
+      // Check if the hero has the spore stat.
+      if (unit.spore && unit.spore > 0) {
+        // Define the stats that can be boosted.
+        const stats = ['attack', 'range', 'agility', 'hp'];
+        // Choose a random stat to boost.
+        const randomStat = stats[Math.floor(Math.random() * stats.length)];
+        // Apply the stat boost based on the spore stat value.
+        unit[randomStat] += unit.spore;
+        this.logCallback(
+          `${unit.name} gains a ${unit.spore} point boost to ${randomStat} from the mushroom! (New ${randomStat}: ${unit[randomStat]})`
+        );
+      }
+    }
+
     // Update the battlefield.
     this.battlefield[unit.y][unit.x] = '.';
     unit.x = newX;
@@ -216,7 +259,7 @@ export class BattleEngine {
       x < this.cols &&
       y >= 0 &&
       y < this.rows &&
-      (this.battlefield[y][x] === '.' || this.battlefield[y][x] === 'ౚ')
+      (this.battlefield[y][x] === '.' || this.battlefield[y][x] === 'ౚ' || this.battlefield[y][x] === 'ඉ')
     );
   }
 
@@ -229,7 +272,7 @@ export class BattleEngine {
     for (let i = 1; i <= unit.range; i++) {
       const targetX = unit.x + dx * i;
       const targetY = unit.y + dy * i;
-      if (!this.isWithinBounds(targetX, targetY)) break;
+      if (!this.isValidMove(targetX, targetY)) break;
 
       // Check for an ally (different from the attacker).
       const ally = this.party.find(
@@ -291,7 +334,7 @@ export class BattleEngine {
             unit.attack,
             this.battlefield,
             this.logCallback,
-            this.isWithinBounds.bind(this)
+            this.isValidMove.bind(this)
           );
         }
         if (enemy.hp <= 0) {
@@ -329,7 +372,7 @@ export class BattleEngine {
     this.nextTurn();
   }
 
-  isWithinBounds(x, y) {
+  isValidMove(x, y) {
     return x >= 0 && x < this.cols && y >= 0 && y < this.rows;
   }
 
@@ -365,7 +408,7 @@ export class BattleEngine {
         adjacentOffsets.forEach(offset => {
           const targetX = hero.x + offset.x;
           const targetY = hero.y + offset.y;
-          if (this.isWithinBounds(targetX, targetY)) {
+          if (this.isValidMove(targetX, targetY)) {
             const enemy = this.enemies.find(e => e.x === targetX && e.y === targetY);
             if (enemy) {
               const damage = hero.swarm;
@@ -446,7 +489,7 @@ export class BattleEngine {
   }
 
   canMove(x, y) {
-    return this.isWithinBounds(x, y) && (this.battlefield[y][x] === '.' || this.battlefield[y][x] === 'ౚ');
+    return this.isValidMove(x, y) && (this.battlefield[y][x] === '.' || this.battlefield[y][x] === 'ౚ' || this.battlefield[y][x] === 'ඉ');
   }
 
   enemyAttackAdjacent(enemy) {
