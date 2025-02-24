@@ -6,12 +6,13 @@
  *  - getModeUpBuff: Computes the buff values based on the selected hero and level.
  *  - applyModeUp: Applies the computed buff values to the entire party and logs a message.
  *
- * Updated to define explicit modeup logic for all heroes, including Yeetrian and Mellitron.
+ * In this update, the Wizard now gains an increase to his "chain" stat,
+ * which gives bonus attack damage to any adjacent enemy. For each mode up,
+ * his chain stat increases by +1 (scaled by the current level).
  */
 
 export function getModeUpBuff(chosenHero, level) {
   const buffIncrement = level;
-  // Define specific buffs for each hero
   if (chosenHero.name === "Knight") {
     // Knight gets increased attack and HP.
     return { attack: 1 * buffIncrement, hp: 2 * buffIncrement };
@@ -60,9 +61,9 @@ export function getModeUpBuff(chosenHero, level) {
   } else if (chosenHero.name === "Mycelian") {
     // Mycelian's spore stat increases.
     return { spore: 1 * buffIncrement };
-  } else if (chosenHero.heal !== undefined) {
-    // Generic heroes with a heal property get a minor heal increase.
-    return { heal: 1 * buffIncrement };
+  } else if (chosenHero.name === "Wizard") {
+    // The Wizard's chain stat increases. It provides bonus attack damage to adjacent enemies.
+    return { chain: 1 * buffIncrement };
   } else {
     // Fallback for heroes with no specific buffs defined.
     return { ghis: 1 * buffIncrement };
@@ -72,8 +73,7 @@ export function getModeUpBuff(chosenHero, level) {
 export function applyModeUp(chosenHero, level, party, logCallback) {
   const buff = getModeUpBuff(chosenHero, level);
   const messageParts = [];
-  
-  // Construct a descriptive message based on the buffs applied.
+
   if (buff.hp) messageParts.push(`+${buff.hp} HP`);
   if (buff.attack) messageParts.push(`+${buff.attack} Attack`);
   if (buff.range) messageParts.push(`+${buff.range} Range`);
@@ -87,14 +87,15 @@ export function applyModeUp(chosenHero, level, party, logCallback) {
   if (buff.spicy) messageParts.push(`+${buff.spicy} Spicy`);
   if (buff.armor) messageParts.push(`+${buff.armor} Armor`);
   if (buff.spore) messageParts.push(`+${buff.spore} Spore`);
-  
-  // Create a log message indicating the hero's power-up and the buffs applied.
-  const message = messageParts.length > 0
-    ? `${chosenHero.name} empowers the party with ${messageParts.join(", ")}!`
-    : `${chosenHero.name} tries to mode up but nothing happens...`;
+  if (buff.chain) messageParts.push(`+${buff.chain} Chain`);
+
+  const message =
+    messageParts.length > 0
+      ? `${chosenHero.name} empowers the party with ${messageParts.join(", ")}!`
+      : `${chosenHero.name} tries to mode up but nothing happens...`;
 
   // Apply the buffs to each hero in the party.
-  party.forEach(hero => {
+  party.forEach((hero) => {
     for (let stat in buff) {
       if (stat === "hp") {
         // Increase HP only if the hero is alive.
@@ -103,14 +104,14 @@ export function applyModeUp(chosenHero, level, party, logCallback) {
         }
       } else {
         // For other stats, initialize the stat if not present, then increment it.
-        if (!Object.prototype.hasOwnProperty.call(hero, stat)) {
+        if (!hero.hasOwnProperty(stat)) {
           hero[stat] = 0;
         }
         hero[stat] += buff[stat];
       }
     }
   });
-  
+
   // Log the buff application message via the provided callback.
   logCallback(message);
 }
