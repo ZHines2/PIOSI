@@ -30,6 +30,7 @@ export const heroes = [
     range: 7,
     agility: 2,
     hp: 10,
+    chain: 5 // Wizard's chain stat, starting at level 5. It gives bonus attack damage to any adjacent enemy.
   },
   {
     name: "Berserker",
