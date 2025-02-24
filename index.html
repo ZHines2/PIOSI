@@ -153,13 +153,14 @@
           charm: hero.charm !== undefined ? hero.charm : 0,
           spicy: hero.spicy !== undefined ? hero.spicy : 0,
           armor: hero.armor !== undefined ? hero.armor : 0,
-          spore: hero.spore !== undefined ? hero.spore : 0
+          spore: hero.spore !== undefined ? hero.spore : 0,
+          chain: hero.chain !== undefined ? hero.chain : 0
         };
       }
 
       /**
        * Update the hero display in the party selection screen.
-       * All stats are displayed, including the yeet, swarm, charm, spicy, and armor stats.
+       * All stats are displayed, including the yeet, swarm, charm, spicy, armor, and chain stats.
        */
       async function updateHeroDisplay() {
         const hero = allHeroes[heroIndex];
@@ -187,7 +188,7 @@
           const reaction = await getGriotReaction();
           display += `<p>${reaction}</p>`;
         }
-        // Get complete stats for the hero, including yeet, swarm, charm, spicy, and armor
+        // Get complete stats for the hero, including chain stat
         const stats = getCompleteStats(hero);
         display += `<p>
           Attack: ${stats.attack} | 
@@ -203,7 +204,8 @@
           Charm: ${stats.charm} | 
           Spicy: ${stats.spicy} | 
           Armor: ${stats.armor} | 
-          Spore: ${stats.spore}
+          Spore: ${stats.spore} | 
+          Chain: ${stats.chain}
         </p>`;
         // Indicate selection status
         display += `<p>${
@@ -264,7 +266,7 @@
 
       /**
        * Update the Mode Up display for the currently selected hero.
-       * The display now shows the yeet, swarm, charm, spicy, and armor stats along with a buff preview.
+       * The display now shows the yeet, swarm, charm, spicy, armor, and chain stats along with a buff preview.
        */
       function updateModeUpHeroDisplay() {
         const hero = livingHeroes[modeUpIndex];
@@ -272,7 +274,7 @@
         const buff = getModeUpBuff(hero, level);
         const lines = [];
         lines.push(`<p class="highlight">${hero.name} (${hero.symbol})</p>`);
-        // Display current stats with buff preview for each stat, including yeet, swarm, charm, spicy, and armor
+        // Display current stats with buff preview for each stat
         const stats = getCompleteStats(hero);
         lines.push(
           `<p>HP: ${stats.hp} ${
@@ -342,6 +344,11 @@
         lines.push(
           `<p>Spore: ${stats.spore} ${
             buff.spore ? `<span class="stat-up">+${buff.spore}</span>` : ""
+          }</p>`
+        );
+        lines.push(
+          `<p>Chain: ${stats.chain} ${
+            buff.chain ? `<span class="stat-up">+${buff.chain}</span>` : ""
           }</p>`
         );
         document.getElementById("mode-up-hero-display").innerHTML =
