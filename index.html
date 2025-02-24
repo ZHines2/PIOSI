@@ -150,7 +150,7 @@
           ghis: hero.ghis !== undefined ? hero.ghis : 0,
           yeet: hero.yeet !== undefined ? hero.yeet : 0,
           swarm: hero.swarm !== undefined ? hero.swarm : 0,
-          charm: hero.charm !== undefined ? hero.charm : 0,
+          // Removed charm stat
           spicy: hero.spicy !== undefined ? hero.spicy : 0,
           armor: hero.armor !== undefined ? hero.armor : 0,
           spore: hero.spore !== undefined ? hero.spore : 0,
@@ -160,7 +160,7 @@
 
       /**
        * Update the hero display in the party selection screen.
-       * All stats are displayed, including the yeet, swarm, charm, spicy, armor, and chain stats.
+       * All stats are displayed, including the yeet, swarm, spicy, armor, and chain stats.
        */
       async function updateHeroDisplay() {
         const hero = allHeroes[heroIndex];
@@ -201,7 +201,6 @@
           Ghïs: ${stats.ghis} | 
           Yeet: ${stats.yeet} | 
           Swarm: ${stats.swarm} | 
-          Charm: ${stats.charm} | 
           Spicy: ${stats.spicy} | 
           Armor: ${stats.armor} | 
           Spore: ${stats.spore} | 
@@ -266,7 +265,7 @@
 
       /**
        * Update the Mode Up display for the currently selected hero.
-       * The display now shows the yeet, swarm, charm, spicy, armor, and chain stats along with a buff preview.
+       * The display now shows the yeet, swarm, spicy, armor, and chain stats along with a buff preview.
        */
       function updateModeUpHeroDisplay() {
         const hero = livingHeroes[modeUpIndex];
@@ -324,11 +323,6 @@
         lines.push(
           `<p>Swarm: ${stats.swarm} ${
             buff.swarm ? `<span class="stat-up">+${buff.swarm}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Charm: ${stats.charm} ${
-            buff.charm ? `<span class="stat-up">+${buff.charm}</span>` : ""
           }</p>`
         );
         lines.push(
