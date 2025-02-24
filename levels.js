@@ -245,9 +245,19 @@ export const levelSettings = [
     title: "Level 10: Introspections of ߁‎",
     rows: 10,
     cols: 10,
-    wallHP: 250,
+    wallHP: 350,
     enemies: [
-      { name: "Ge'umdaïƨe", symbol: "⅌", attack: 100, range: 5, hp: 1000, agility: 3, x: 6, y: 6 }
+      { name: "Ge'umdaïƨe", symbol: "⅌", attack: 100, range: 6, hp: 1000, agility: 6, x: 6, y: 6 },
+      { name: "Coterian", symbol: "ꕥ", attack: 1, range: 1, hp: 55, agility: 22, x: 0, y: 7 },
+      { name: "Coterian", symbol: "ꕥ", attack: 1, range: 1, hp: 55, agility: 22, x: 1, y: 7 },
+      { name: "Coterian", symbol: "ꕥ", attack: 1, range: 1, hp: 55, agility: 22, x: 2, y: 7 },
+      { name: "Coterian", symbol: "ꕥ", attack: 1, range: 1, hp: 55, agility: 22, x: 3, y: 7 },
+      { name: "Coterian", symbol: "ꕥ", attack: 1, range: 1, hp: 55, agility: 22, x: 4, y: 7 },
+      { name: "Coterian", symbol: "ꕥ", attack: 1, range: 1, hp: 55, agility: 22, x: 5, y: 7 },
+      { name: "Coterian", symbol: "ꕥ", attack: 1, range: 1, hp: 55, agility: 22, x: 6, y: 7 },
+      { name: "Coterian", symbol: "ꕥ", attack: 1, range: 1, hp: 55, agility: 22, x: 7, y: 7 },
+      { name: "Coterian", symbol: "ꕥ", attack: 1, range: 1, hp: 55, agility: 22, x: 8, y: 7 },
+      { name: "Coterian", symbol: "ꕥ", attack: 1, range: 1, hp: 55, agility: 22, x: 9, y: 7 }
     ]
   },
   {
