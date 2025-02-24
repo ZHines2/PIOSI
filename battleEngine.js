@@ -545,14 +545,16 @@ export class BattleEngine {
     });
   }
 
+  // Modified nextTurn() method that filters out dead heroes and updates currentUnit.
   nextTurn() {
     if (this.transitioningLevel) return;
-    
-    // Process status effects first.
-    this.applyStatusEffects();
 
-    // Apply swarm damage from heroes like Mellitron.
+    // Process status effects and swarm damage.
+    this.applyStatusEffects();
     this.applySwarmDamage();
+
+    // Remove any dead heroes from the party.
+    this.party = this.party.filter(hero => hero.hp > 0);
 
     if (this.party.length === 0) {
       this.logCallback('All heroes have been defeated! Game Over.');
@@ -560,16 +562,12 @@ export class BattleEngine {
       return;
     }
 
-    if (this.currentUnit >= this.party.length) {
-      this.currentUnit = 0;
-    }
-
-    this.awaitingAttackDirection = false;
-    this.currentUnit++;
+    // Ensure the current unit index is valid.
     if (this.currentUnit >= this.party.length) {
       this.currentUnit = 0;
       this.logCallback('Enemy turn begins.');
       this.enemyTurn();
+      // Reapply status effects after enemy turn.
       this.applyStatusEffects();
       if (this.party.length === 0) {
         this.logCallback('All heroes have been defeated! Game Over.');
@@ -577,8 +575,15 @@ export class BattleEngine {
         return;
       }
     }
-    this.movePoints = this.party[this.currentUnit].agility;
-    this.logCallback(`Now it's ${this.party[this.currentUnit].name}'s turn.`);
+
+    // Set up the turn for the current hero.
+    const currentHero = this.party[this.currentUnit];
+    this.movePoints = currentHero.agility;
+    this.awaitingAttackDirection = false;
+    this.logCallback(`Now it's ${currentHero.name}'s turn.`);
+
+    // Prepare for the next hero’s turn: increment and wrap the index.
+    this.currentUnit = (this.currentUnit + 1) % this.party.length;
   }
 
   applyStatusEffects() {
