@@ -1,14 +1,14 @@
 /**
  * modeup.js
  * 
- * This file contains the logic for powering up heroes ("mode up") 
+ * This file contains the logic for powering up heroes ("mode up")
  * when a level is completed. It exports two functions:
  *  - getModeUpBuff: Computes the buff values based on the selected hero and level.
  *  - applyModeUp: Applies the computed buff values to the entire party and logs a message.
  *
- * In this update, the Wizard now gains an increase to his "chain" stat,
- * which gives bonus attack damage to any adjacent enemy. For each mode up,
- * his chain stat increases by +1 (scaled by the current level).
+ * Updates:
+ * - The Wizard now gains an increase to his "chain" stat.
+ * - The Sycophant's mode up now gives him +1 in every stat.
  */
 
 export function getModeUpBuff(chosenHero, level) {
@@ -17,25 +17,25 @@ export function getModeUpBuff(chosenHero, level) {
     // Knight gets increased attack and HP.
     return { attack: 1 * buffIncrement, hp: 2 * buffIncrement };
   } else if (chosenHero.name === "Archer") {
-    // Archer gets increased range to simulate extended reach.
+    // Archer gets increased range.
     return { range: 1 * buffIncrement };
   } else if (chosenHero.name === "Berserker") {
     // Berserker gets a significant boost to attack power.
     return { attack: 3 * buffIncrement };
   } else if (chosenHero.name === "Rogue") {
-    // Rogue receives additional agility to enhance mobility.
+    // Rogue receives additional agility.
     return { agility: 2 * buffIncrement };
   } else if (chosenHero.name === "Torcher") {
-    // Torcher's burn damage increases with level.
+    // Torcher's burn damage increases.
     return { burn: 1 * buffIncrement };
   } else if (chosenHero.name === "Slüjier") {
-    // Slüjier's unique stat "sluj" increases.
+    // Slüjier's "sluj" increases.
     return { sluj: 1 * buffIncrement };
   } else if (chosenHero.name === "Cleric") {
     // Cleric's healing power increases.
     return { heal: 2 * buffIncrement };
   } else if (chosenHero.name === "Sycophant") {
-    // Sycophant gets increases in all stats including a special "ghis" stat.
+    // Sycophant now gains +1 in every stat.
     return {
       attack: 1 * buffIncrement,
       hp: 1 * buffIncrement,
@@ -45,27 +45,33 @@ export function getModeUpBuff(chosenHero, level) {
       sluj: 1 * buffIncrement,
       heal: 1 * buffIncrement,
       ghis: 1 * buffIncrement,
+      yeet: 1 * buffIncrement,
+      swarm: 1 * buffIncrement,
+      spicy: 1 * buffIncrement,
+      armor: 1 * buffIncrement,
+      spore: 1 * buffIncrement,
+      chain: 1 * buffIncrement
     };
   } else if (chosenHero.name === "Yeetrian") {
-    // Yeetrian's knockback ability increases.
+    // Yeetrian's knockback increases.
     return { yeet: 1 * buffIncrement };
   } else if (chosenHero.name === "Mellitron") {
-    // Mellitron's unique swarm ability increases.
+    // Mellitron's swarm ability increases.
     return { swarm: 1 * buffIncrement };
   } else if (chosenHero.name === "Gastronomer") {
     // Gastronomer's spicy stat increases.
     return { spicy: 1 * buffIncrement };
   } else if (chosenHero.name === "Palisade") {
-    // Palisade's armor stat increases.
+    // Palisade's armor increases.
     return { armor: 1 * buffIncrement };
   } else if (chosenHero.name === "Mycelian") {
-    // Mycelian's spore stat increases.
+    // Mycelian's spore increases.
     return { spore: 1 * buffIncrement };
   } else if (chosenHero.name === "Wizard") {
-    // The Wizard's chain stat increases. It provides bonus attack damage to adjacent enemies.
+    // The Wizard's chain stat increases.
     return { chain: 1 * buffIncrement };
   } else {
-    // Fallback for heroes with no specific buffs defined.
+    // Fallback for heroes with no specific buff defined.
     return { ghis: 1 * buffIncrement };
   }
 }
@@ -98,12 +104,10 @@ export function applyModeUp(chosenHero, level, party, logCallback) {
   party.forEach((hero) => {
     for (let stat in buff) {
       if (stat === "hp") {
-        // Increase HP only if the hero is alive.
         if (hero.hp > 0) {
           hero.hp += buff[stat];
         }
       } else {
-        // For other stats, initialize the stat if not present, then increment it.
         if (!hero.hasOwnProperty(stat)) {
           hero[stat] = 0;
         }
@@ -112,6 +116,5 @@ export function applyModeUp(chosenHero, level, party, logCallback) {
     }
   });
 
-  // Log the buff application message via the provided callback.
   logCallback(message);
 }
