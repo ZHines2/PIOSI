@@ -17,6 +17,14 @@
  * - Healing mushroom functionality has been added.
  *   Mushrooms are represented by the symbol 'ඉ' on the battlefield.
  *
+ * - Wizard chain ability updated:
+ *   The wizard's "chain" stat now is converted into an effective damage multiplier
+ *   using the formula:
+ *       effectiveMultiplier = 1 - Math.exp(-chain / 10)
+ *   For example, starting at chain = 5, the multiplier is ≈0.393 (39.3% of base damage),
+ *   and a mode up increase to chain = 6 raises it to ≈0.451. This new metric provides a
+ *   balanced, non-linear scaling to justify the numbering.
+ *
  * For detailed guidelines on creating new levels, refer to the Level Creation Rubric in docs/level-creation.md.
  */
 
@@ -151,7 +159,7 @@ export class BattleEngine {
     if (emptyCells.length) {
       const index = Math.floor(Math.random() * emptyCells.length);
       const cell = emptyCells[index];
-      field[cell.y][cell.x] = 'ඉ'; // 'ඉ' represents the healing item (mushroom).
+      field[cell.y][cell.x] = 'ඉ'; // 'ඉ' represents the mushroom.
     }
   }
 
@@ -353,6 +361,16 @@ export class BattleEngine {
             this.isWithinBounds.bind(this)
           );
         }
+
+        // Wizard chain ability: use the new algorithmic metric to compute propagation.
+        if (unit.name === "Wizard" && unit.chain) {
+          const effectiveMultiplier = 1 - Math.exp(-unit.chain / 10);
+          const initialChainDamage = Math.round(unit.attack * effectiveMultiplier);
+          if (initialChainDamage > 0) {
+            this.applyChainDamage(enemy, initialChainDamage, effectiveMultiplier, new Set());
+          }
+        }
+
         if (enemy.hp <= 0) {
           this.logCallback(`${enemy.name} is defeated!`);
           this.battlefield[targetY][targetX] = '.';
@@ -386,6 +404,43 @@ export class BattleEngine {
     this.awaitingAttackDirection = false;
     await this.shortPause();
     this.nextTurn();
+  }
+
+  // Recursive helper method to apply chain damage to adjacent enemies.
+  // Propagation continues using the effective multiplier.
+  applyChainDamage(enemy, damage, effectiveMultiplier, visited = new Set()) {
+    visited.add(enemy);
+    const adjacentOffsets = [
+      { x: -1, y: 0 },
+      { x: 1, y: 0 },
+      { x: 0, y: -1 },
+      { x: 0, y: 1 },
+      { x: -1, y: -1 },
+      { x: -1, y: 1 },
+      { x: 1, y: -1 },
+      { x: 1, y: 1 }
+    ];
+    for (let offset of adjacentOffsets) {
+      const adjX = enemy.x + offset.x;
+      const adjY = enemy.y + offset.y;
+      if (!this.isWithinBounds(adjX, adjY)) continue;
+      // Check for an adjacent enemy that hasn't been processed yet.
+      const adjacentEnemy = this.enemies.find(e => e.x === adjX && e.y === adjY);
+      if (adjacentEnemy && !visited.has(adjacentEnemy)) {
+        adjacentEnemy.hp -= damage;
+        this.logCallback(`Wizard's chain deals ${damage} damage to ${adjacentEnemy.name} at (${adjX},${adjY})! (HP left: ${adjacentEnemy.hp})`);
+        if (adjacentEnemy.hp <= 0) {
+          this.logCallback(`${adjacentEnemy.name} is defeated by chain damage!`);
+          this.battlefield[adjY][adjX] = '.';
+          this.enemies = this.enemies.filter(e => e !== adjacentEnemy);
+        }
+        // Compute next chain damage using the same effective multiplier.
+        const nextDamage = Math.round(damage * effectiveMultiplier);
+        if (nextDamage > 0 && nextDamage < damage) {
+          this.applyChainDamage(adjacentEnemy, nextDamage, effectiveMultiplier, visited);
+        }
+      }
+    }
   }
 
   enemyTurn() {
