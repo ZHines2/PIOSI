@@ -30,7 +30,7 @@ export const heroes = [
     range: 7,
     agility: 2,
     hp: 10,
-    chain: 5 // Wizard's chain stat, starting at level 5. It gives bonus attack damage to any adjacent enemy.
+    chain: 5 // The chain stat gives bonus attack damage to any adjacent enemy. Begins at level 5.
   },
   {
     name: "Berserker",
@@ -135,10 +135,20 @@ export const heroes = [
   {
     name: "Sycophant",
     symbol: "♟",
-    attack: 0,
-    range: 0,
-    agility: 2,
-    hp: 15
+    attack: 1,
+    range: 1,
+    agility: 1,
+    hp: 1,
+    heal: 1,
+    burn: 1,
+    sluj: 1,
+    ghis: 1,
+    yeet: 1,
+    swarm: 1,
+    spicy: 1,
+    armor: 1,
+    spore: 1
+    // Sycophant now starts with 1 in every stat.
   },
   // New hero "Yeetrian" with knockback stat "yeet".
   // The knockback (or "yeet") stat indicates the hero's ability to push enemies.
@@ -193,23 +203,23 @@ export const heroes = [
     hp: 15,
     spore: 1 // Spore stat: indicates the ability to gain random stats from mushrooms.
   },
-  // New hero "Pæg" with 1 in every stat.
+  // Updated hero "Pæg" with improved stats and added chain stat.
   {
     name: "Pæg",
     symbol: "ꚤ",
     attack: 1,
     range: 1,
-    agility: 1,
-    hp: 1,
+    agility: 2,  // Increased agility from 1 to 2 for better turn order.
+    hp: 3,       // Increased HP from 1 to 3 for survivability.
     heal: 1,
     burn: 1,
     sluj: 1,
     ghis: 1,
     yeet: 1,
     swarm: 1,
-    charm: 1,
     spicy: 1,
     armor: 1,
-    spore: 1
+    spore: 1,
+    chain: 1    // Added chain stat to Pæg.
   }
 ];
