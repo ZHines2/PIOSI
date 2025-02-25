@@ -83,7 +83,8 @@ export const heroes = [
     range: 6,
     agility: 3,
     hp: 11,
-    tarot: true // Can fetch tarot cards for special actions.
+    tarot: true, // Can fetch tarot cards for special actions.
+    fate: 1 // Pefc2
   },
   {
     name: "Nonsequiteur",
