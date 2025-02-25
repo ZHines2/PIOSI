@@ -543,8 +543,6 @@ export class BattleEngine {
   canMove(x, y) {
     return this.isWithinBounds(x, y) && this.isCellPassable(x, y);
   }
-
-// Enemy attacking adjacent heroes.
 enemyAttackAdjacent(enemy) {
   const directions = [
     [0, -1],
@@ -571,23 +569,26 @@ enemyAttackAdjacent(enemy) {
           `${enemy.name} attacks ${targetHero.name} for ${enemy.attack} damage! (HP left: ${targetHero.hp})`
         );
       }
-      
-      // Apply Berserker Rage ability if the target hero has a rage stat.
-      if (targetHero.hp > 0 && targetHero.rage && targetHero.rage > 0) {
-        const stats = ['attack', 'range', 'agility', 'hp'];
-        const randomStat = stats[Math.floor(Math.random() * stats.length)];
-        targetHero[randomStat] += targetHero.rage;
-        this.logCallback(
-          `${targetHero.name}'s rage surges, adding ${targetHero.rage} to ${randomStat}! (New ${randomStat}: ${targetHero[randomStat]})`
-        );
-      }
-      
       if (targetHero.hp <= 0) {
         this.logCallback(`${targetHero.name} is defeated!`);
         this.battlefield[targetHero.y][targetHero.x] = '.';
         this.party = this.party.filter(h => h !== targetHero);
         if (this.currentUnit >= this.party.length) {
           this.currentUnit = 0;
+        }
+      } else {
+        // Rage stat functionality - simple version
+        if (targetHero.rage && targetHero.rage > 0) {
+          const stats = ['attack', 'range', 'agility', 'hp'];
+          const randomStat = stats[Math.floor(Math.random() * stats.length)];
+          if (targetHero.hasOwnProperty(randomStat)) { // Check if the stat exists
+            targetHero[randomStat] += targetHero.rage;
+            this.logCallback(
+              `${targetHero.name}'s rage increases their ${randomStat} by ${targetHero.rage}! (New ${targetHero[randomStat]})`
+            );
+          } else {
+            console.warn(`Hero ${targetHero.name} is missing stat ${randomStat}`);
+          }
         }
       }
     }
