@@ -9,6 +9,8 @@
  * Updates:
  * - The Wizard now gains an increase to his "chain" stat.
  * - The Sycophant's mode up now gives him +1 in every stat.
+ * - The Berserker gains "rage" stat.
+
  */
 
 export function getModeUpBuff(chosenHero, level) {
@@ -21,7 +23,7 @@ export function getModeUpBuff(chosenHero, level) {
     return { range: 1 * buffIncrement };
   } else if (chosenHero.name === "Berserker") {
     // Berserker gets a significant boost to attack power.
-    return { attack: 3 * buffIncrement };
+    return { rage: 1 * buffIncrement };
   } else if (chosenHero.name === "Rogue") {
     // Rogue receives additional agility.
     return { agility: 2 * buffIncrement };
@@ -102,6 +104,8 @@ export function applyModeUp(chosenHero, level, party, logCallback) {
   if (buff.chain) messageParts.push(`+${buff.chain} Chain`);
   if (buff.caprice) messageParts.push(`+${buff.caprice} Caprice`);
   if (buff.fate) messageParts.push(`+${buff.fate} Fate`);
+  if (buff.rage) messageParts.push(`+${buff.rage} Rage`);
+
 
   const message =
     messageParts.length > 0
