@@ -154,7 +154,8 @@
           spicy: hero.spicy !== undefined ? hero.spicy : 0,
           armor: hero.armor !== undefined ? hero.armor : 0,
           spore: hero.spore !== undefined ? hero.spore : 0,
-          chain: hero.chain !== undefined ? hero.chain : 0
+          chain: hero.chain !== undefined ? hero.chain : 0,
+          caprice: hero.caprice !== undefined ? hero.caprice : 0 // Added caprice stat
         };
       }
 
@@ -204,7 +205,8 @@
           Spicy: ${stats.spicy} | 
           Armor: ${stats.armor} | 
           Spore: ${stats.spore} | 
-          Chain: ${stats.chain}
+          Chain: ${stats.chain} | 
+          Caprice: ${stats.caprice} <!-- Caprice stat increment logic -->
         </p>`;
         // Indicate selection status
         display += `<p>${
@@ -343,6 +345,11 @@
         lines.push(
           `<p>Chain: ${stats.chain} ${
             buff.chain ? `<span class="stat-up">+${buff.chain}</span>` : ""
+          }</p>`
+        );
+        lines.push(
+          `<p>Caprice: ${stats.caprice} ${
+            buff.caprice ? `<span class="stat-up">+${buff.caprice}</span>` : ""
           }</p>`
         );
         document.getElementById("mode-up-hero-display").innerHTML =
