@@ -9,6 +9,7 @@
  * Updates:
  * - The Wizard now gains an increase to his "chain" stat.
  * - The Sycophant's mode up now gives him +1 in every stat.
+ * - Berserker now gains a buff to his "rage" stat instead of an attack buff.
  */
 
 export function getModeUpBuff(chosenHero, level) {
@@ -20,11 +21,11 @@ export function getModeUpBuff(chosenHero, level) {
     // Archer gets increased range.
     return { range: 1 * buffIncrement };
   } else if (chosenHero.name === "Berserker") {
-    // Berserker gets a significant boost to attack power.
-    return { attack: 3 * buffIncrement };
+    // Berserker now gets an increase to his rage stat instead of attack.
+    return { rage: 1 * buffIncrement };
   } else if (chosenHero.name === "Rogue") {
     // Rogue receives additional agility.
-    return { agility: 2 * buffIncrement };
+    return { agility: 1 * buffIncrement };
   } else if (chosenHero.name === "Torcher") {
     // Torcher's burn damage increases.
     return { burn: 1 * buffIncrement };
@@ -33,7 +34,7 @@ export function getModeUpBuff(chosenHero, level) {
     return { sluj: 1 * buffIncrement };
   } else if (chosenHero.name === "Cleric") {
     // Cleric's healing power increases.
-    return { heal: 2 * buffIncrement };
+    return { heal: 1 * buffIncrement };
   } else if (chosenHero.name === "Sycophant") {
     // Sycophant now gains +1 in every stat.
     return {
@@ -102,6 +103,7 @@ export function applyModeUp(chosenHero, level, party, logCallback) {
   if (buff.chain) messageParts.push(`+${buff.chain} Chain`);
   if (buff.caprice) messageParts.push(`+${buff.caprice} Caprice`);
   if (buff.fate) messageParts.push(`+${buff.fate} Fate`);
+  if (buff.rage) messageParts.push(`+${buff.rage} Rage`);
 
   const message =
     messageParts.length > 0
