@@ -288,16 +288,6 @@ export class BattleEngine {
       }
     }
 
-    // Implement the random stat increment for the "caprice" stat.
-    if (unit.caprice && unit.caprice > 0) {
-      const stats = ['attack', 'range', 'agility', 'hp'];
-      const randomStat = stats[Math.floor(Math.random() * stats.length)];
-      unit[randomStat] += unit.caprice;
-      this.logCallback(
-        `${unit.name}'s caprice grants a ${unit.caprice} point boost to ${randomStat}! (New ${randomStat}: ${unit[randomStat]})`
-      );
-    }
-
     // Prevent movement into a cell occupied by another hero or enemy.
     if (!this.isCellPassable(newX, newY)) return;
 
