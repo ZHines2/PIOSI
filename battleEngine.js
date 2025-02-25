@@ -89,6 +89,20 @@ export class BattleEngine {
       }
     }
 
+    // Apply random stat buffs based on the "caprice" stat for each hero at the start of each level.
+    this.party.forEach(hero => {
+      if (hero.caprice && hero.caprice > 0) {
+        const stats = ['attack', 'range', 'agility', 'hp'];
+        for (let i = 0; i < hero.caprice; i++) {
+          const randomStat = stats[Math.floor(Math.random() * stats.length)];
+          hero[randomStat] += 1;
+          this.logCallback(
+            `${hero.name}'s caprice grants a 1 point boost to ${randomStat}! (New ${randomStat}: ${hero[randomStat]})`
+          );
+        }
+      }
+    });
+
     return field;
   }
 
