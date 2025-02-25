@@ -261,6 +261,201 @@ export const levelSettings = [
     ]
   },
   {
+    level: 11,
+    title: "Level 11: The Hidden Depths",
+    rows: 8,
+    cols: 8,
+    wallHP: 400,
+    generateEnemies: true,
+    enemyGenerator: (rows, cols) => {
+      const enemies = [];
+      for (let i = 0; i < 5; i++) {
+        enemies.push({
+          name: "Shadow Stalker",
+          symbol: "☾",
+          attack: 15,
+          range: 2,
+          hp: 100,
+          agility: 5,
+          x: getRandomInt(0, cols - 1),
+          y: getRandomInt(0, rows - 1),
+          dialogue: ["You cannot escape the shadows!", "I am the darkness."]
+        });
+      }
+      return enemies;
+    },
+    layout: generateLevelLayout(8, 8, 2, 4, 3, 400).layout
+  },
+  {
+    level: 12,
+    title: "Level 12: The Forgotten Ruins",
+    rows: 9,
+    cols: 9,
+    wallHP: 450,
+    enemies: [
+      { name: "Ancient Guardian", symbol: "⚔", attack: 20, range: 1, hp: 200, agility: 3, x: 4, y: 4, dialogue: ["You shall not pass!", "I guard these ruins."] },
+      { name: "Ancient Guardian", symbol: "⚔", attack: 20, range: 1, hp: 200, agility: 3, x: 3, y: 3, dialogue: ["You shall not pass!", "I guard these ruins."] },
+      { name: "Ancient Guardian", symbol: "⚔", attack: 20, range: 1, hp: 200, agility: 3, x: 5, y: 5, dialogue: ["You shall not pass!", "I guard these ruins."] }
+    ],
+    layout: generateLevelLayout(9, 9, 2, 4, 3, 450).layout
+  },
+  {
+    level: 13,
+    title: "Level 13: The Abyssal Chasm",
+    rows: 10,
+    cols: 10,
+    wallHP: 500,
+    generateEnemies: true,
+    enemyGenerator: (rows, cols) => {
+      const enemies = [];
+      for (let i = 0; i < 7; i++) {
+        enemies.push({
+          name: "Abyssal Fiend",
+          symbol: "⛧",
+          attack: 25,
+          range: 3,
+          hp: 150,
+          agility: 4,
+          x: getRandomInt(0, cols - 1),
+          y: getRandomInt(0, rows - 1),
+          dialogue: ["The abyss consumes all!", "You will be devoured."]
+        });
+      }
+      return enemies;
+    },
+    layout: generateLevelLayout(10, 10, 2, 4, 3, 500).layout
+  },
+  {
+    level: 14,
+    title: "Level 14: The Enchanted Forest",
+    rows: 11,
+    cols: 11,
+    wallHP: 550,
+    enemies: [
+      { name: "Forest Spirit", symbol: "♆", attack: 30, range: 2, hp: 250, agility: 6, x: 5, y: 5, dialogue: ["The forest protects us!", "You shall not harm nature."] },
+      { name: "Forest Spirit", symbol: "♆", attack: 30, range: 2, hp: 250, agility: 6, x: 4, y: 4, dialogue: ["The forest protects us!", "You shall not harm nature."] },
+      { name: "Forest Spirit", symbol: "♆", attack: 30, range: 2, hp: 250, agility: 6, x: 6, y: 6, dialogue: ["The forest protects us!", "You shall not harm nature."] }
+    ],
+    layout: generateLevelLayout(11, 11, 2, 4, 3, 550).layout
+  },
+  {
+    level: 15,
+    title: "Level 15: The Crystal Caverns",
+    rows: 12,
+    cols: 12,
+    wallHP: 600,
+    generateEnemies: true,
+    enemyGenerator: (rows, cols) => {
+      const enemies = [];
+      for (let i = 0; i < 10; i++) {
+        enemies.push({
+          name: "Crystal Golem",
+          symbol: "♦",
+          attack: 35,
+          range: 1,
+          hp: 300,
+          agility: 2,
+          x: getRandomInt(0, cols - 1),
+          y: getRandomInt(0, rows - 1),
+          dialogue: ["You will shatter!", "Feel the power of the crystals."]
+        });
+      }
+      return enemies;
+    },
+    layout: generateLevelLayout(12, 12, 2, 4, 3, 600).layout
+  },
+  {
+    level: 16,
+    title: "Level 16: The Infernal Pit",
+    rows: 13,
+    cols: 13,
+    wallHP: 650,
+    enemies: [
+      { name: "Infernal Demon", symbol: "♨", attack: 40, range: 3, hp: 350, agility: 5, x: 6, y: 6, dialogue: ["Burn in the flames!", "You cannot withstand the heat."] },
+      { name: "Infernal Demon", symbol: "♨", attack: 40, range: 3, hp: 350, agility: 5, x: 5, y: 5, dialogue: ["Burn in the flames!", "You cannot withstand the heat."] },
+      { name: "Infernal Demon", symbol: "♨", attack: 40, range: 3, hp: 350, agility: 5, x: 7, y: 7, dialogue: ["Burn in the flames!", "You cannot withstand the heat."] }
+    ],
+    layout: generateLevelLayout(13, 13, 2, 4, 3, 650).layout
+  },
+  {
+    level: 17,
+    title: "Level 17: The Celestial Spire",
+    rows: 14,
+    cols: 14,
+    wallHP: 700,
+    generateEnemies: true,
+    enemyGenerator: (rows, cols) => {
+      const enemies = [];
+      for (let i = 0; i < 12; i++) {
+        enemies.push({
+          name: "Celestial Guardian",
+          symbol: "✪",
+          attack: 45,
+          range: 2,
+          hp: 400,
+          agility: 4,
+          x: getRandomInt(0, cols - 1),
+          y: getRandomInt(0, rows - 1),
+          dialogue: ["The stars guide us!", "You cannot reach the heavens."]
+        });
+      }
+      return enemies;
+    },
+    layout: generateLevelLayout(14, 14, 2, 4, 3, 700).layout
+  },
+  {
+    level: 18,
+    title: "Level 18: The Arcane Sanctum",
+    rows: 15,
+    cols: 15,
+    wallHP: 750,
+    enemies: [
+      { name: "Arcane Sentinel", symbol: "⚚", attack: 50, range: 4, hp: 450, agility: 6, x: 7, y: 7, dialogue: ["The arcane protects us!", "You shall not breach our sanctum."] },
+      { name: "Arcane Sentinel", symbol: "⚚", attack: 50, range: 4, hp: 450, agility: 6, x: 6, y: 6, dialogue: ["The arcane protects us!", "You shall not breach our sanctum."] },
+      { name: "Arcane Sentinel", symbol: "⚚", attack: 50, range: 4, hp: 450, agility: 6, x: 8, y: 8, dialogue: ["The arcane protects us!", "You shall not breach our sanctum."] }
+    ],
+    layout: generateLevelLayout(15, 15, 2, 4, 3, 750).layout
+  },
+  {
+    level: 19,
+    title: "Level 19: The Void Realm",
+    rows: 16,
+    cols: 16,
+    wallHP: 800,
+    generateEnemies: true,
+    enemyGenerator: (rows, cols) => {
+      const enemies = [];
+      for (let i = 0; i < 15; i++) {
+        enemies.push({
+          name: "Void Wraith",
+          symbol: "☠",
+          attack: 55,
+          range: 3,
+          hp: 500,
+          agility: 5,
+          x: getRandomInt(0, cols - 1),
+          y: getRandomInt(0, rows - 1),
+          dialogue: ["The void consumes all!", "You will be lost in the void."]
+        });
+      }
+      return enemies;
+    },
+    layout: generateLevelLayout(16, 16, 2, 4, 3, 800).layout
+  },
+  {
+    level: 20,
+    title: "Level 20: The Final Confrontation",
+    rows: 17,
+    cols: 17,
+    wallHP: 850,
+    enemies: [
+      { name: "Eternal Overlord", symbol: "♛", attack: 60, range: 5, hp: 1000, agility: 7, x: 8, y: 8, dialogue: ["You cannot defeat me!", "I am eternal."] },
+      { name: "Eternal Overlord", symbol: "♛", attack: 60, range: 5, hp: 1000, agility: 7, x: 7, y: 7, dialogue: ["You cannot defeat me!", "I am eternal."] },
+      { name: "Eternal Overlord", symbol: "♛", attack: 60, range: 5, hp: 1000, agility: 7, x: 9, y: 9, dialogue: ["You cannot defeat me!", "I am eternal."] }
+    ],
+    layout: generateLevelLayout(17, 17, 2, 4, 3, 850).layout
+  },
+  {
     level: 99,
     title: "Level ௧: Further Introspection",
     rows: 15,

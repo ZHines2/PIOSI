@@ -437,10 +437,10 @@
        * Secret level (level 99) remains unchanged.
        */
       function onLevelComplete() {
-        if (level >= 1 && level <= 9) {
+        if (level >= 1 && level <= 19) {
           logMessage(`Level ${level} complete!`);
           showModeUpWindow();
-        } else if (level === 10) {
+        } else if (level === 20) {
           logMessage("The final path is complete!");
           showScreen("victory");
         } else if (level === 99) {
