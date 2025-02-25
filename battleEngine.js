@@ -577,13 +577,6 @@ export class BattleEngine {
           if (this.currentUnit >= this.party.length) {
             this.currentUnit = 0;
           }
-        } else if (targetHero.rage && targetHero.rage > 0) {
-          const stats = ['attack', 'range', 'agility', 'hp', 'armor', 'burn', 'sluj', 'yeet', 'swarm', 'spicy', 'spore', 'chain', 'caprice', 'fate'];
-          const randomStat = stats[Math.floor(Math.random() * stats.length)];
-          targetHero[randomStat] += targetHero.rage;
-          this.logCallback(
-            `${targetHero.name}'s rage grants a ${targetHero.rage} point boost to ${randomStat}! (New ${randomStat}: ${targetHero[randomStat]})`
-          );
         }
       }
     });
