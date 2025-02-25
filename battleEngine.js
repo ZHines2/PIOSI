@@ -89,6 +89,43 @@ export class BattleEngine {
       }
     }
 
+    // Apply random stat buffs based on the "caprice" stat for each hero at the start of each level.
+    this.party.forEach(hero => {
+      if (hero.caprice && hero.caprice > 0) {
+        const stats = ['attack', 'range', 'agility', 'hp'];
+        for (let i = 0; i < hero.caprice; i++) {
+          const randomStat = stats[Math.floor(Math.random() * stats.length)];
+          hero[randomStat] += 1;
+          this.logCallback(
+            `${hero.name}'s caprice grants a 1 point boost to ${randomStat}! (New ${randomStat}: ${hero[randomStat]})`
+          );
+        }
+      }
+    });
+
+    // Apply random stat buffs or debuffs based on the "fate" stat for each hero at the start of each level.
+    this.party.forEach(hero => {
+      if (hero.fate && hero.fate > 0) {
+        const fates = [
+          { stat: 'attack', change: 1 },
+          { stat: 'attack', change: -1 },
+          { stat: 'range', change: 1 },
+          { stat: 'range', change: -1 },
+          { stat: 'agility', change: 1 },
+          { stat: 'agility', change: -1 },
+          { stat: 'hp', change: 1 },
+          { stat: 'hp', change: -1 }
+        ];
+        for (let i = 0; i < hero.fate; i++) {
+          const randomFate = fates[Math.floor(Math.random() * fates.length)];
+          hero[randomFate.stat] += randomFate.change;
+          this.logCallback(
+            `${hero.name}'s fate grants a ${randomFate.change} point change to ${randomFate.stat}! (New ${randomFate.stat}: ${hero[randomFate.stat]})`
+          );
+        }
+      }
+    });
+
     return field;
   }
 

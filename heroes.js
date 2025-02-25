@@ -83,7 +83,8 @@ export const heroes = [
     range: 6,
     agility: 3,
     hp: 11,
-    tarot: true // Can fetch tarot cards for special actions.
+    tarot: true, // Can fetch tarot cards for special actions.
+    fate: 1 // Pefc2
   },
   {
     name: "Nonsequiteur",
@@ -92,7 +93,8 @@ export const heroes = [
     range: 3,
     agility: 3,
     hp: 10,
-    nonseq: true // Delivers random, non-sequitur interactions.
+    nonseq: true, // Delivers random, non-sequitur interactions.
+    caprice: 1 // New stat for random stat increment
   },
   {
     name: "Griot",

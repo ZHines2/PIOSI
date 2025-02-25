@@ -154,7 +154,9 @@
           spicy: hero.spicy !== undefined ? hero.spicy : 0,
           armor: hero.armor !== undefined ? hero.armor : 0,
           spore: hero.spore !== undefined ? hero.spore : 0,
-          chain: hero.chain !== undefined ? hero.chain : 0
+          chain: hero.chain !== undefined ? hero.chain : 0,
+          caprice: hero.caprice !== undefined ? hero.caprice : 0, // Added caprice stat
+          fate: hero.fate !== undefined ? hero.fate : 0 // Added fate stat
         };
       }
 
@@ -204,7 +206,9 @@
           Spicy: ${stats.spicy} | 
           Armor: ${stats.armor} | 
           Spore: ${stats.spore} | 
-          Chain: ${stats.chain}
+          Chain: ${stats.chain} | 
+          Caprice: ${stats.caprice} | 
+          Fate: ${stats.fate} <!-- Fate stat increment logic -->
         </p>`;
         // Indicate selection status
         display += `<p>${
@@ -345,6 +349,16 @@
             buff.chain ? `<span class="stat-up">+${buff.chain}</span>` : ""
           }</p>`
         );
+        lines.push(
+          `<p>Caprice: ${stats.caprice} ${
+            buff.caprice ? `<span class="stat-up">+${buff.caprice}</span>` : ""
+          }</p>`
+        );
+        lines.push(
+          `<p>Fate: ${stats.fate} ${
+            buff.fate ? `<span class="stat-up">+${buff.fate}</span>` : ""
+          }</p>`
+        );
         document.getElementById("mode-up-hero-display").innerHTML =
           lines.join("");
       }
@@ -437,10 +451,10 @@
        * Secret level (level 99) remains unchanged.
        */
       function onLevelComplete() {
-        if (level >= 1 && level <= 9) {
+        if (level >= 1 && level <= 19) {
           logMessage(`Level ${level} complete!`);
           showModeUpWindow();
-        } else if (level === 10) {
+        } else if (level === 20) {
           logMessage("The final path is complete!");
           showScreen("victory");
         } else if (level === 99) {

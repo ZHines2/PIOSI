@@ -25,6 +25,8 @@ Some heroes have special properties that give them unique abilities. Here are so
 - `yeet`: The hero can knock back enemies.
 - `swarm`: The hero can deal turn-based damage to adjacent enemies.
 - `spicy`: Each "spicy" stat raises the amount the vittle heals for.
+- `caprice`: The hero can randomly boost one of their stats.
+- `fate`: The hero can randomly buff or debuff stats for all heroes.
 
 ## Best Practices
 
@@ -149,6 +151,38 @@ Here are some examples of hero configurations:
 }
 ```
 
+### Example 8: Nonsequiteur
+
+```javascript
+{
+  name: "Nonsequiteur",
+  symbol: "∄",
+  attack: 3,
+  range: 3,
+  agility: 3,
+  hp: 10,
+  nonseq: true, // Delivers random, non-sequitur interactions.
+  caprice: 1, // New stat for random stat increment
+  description: "Nonsequiteur is known for his unpredictable nature. His 'caprice' stat allows him to randomly boost one of his stats, making him a wild card in any battle."
+}
+```
+
+### Example 9: Soothscribe
+
+```javascript
+{
+  name: "Soothscribe",
+  symbol: "☄",
+  attack: 2,
+  range: 6,
+  agility: 3,
+  hp: 11,
+  tarot: true, // Can fetch tarot cards for special actions.
+  fate: 1, // New stat for random buffs or debuffs
+  description: "The Soothscribe's 'fate' stat allows him to randomly buff or debuff stats for all heroes, making him a master of unpredictability."
+}
+```
+
 ## Griot.js Integration
 
 The `griot.js` module handles API calls for special characters and generates narrative text using a Markov chain that’s refreshed with recent interactions. The Griot hero reacts uniquely when encountering historical events, and the module provides various special API calls for characters.
@@ -166,5 +200,20 @@ The `griot.js` module handles API calls for special characters and generates nar
 - **Symbol**: ඉ
 - **Healing Amount**: 5 HP
 - **Description**: A healing item that restores 5 health points to the hero when picked up.
+
+## Possible Fates
+
+Here is a list of 10 possible fates that can be applied to heroes:
+
+1. Increase attack power
+2. Decrease attack power
+3. Increase range
+4. Decrease range
+5. Increase agility
+6. Decrease agility
+7. Increase health points (HP)
+8. Decrease health points (HP)
+9. Increase healing power
+10. Decrease healing power
 
 By following these guidelines and best practices, you can create heroes that are balanced, engaging, and fun for players. Happy hero designing!
