@@ -92,7 +92,8 @@ export const heroes = [
     range: 3,
     agility: 3,
     hp: 10,
-    nonseq: true // Delivers random, non-sequitur interactions.
+    nonseq: true, // Delivers random, non-sequitur interactions.
+    caprice: 1 // New stat for random stat increment
   },
   {
     name: "Griot",

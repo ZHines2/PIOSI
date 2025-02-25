@@ -70,6 +70,9 @@ export function getModeUpBuff(chosenHero, level) {
   } else if (chosenHero.name === "Wizard") {
     // The Wizard's chain stat increases.
     return { chain: 1 * buffIncrement };
+  } else if (chosenHero.name === "Nonsequiteur") {
+    // Nonsequiteur's caprice stat increases.
+    return { caprice: 1 * buffIncrement };
   } else {
     // Fallback for heroes with no specific buff defined.
     return { ghis: 1 * buffIncrement };
@@ -94,6 +97,7 @@ export function applyModeUp(chosenHero, level, party, logCallback) {
   if (buff.armor) messageParts.push(`+${buff.armor} Armor`);
   if (buff.spore) messageParts.push(`+${buff.spore} Spore`);
   if (buff.chain) messageParts.push(`+${buff.chain} Chain`);
+  if (buff.caprice) messageParts.push(`+${buff.caprice} Caprice`);
 
   const message =
     messageParts.length > 0
