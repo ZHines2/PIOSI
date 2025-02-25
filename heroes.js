@@ -39,7 +39,6 @@ export const heroes = [
     range: 1,
     agility: 3,
     hp: 20,
-    rage: 1 // New rage stat for Berserker
   },
   {
     name: "Rogue",
