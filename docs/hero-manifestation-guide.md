@@ -25,6 +25,7 @@ Some heroes have special properties that give them unique abilities. Here are so
 - `yeet`: The hero can knock back enemies.
 - `swarm`: The hero can deal turn-based damage to adjacent enemies.
 - `spicy`: Each "spicy" stat raises the amount the vittle heals for.
+- `caprice`: The hero can randomly boost one of their stats.
 
 ## Best Practices
 
@@ -146,6 +147,22 @@ Here are some examples of hero configurations:
   armor: 1,
   spore: 1,
   description: "Pæg is a versatile hero with 1 in every stat, making him a jack-of-all-trades but master of none."
+}
+```
+
+### Example 8: Nonsequiteur
+
+```javascript
+{
+  name: "Nonsequiteur",
+  symbol: "∄",
+  attack: 3,
+  range: 3,
+  agility: 3,
+  hp: 10,
+  nonseq: true, // Delivers random, non-sequitur interactions.
+  caprice: 1, // New stat for random stat increment
+  description: "Nonsequiteur is known for his unpredictable nature. His 'caprice' stat allows him to randomly boost one of his stats, making him a wild card in any battle."
 }
 ```
 
