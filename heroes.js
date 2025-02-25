@@ -39,6 +39,7 @@ export const heroes = [
     range: 1,
     agility: 3,
     hp: 20,
+    rage: 1, // New rage stat: whenever attacked by an enemy, a random stat is increased by this value.
   },
   {
     name: "Rogue",
