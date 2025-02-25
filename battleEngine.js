@@ -114,9 +114,7 @@ export class BattleEngine {
           { stat: 'agility', change: 1 },
           { stat: 'agility', change: -1 },
           { stat: 'hp', change: 1 },
-          { stat: 'hp', change: -1 },
-          { stat: 'heal', change: 1 },
-          { stat: 'heal', change: -1 }
+          { stat: 'hp', change: -1 }
         ];
         for (let i = 0; i < hero.fate; i++) {
           const randomFate = fates[Math.floor(Math.random() * fates.length)];
