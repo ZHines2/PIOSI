@@ -741,7 +741,6 @@ export class BattleEngine {
     const range = currentHero.range;
     const directions = [
         [0, 1], [0, -1], [1, 0], [-1, 0],  // Cardinal directions
-        [1, 1], [1, -1], [-1, 1], [-1, -1] // Diagonal directions
     ];
     directions.forEach(([dx, dy]) => {
         for (let i = 1; i <= range; i++) {
