@@ -72,7 +72,7 @@ export const levelSettings = [
     level: 1,
     title: "Level 1: The Breaking Wall",
     rows: 5,
-    cols: 10,
+    cols: 5,
     wallHP: 20,
     enemies: []
   },
