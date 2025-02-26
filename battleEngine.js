@@ -749,6 +749,27 @@ export class BattleEngine {
                 this.enemies = this.enemies.filter(e => e !== enemy);
               }
             }
+
+    // Remove existing range indicators
+    document.querySelectorAll('.range-indicator').forEach(cell => {
+        cell.classList.remove('range-indicator');
+    });
+
+    // Apply range indicator to current hero's range
+    const currentHero = this.party[this.currentUnit];
+    const range = currentHero.range;
+    const directions = [
+        [0, 1], [0, -1], [1, 0], [-1, 0],  // Cardinal directions
+        [1, 1], [1, -1], [-1, 1], [-1, -1] // Diagonal directions
+    ];
+    directions.forEach(([dx, dy]) => {
+        for (let i = 1; i <= range; i++) {
+            const x = currentHero.x + dx * i;
+            const y = currentHero.y + dy * i;
+            if (this.isWithinBounds(x, y)) {
+                const cell = document.querySelector(`#cell-${x}-${y}`);
+                if (cell) {
+                    cell.classList.add('range-indicator');
           }
         });
       }
