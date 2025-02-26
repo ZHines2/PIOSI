@@ -363,6 +363,24 @@ export class BattleEngine {
         this.logCallback(
           `${unit.name} attacks ${enemy.name} for ${unit.attack} damage! (HP left: ${enemy.hp})`
         );
+      // Apply trick debuff if the hero has the trick stat.
+      if (unit.trick > 0) {
+        const debuffableStats = ["attack", "range", "agility", "hp"];
+        const availableStats = debuffableStats.filter(
+          stat => typeof enemy[stat] === "number"
+        );
+        if (availableStats.length > 0) {
+          const randomIndex = Math.floor(Math.random() * availableStats.length);
+          const chosenStat = availableStats[randomIndex];
+          const debuffAmount = unit.trick;
+          const originalValue = enemy[chosenStat];
+          enemy[chosenStat] = Math.max(0, enemy[chosenStat] - debuffAmount);
+          this.logCallback(
+            `${unit.name}'s trick lowers ${enemy.name}'s ${chosenStat} from ${originalValue} to ${enemy[chosenStat]}!`
+          );
+        }
+      }
+
         if (unit.burn) {
           enemy.statusEffects.burn = { damage: unit.burn, duration: 3 };
           this.logCallback(
@@ -418,6 +436,7 @@ export class BattleEngine {
         this.nextTurn();
         return;
       }
+
       // Check for the wall.
       if (
         this.battlefield[targetY][targetX] === 'ᚙ' ||

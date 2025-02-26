@@ -65,7 +65,8 @@ export const heroes = [
     range: 2,
     agility: 5,
     hp: 10,
-    joke: true // Provides humorous interactions.
+    joke: true, // Provides humorous interactions.
+    trick: 1   // Placeholder "trick" stat for potential future behaviors.
   },
   {
     name: "Meatwalker",
