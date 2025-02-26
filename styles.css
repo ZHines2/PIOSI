@@ -189,45 +189,59 @@ button {
   font-size: 1.5em;
 }
 
-/* Mode Up Window Overlay */
-/* Styles for the level-up or mode-up window that overlays the game screen */
+/* Mode Up Window Overlay - Improved Responsiveness */
 #mode-up-window {
   display: none;
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
-  height: 100vh;
+  height: auto; /* Adjust height to content */
+  min-height: 100vh; /* Ensure it covers the full viewport */
   background: rgba(0, 0, 0, 0.8);
   z-index: 1000;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
   color: white;
+  overflow-y: auto; /* Enable scrolling if content overflows */
+  padding: 20px; /* Add padding for better spacing */
+  box-sizing: border-box; /* Include padding in width/height */
 }
 
-/* Style for headings in mode up window */
+/* Style for headings in mode up window - Reduced Margin */
 #mode-up-window h2 {
-  margin-top: 20px;
-  margin-bottom: 20px;
+  margin-top: 10px; /* Reduce top margin */
+  margin-bottom: 10px; /* Reduce bottom margin */
+  font-size: 1.5em; /* Adjust font size for smaller screens */
 }
 
-/* Style for hero display in mode up window */
+/* Style for hero display in mode up window - Adjusted Font Size and Wrapping */
 #mode-up-hero-display {
-  margin: 10px;
-  font-size: 1.2em;
+  margin: 5px; /* Reduce margin */
+  font-size: 1em; /* Reduce font size */
+  word-break: break-word; /* Prevent long words from overflowing */
+  max-width: 90%; /* Ensure it doesn't overflow on smaller screens */
 }
 
-/* Instructions text for mode up window */
+/* Instructions text for mode up window - Adjusted Margin and Font Size */
 #mode-up-instructions {
-  margin-top: 10px;
+  margin-top: 5px; /* Reduce top margin */
+  font-size: 0.9em; /* Reduce font size */
 }
 
-/* Stat Up Highlight */
-/* Style for highlighting stat increases */
+/* Button Styles - Reduced Padding and Font Size */
+#mode-up-window button {
+  padding: 8px 12px; /* Reduce padding */
+  margin: 3px; /* Reduce margin */
+  font-size: 16px; /* Reduce font size */
+}
+
+/* Stat Up Highlight - Adjusted Font Size */
 .stat-up {
   color: #32cd32;
   font-weight: bold;
+  font-size: 0.9em; /* Match instruction text size */
 }
 
 /* Dead Hero Styling */
@@ -253,4 +267,14 @@ button {
 /* Margins for each paragraph inside the log area for spacing */
 #log p {
   margin: 0.5rem 0;
+}
+
+/* Media Query for Smaller Screens */
+@media (max-width: 600px) {
+  #mode-up-window h2 {
+    font-size: 1.2em; /* Further reduction for very small screens */
+  }
+  #mode-up-hero-display {
+    font-size: 0.9em; /* Further reduction for very small screens */
+  }
 }
