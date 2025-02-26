@@ -150,20 +150,19 @@
           ghis: hero.ghis !== undefined ? hero.ghis : 0,
           yeet: hero.yeet !== undefined ? hero.yeet : 0,
           swarm: hero.swarm !== undefined ? hero.swarm : 0,
-          // Removed charm stat
           spicy: hero.spicy !== undefined ? hero.spicy : 0,
           armor: hero.armor !== undefined ? hero.armor : 0,
           spore: hero.spore !== undefined ? hero.spore : 0,
           chain: hero.chain !== undefined ? hero.chain : 0,
           caprice: hero.caprice !== undefined ? hero.caprice : 0, // Added caprice stat
-          fate: hero.fate !== undefined ? hero.fate : 0, // Added fate stat
+          fate: hero.fate !== undefined ? hero.fate : 0 // Added fate stat
           rage: hero.rage !== undefined ? hero.rage : 0 // Added rage stat
         };
       }
 
       /**
        * Update the hero display in the party selection screen.
-       * All stats are displayed, including the yeet, swarm, spicy, armor, chain, and rage stats.
+       * All stats are displayed, including the yeet, swarm, spicy, armor, and chain stats.
        */
       async function updateHeroDisplay() {
         const hero = allHeroes[heroIndex];
@@ -191,7 +190,7 @@
           const reaction = await getGriotReaction();
           display += `<p>${reaction}</p>`;
         }
-        // Get complete stats for the hero, including chain and rage stat
+        // Get complete stats for the hero, including chain stat
         const stats = getCompleteStats(hero);
         display += `<p>
           Attack: ${stats.attack} | 
@@ -271,7 +270,7 @@
 
       /**
        * Update the Mode Up display for the currently selected hero.
-       * The display now shows the yeet, swarm, spicy, armor, chain, and rage stats along with a buff preview.
+       * The display now shows the yeet, swarm, spicy, armor, and chain stats along with a buff preview.
        */
       function updateModeUpHeroDisplay() {
         const hero = livingHeroes[modeUpIndex];
