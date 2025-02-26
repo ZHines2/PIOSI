@@ -140,6 +140,11 @@ body {
   color: tan;
 }
 
+/* Random Space Styling */
+.special-tile {
+    color: gold;
+}
+
 /* Enemy cell style */
 /* Highlight enemy cells with distinctive color and bold text */
 .enemy {
