@@ -66,6 +66,16 @@ export class BattleEngine {
     });
 
     this.battlefield = this.initializeBattlefield();
+
+    // Initialize tracking properties
+    this.enemiesDefeated = 0;
+    this.vittlesCollected = 0;
+    this.mushroomsCollected = 0;
+    this.levelsBeaten = 0;
+    this.stepsTaken = 0;
+    this.timesHealed = 0;
+    this.damageGiven = 0;
+    this.runData = [];
   }
 
   initializeBattlefield() {
@@ -291,6 +301,8 @@ export class BattleEngine {
       );
       // Remove the healing item from the battlefield.
       this.battlefield[newY][newX] = '.';
+      this.vittlesCollected++; // Track vittles collected
+      this.timesHealed++; // Track times healed
     }
     if (this.battlefield[newY][newX] === 'ඉ') {
       const healingValue = 5; // Fixed healing value for the mushroom.
@@ -300,6 +312,8 @@ export class BattleEngine {
       );
       // Remove the healing item from the battlefield.
       this.battlefield[newY][newX] = '.';
+      this.mushroomsCollected++; // Track mushrooms collected
+      this.timesHealed++; // Track times healed
       // If the hero has the spore stat, randomly boost one of their stats.
       if (unit.spore && unit.spore > 0) {
         const stats = ['attack', 'range', 'agility', 'hp'];
@@ -320,6 +334,7 @@ export class BattleEngine {
     unit.y = newY;
     this.battlefield[newY][newX] = unit.symbol;
     this.movePoints--;
+    this.stepsTaken++; // Track steps taken
     if (this.movePoints === 0) {
       this.nextTurn();
     }
@@ -345,6 +360,7 @@ export class BattleEngine {
           this.logCallback(
             `${unit.name} heals ${ally.name} for ${unit.heal} HP! (New HP: ${ally.hp})`
           );
+          this.timesHealed++; // Track times healed
         } else {
           this.logCallback(
             `${unit.name} attacks ${ally.name} but nothing happens.`
@@ -363,6 +379,7 @@ export class BattleEngine {
         this.logCallback(
           `${unit.name} attacks ${enemy.name} for ${unit.attack} damage! (HP left: ${enemy.hp})`
         );
+        this.damageGiven += unit.attack; // Track damage given
         if (unit.burn) {
           enemy.statusEffects.burn = { damage: unit.burn, duration: 3 };
           this.logCallback(
@@ -412,6 +429,7 @@ export class BattleEngine {
           this.logCallback(`${enemy.name} is defeated!`);
           this.battlefield[targetY][targetX] = '.';
           this.enemies = this.enemies.filter(e => e !== enemy);
+          this.enemiesDefeated++; // Track enemies defeated
         }
         this.awaitingAttackDirection = false;
         await this.shortPause();
@@ -427,6 +445,7 @@ export class BattleEngine {
         this.logCallback(
           `${unit.name} attacks the wall for ${unit.attack} damage! (Wall HP: ${this.wallHP})`
         );
+        this.damageGiven += unit.attack; // Track damage given
         this.awaitingAttackDirection = false;
         if (this.wallHP <= 0 && !this.transitioningLevel) {
           this.handleWallCollapse();
@@ -466,10 +485,12 @@ export class BattleEngine {
       if (adjacentEnemy && !visited.has(adjacentEnemy)) {
         adjacentEnemy.hp -= damage;
         this.logCallback(`Wizard's chain deals ${damage} damage to ${adjacentEnemy.name} at (${adjX},${adjY})! (HP left: ${adjacentEnemy.hp})`);
+        this.damageGiven += damage; // Track damage given
         if (adjacentEnemy.hp <= 0) {
           this.logCallback(`${adjacentEnemy.name} is defeated by chain damage!`);
           this.battlefield[adjY][adjX] = '.';
           this.enemies = this.enemies.filter(e => e !== adjacentEnemy);
+          this.enemiesDefeated++; // Track enemies defeated
         }
         // Compute next chain damage using the same effective multiplier.
         const nextDamage = Math.round(damage * effectiveMultiplier);
@@ -724,10 +745,12 @@ export class BattleEngine {
               this.logCallback(
                 `${hero.name}'s swarm deals ${damage} damage to ${enemy.name} at (${targetX},${targetY})! (HP left: ${enemy.hp})`
               );
+              this.damageGiven += damage; // Track damage given
               if (enemy.hp <= 0) {
                 this.logCallback(`${enemy.name} is defeated by swarm damage!`);
                 this.battlefield[targetY][targetX] = '.';
                 this.enemies = this.enemies.filter(e => e !== enemy);
+                this.enemiesDefeated++; // Track enemies defeated
               }
             }
           }

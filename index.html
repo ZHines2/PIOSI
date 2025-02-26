@@ -117,6 +117,16 @@
       let modeUpIndex = 0;
       let livingHeroes = [];
 
+      // Tracking properties
+      let enemiesDefeated = 0;
+      let vittlesCollected = 0;
+      let mushroomsCollected = 0;
+      let levelsBeaten = 0;
+      let stepsTaken = 0;
+      let timesHealed = 0;
+      let damageGiven = 0;
+      let runData = [];
+
       /**
        * Function to show a specific screen by setting display properties.
        */
@@ -264,6 +274,17 @@
         party = selectedHeroes.map((i) => Object.assign({}, allHeroes[i]));
         // Sort party by agility descending for turn order
         party.sort((a, b) => b.agility - a.agility);
+
+        // Initialize tracking properties
+        enemiesDefeated = 0;
+        vittlesCollected = 0;
+        mushroomsCollected = 0;
+        levelsBeaten = 0;
+        stepsTaken = 0;
+        timesHealed = 0;
+        damageGiven = 0;
+        runData = retrieveRunData();
+
         initializeBattle();
         showScreen("battle");
       }
@@ -484,6 +505,10 @@
             }
           }, 100); // Adjust timing as needed
         }
+
+        // Track levels beaten
+        levelsBeaten++;
+        saveRunData();
       }
 
       /**
@@ -496,6 +521,9 @@
         const level6Music = document.getElementById("level-6-music");
         level6Music.pause();
         level6Music.currentTime = 0;
+
+        // Save final stats and run data
+        saveRunData();
       }
 
       /**
@@ -521,6 +549,15 @@
         const logDiv = document.getElementById("log");
         logDiv.innerHTML += `<p>${message}</p>`;
         logDiv.scrollTop = logDiv.scrollHeight;
+
+        // Include tracking data in the log
+        logDiv.innerHTML += `<p>Enemies Defeated: ${enemiesDefeated}</p>`;
+        logDiv.innerHTML += `<p>Vittles Collected: ${vittlesCollected}</p>`;
+        logDiv.innerHTML += `<p>Mushrooms Collected: ${mushroomsCollected}</p>`;
+        logDiv.innerHTML += `<p>Levels Beaten: ${levelsBeaten}</p>`;
+        logDiv.innerHTML += `<p>Steps Taken: ${stepsTaken}</p>`;
+        logDiv.innerHTML += `<p>Times Healed: ${timesHealed}</p>`;
+        logDiv.innerHTML += `<p>Damage Given: ${damageGiven}</p>`;
       }
 
       /**
@@ -586,6 +623,9 @@
         heroSelectMusic.volume = 1;
         heroSelectMusic.play().catch(() => {});
 
+        // Clear local storage if needed
+        localStorage.removeItem("runData");
+
         showScreen("title");
       }
 
@@ -599,6 +639,31 @@
           level = 99;
           initializeBattle();
         }
+      }
+
+      /**
+       * Save run data to local storage.
+       */
+      function saveRunData() {
+        const runData = {
+          enemiesDefeated,
+          vittlesCollected,
+          mushroomsCollected,
+          levelsBeaten,
+          stepsTaken,
+          timesHealed,
+          damageGiven,
+          finalStats: party.map(hero => getCompleteStats(hero)),
+        };
+        localStorage.setItem("runData", JSON.stringify(runData));
+      }
+
+      /**
+       * Retrieve run data from local storage.
+       */
+      function retrieveRunData() {
+        const data = localStorage.getItem("runData");
+        return data ? JSON.parse(data) : [];
       }
 
       // Global keydown listener handling various game screens and actions.
