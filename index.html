@@ -150,13 +150,13 @@
           ghis: hero.ghis !== undefined ? hero.ghis : 0,
           yeet: hero.yeet !== undefined ? hero.yeet : 0,
           swarm: hero.swarm !== undefined ? hero.swarm : 0,
-          // Removed charm stat
           spicy: hero.spicy !== undefined ? hero.spicy : 0,
           armor: hero.armor !== undefined ? hero.armor : 0,
           spore: hero.spore !== undefined ? hero.spore : 0,
           chain: hero.chain !== undefined ? hero.chain : 0,
           caprice: hero.caprice !== undefined ? hero.caprice : 0, // Added caprice stat
-          fate: hero.fate !== undefined ? hero.fate : 0 // Added fate stat
+          fate: hero.fate !== undefined ? hero.fate : 0, // Added fate stat
+          rage: hero.rage !== undefined ? hero.rage : 0 // Added rage stat
         };
       }
 
@@ -208,7 +208,8 @@
           Spore: ${stats.spore} | 
           Chain: ${stats.chain} | 
           Caprice: ${stats.caprice} | 
-          Fate: ${stats.fate} <!-- Fate stat increment logic -->
+          Fate: ${stats.fate} | 
+          Rage: ${stats.rage}
         </p>`;
         // Indicate selection status
         display += `<p>${
@@ -357,6 +358,11 @@
         lines.push(
           `<p>Fate: ${stats.fate} ${
             buff.fate ? `<span class="stat-up">+${buff.fate}</span>` : ""
+          }</p>`
+        );
+        lines.push(
+          `<p>Rage: ${stats.rage} ${
+            buff.rage ? `<span class="stat-up">+${buff.rage}</span>` : ""
           }</p>`
         );
         document.getElementById("mode-up-hero-display").innerHTML =

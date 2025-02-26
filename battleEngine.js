@@ -543,20 +543,19 @@ export class BattleEngine {
   canMove(x, y) {
     return this.isWithinBounds(x, y) && this.isCellPassable(x, y);
   }
-
   enemyAttackAdjacent(enemy) {
     const directions = [
       [0, -1],
       [0, 1],
       [-1, 0],
-      [1, 0],
+      [1, 0]
     ];
+    
     directions.forEach(([dx, dy]) => {
       const tx = enemy.x + dx;
       const ty = enemy.y + dy;
-      const targetHero = this.party.find(
-        hero => hero.x === tx && hero.y === ty
-      );
+      const targetHero = this.party.find(hero => hero.x === tx && hero.y === ty);
+      
       if (targetHero) {
         // Check for armor before applying damage.
         if (targetHero.armor && targetHero.armor > 0) {
@@ -570,12 +569,28 @@ export class BattleEngine {
             `${enemy.name} attacks ${targetHero.name} for ${enemy.attack} damage! (HP left: ${targetHero.hp})`
           );
         }
+        
         if (targetHero.hp <= 0) {
           this.logCallback(`${targetHero.name} is defeated!`);
           this.battlefield[targetHero.y][targetHero.x] = '.';
           this.party = this.party.filter(h => h !== targetHero);
           if (this.currentUnit >= this.party.length) {
             this.currentUnit = 0;
+          }
+        } else {
+          // Rage stat functionality - simple version:
+          if (targetHero.rage && targetHero.rage > 0) {
+            const stats = ['attack', 'range', 'agility', 'hp'];
+            const randomStat = stats[Math.floor(Math.random() * stats.length)];
+            
+            if (targetHero.hasOwnProperty(randomStat)) { // Check if the stat exists
+              targetHero[randomStat] += targetHero.rage;
+              this.logCallback(
+                `${targetHero.name}'s rage increases their ${randomStat} by ${targetHero.rage}! (New ${randomStat}: ${targetHero[randomStat]})`
+              );
+            } else {
+              console.warn(`Hero ${targetHero.name} is missing stat ${randomStat}`);
+            }
           }
         }
       }
