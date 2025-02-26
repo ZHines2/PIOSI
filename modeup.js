@@ -10,6 +10,7 @@
  * - The Wizard now gains an increase to his "chain" stat.
  * - The Sycophant's mode up now gives him +1 in every stat.
  * - The Berserker now increases his "rage" stat with mode up.
+ * - The Jester now increases his "trick" stat with mode up.
  */
 
 export function getModeUpBuff(chosenHero, level) {
@@ -21,8 +22,8 @@ export function getModeUpBuff(chosenHero, level) {
     // Archer gets increased range.
     return { range: 1 * buffIncrement };
   } else if (chosenHero.name === "Berserker") {
-  // Berserker gets a significant boost to attack power and rage.
-  return { attack: 3 * buffIncrement, rage: 1 * buffIncrement };
+    // Berserker gets a significant boost to attack power and rage.
+    return { attack: 3 * buffIncrement, rage: 1 * buffIncrement };
   } else if (chosenHero.name === "Rogue") {
     // Rogue receives additional agility.
     return { agility: 2 * buffIncrement };
@@ -35,6 +36,9 @@ export function getModeUpBuff(chosenHero, level) {
   } else if (chosenHero.name === "Cleric") {
     // Cleric's healing power increases.
     return { heal: 2 * buffIncrement };
+  } else if (chosenHero.name === "Jester") {
+    // Jester's trick stat increases.
+    return { trick: 1 * buffIncrement };
   } else if (chosenHero.name === "Sycophant") {
     // Sycophant now gains +1 in every stat.
     return {
@@ -97,6 +101,7 @@ export function applyModeUp(chosenHero, level, party, logCallback) {
   if (buff.burn) messageParts.push(`+${buff.burn} Burn`);
   if (buff.sluj) messageParts.push(`+${buff.sluj} Slüj`);
   if (buff.heal) messageParts.push(`+${buff.heal} Heal`);
+  if (buff.trick) messageParts.push(`+${buff.trick} Trick`);
   if (buff.ghis) messageParts.push(`+${buff.ghis} Ghïs`);
   if (buff.yeet) messageParts.push(`+${buff.yeet} Yeet`);
   if (buff.swarm) messageParts.push(`+${buff.swarm} Swarm`);
