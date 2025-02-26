@@ -419,23 +419,23 @@ export class BattleEngine {
         return;
       }
 
-// If the attacking hero is a Jester, apply the trick debuff.
-if (unit.name === "Jester" && unit.trick > 0) {
-  const debuffableStats = ["attack", "range", "agility", "hp"];
-  const availableStats = debuffableStats.filter(
-    stat => typeof enemy[stat] === "number"
-  );
-  if (availableStats.length > 0) {
-    const randomIndex = Math.floor(Math.random() * availableStats.length);
-    const chosenStat = availableStats[randomIndex];
-    const debuffAmount = unit.trick;
-    const originalValue = enemy[chosenStat];
-    enemy[chosenStat] = Math.max(0, enemy[chosenStat] - debuffAmount);
-    this.logCallback(
-      `${unit.name}'s trick lowers ${enemy.name}'s ${chosenStat} from ${originalValue} to ${enemy[chosenStat]}!`
-    );
-  }
-}
+      // If the attacking hero is a Jester, apply the trick debuff.
+      if (unit.name === "Jester" && unit.trick > 0) {
+        const debuffableStats = ["attack", "range", "agility", "hp"];
+        const availableStats = debuffableStats.filter(
+          stat => typeof enemy[stat] === "number"
+        );
+        if (availableStats.length > 0) {
+          const randomIndex = Math.floor(Math.random() * availableStats.length);
+          const chosenStat = availableStats[randomIndex];
+          const debuffAmount = unit.trick;
+          const originalValue = enemy[chosenStat];
+          enemy[chosenStat] = Math.max(0, enemy[chosenStat] - debuffAmount);
+          this.logCallback(
+            `${unit.name}'s trick lowers ${enemy.name}'s ${chosenStat} from ${originalValue} to ${enemy[chosenStat]}!`
+          );
+        }
+      }
 
       // Check for the wall.
       if (
