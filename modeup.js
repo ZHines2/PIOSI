@@ -87,6 +87,9 @@ export function getModeUpBuff(chosenHero, level) {
   } else if (chosenHero.name === "Meatwalker") {
     // Meatwalker's bulk stat increases.
     return { bulk: 1 * buffIncrement };
+  } else if (chosenHero.name === "Shrink") {
+    // Shrink's psych stat increases.
+    return { psych: 1 * buffIncrement };
   } else {
     // Fallback for heroes with no specific buff defined.
     return { ghis: 1 * buffIncrement };
@@ -116,6 +119,7 @@ export function applyModeUp(chosenHero, level, party, logCallback) {
   if (buff.fate) messageParts.push(`+${buff.fate} Fate`);
   if (buff.rage) messageParts.push(`+${buff.rage} Rage`);
   if (buff.bulk) messageParts.push(`+${buff.bulk} Bulk`);
+  if (buff.psych) messageParts.push(`+${buff.psych} Psych`);
 
   const message =
     messageParts.length > 0
