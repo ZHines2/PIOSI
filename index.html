@@ -157,7 +157,8 @@
           chain: hero.chain !== undefined ? hero.chain : 0,
           caprice: hero.caprice !== undefined ? hero.caprice : 0,
           fate: hero.fate !== undefined ? hero.fate : 0,
-          rage: hero.rage !== undefined ? hero.rage : 0
+          rage: hero.rage !== undefined ? hero.rage : 0,
+          bulk: hero.bulk !== undefined ? hero.bulk : 0
         };
       }
 
@@ -210,7 +211,8 @@
           Chain: ${stats.chain} | 
           Caprice: ${stats.caprice} | 
           Fate: ${stats.fate} | 
-          Rage: ${stats.rage}
+          Rage: ${stats.rage} | 
+          Bulk: ${stats.bulk}
         </p>`;
         // Indicate selection status
         display += `<p>${
@@ -368,6 +370,11 @@
         lines.push(
           `<p>Rage: ${stats.rage} ${
             buff.rage ? `<span class="stat-up">+${buff.rage}</span>` : ""
+          }</p>`
+        );
+        lines.push(
+          `<p>Bulk: ${stats.bulk} ${
+            buff.bulk ? `<span class="stat-up">+${buff.bulk}</span>` : ""
           }</p>`
         );
         document.getElementById("mode-up-hero-display").innerHTML =
