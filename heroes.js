@@ -135,7 +135,8 @@ export const heroes = [
     range: 1,
     agility: 3,
     hp: 12,
-    shrink: true // Indicates shrink-related behavior.
+    shrink: true, // Indicates shrink-related behavior.
+    psych: 1 // New psych stat for Shrink
   },
   {
     name: "Sycophant",
