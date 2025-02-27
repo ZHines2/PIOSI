@@ -417,8 +417,8 @@ export class BattleEngine {
           );
         }
 
-        // Apply chain damage for any hero with the chain stat.
-        if (unit.chain) {
+        // Wizard chain ability: use the new algorithmic metric to compute propagation.
+        if (unit.name === "Wizard" && unit.chain) {
           const effectiveMultiplier = 1 - Math.exp(-unit.chain / 10);
           const initialChainDamage = Math.round(unit.attack * effectiveMultiplier);
           if (initialChainDamage > 0) {
@@ -494,7 +494,7 @@ export class BattleEngine {
       const adjacentEnemy = this.enemies.find(e => e.x === adjX && e.y === adjY);
       if (adjacentEnemy && !visited.has(adjacentEnemy)) {
         adjacentEnemy.hp -= damage;
-        this.logCallback(`Chain deals ${damage} damage to ${adjacentEnemy.name} at (${adjX},${adjY})! (HP left: ${adjacentEnemy.hp})`);
+        this.logCallback(`Wizard's chain deals ${damage} damage to ${adjacentEnemy.name} at (${adjX},${adjY})! (HP left: ${adjacentEnemy.hp})`);
         if (adjacentEnemy.hp <= 0) {
           this.logCallback(`${adjacentEnemy.name} is defeated by chain damage!`);
           this.battlefield[adjY][adjX] = '.';
