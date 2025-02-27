@@ -84,6 +84,9 @@ export function getModeUpBuff(chosenHero, level) {
   } else if (chosenHero.name === "Soothscribe") {
     // Soothscribe's fate stat increases.
     return { fate: 1 * buffIncrement };
+  } else if (chosenHero.name === "Meatwalker") {
+    // Meatwalker's bulk stat increases.
+    return { bulk: 1 * buffIncrement };
   } else {
     // Fallback for heroes with no specific buff defined.
     return { ghis: 1 * buffIncrement };
@@ -112,6 +115,7 @@ export function applyModeUp(chosenHero, level, party, logCallback) {
   if (buff.caprice) messageParts.push(`+${buff.caprice} Caprice`);
   if (buff.fate) messageParts.push(`+${buff.fate} Fate`);
   if (buff.rage) messageParts.push(`+${buff.rage} Rage`);
+  if (buff.bulk) messageParts.push(`+${buff.bulk} Bulk`);
 
   const message =
     messageParts.length > 0

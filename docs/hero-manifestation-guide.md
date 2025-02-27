@@ -27,6 +27,7 @@ Some heroes have special properties that give them unique abilities. Here are so
 - `spicy`: Each "spicy" stat raises the amount the vittle heals for.
 - `caprice`: The hero can randomly boost one of their stats.
 - `fate`: The hero can randomly buff or debuff stats for all heroes.
+- `bulk`: The hero can raise a random stat every time they defeat an enemy.
 
 ## Best Practices
 
@@ -180,6 +181,23 @@ Here are some examples of hero configurations:
   tarot: true, // Can fetch tarot cards for special actions.
   fate: 1, // New stat for random buffs or debuffs
   description: "The Soothscribe's 'fate' stat allows him to randomly buff or debuff stats for all heroes, making him a master of unpredictability."
+}
+```
+
+### Example 10: Meatwalker
+
+```javascript
+{
+  name: "Meatwalker",
+  symbol: "₻",
+  attack: 7,
+  range: 1,
+  agility: 2,
+  hp: 22,
+  heal: 1, // Slight healing property.
+  meat: true, // Indicates meat-related interactions.
+  bulk: 1, // New bulk stat for Meatwalker
+  description: "Meatwalker's bulk stat allows him to raise a random stat every time he defeats an enemy, making him stronger with each victory."
 }
 ```
 
