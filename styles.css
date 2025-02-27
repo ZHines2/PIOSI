@@ -129,10 +129,20 @@ body {
   color: white; /* White text color */
 }
 
+/* Range Indicator styling */
+.range-indicator {
+    border: 2px solid green;
+}
+
 /* Healing Item Styling */
 /* Mark healing items with a distinctive tan color */
 .healing-item {
   color: tan;
+}
+
+/* Random Space Styling */
+.special-tile {
+    color: gold;
 }
 
 /* Enemy cell style */
