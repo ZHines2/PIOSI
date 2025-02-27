@@ -68,7 +68,7 @@ export const heroes = [
     joke: true, // Provides humorous interactions.
     trick: 1   // Placeholder "trick" stat for potential future behaviors.
   },
-  {
+  {  
     name: "Meatwalker",
     symbol: "₻",
     attack: 7,
@@ -76,9 +76,9 @@ export const heroes = [
     agility: 2,
     hp: 22,
     heal: 1, // Slight healing property.
-    meat: true // Indicates meat-related interactions.
-    bulk: 1 // New bulk stat for Meatwalker  
-    },
+    meat: true, // Indicates meat-related interactions.
+    bulk: 1 // New bulk stat for Meatwalker
+  },
   {
     name: "Soothscribe",
     symbol: "☄",
