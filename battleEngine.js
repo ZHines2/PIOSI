@@ -345,6 +345,13 @@ export class BattleEngine {
           this.logCallback(
             `${unit.name} heals ${ally.name} for ${unit.heal} HP! (New HP: ${ally.hp})`
           );
+        } else if (unit.psych && unit.psych > 0) {
+          const stats = ['attack', 'range', 'agility', 'hp'];
+          const randomStat = stats[Math.floor(Math.random() * stats.length)];
+          ally[randomStat] += unit.psych;
+          this.logCallback(
+            `${unit.name} uses psych on ${ally.name}, raising their ${randomStat} by ${unit.psych}! (New ${randomStat}: ${ally[randomStat]})`
+          );
         } else {
           this.logCallback(
             `${unit.name} attacks ${ally.name} but nothing happens.`
