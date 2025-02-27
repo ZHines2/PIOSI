@@ -28,6 +28,7 @@ Some heroes have special properties that give them unique abilities. Here are so
 - `caprice`: The hero can randomly boost one of their stats.
 - `fate`: The hero can randomly buff or debuff stats for all heroes.
 - `bulk`: The hero can raise a random stat every time they defeat an enemy.
+- `chain`: The hero can deal chain damage to adjacent enemies.
 
 ## Best Practices
 
@@ -148,6 +149,7 @@ Here are some examples of hero configurations:
   spicy: 1,
   armor: 1,
   spore: 1,
+  chain: 1,
   description: "Pæg is a versatile hero with 1 in every stat, making him a jack-of-all-trades but master of none."
 }
 ```
