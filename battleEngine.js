@@ -423,9 +423,9 @@ export class BattleEngine {
             this.isWithinBounds.bind(this)
           );
         }
-
-        // Wizard chain ability: use the new algorithmic metric to compute propagation.
-        if (unit.name === "Wizard" && unit.chain) {
+  
+        // Chain ability: use the new algorithmic metric to compute propagation.
+        if (unit.chain) {
           const effectiveMultiplier = 1 - Math.exp(-unit.chain / 10);
           const initialChainDamage = Math.round(unit.attack * effectiveMultiplier);
           if (initialChainDamage > 0) {
