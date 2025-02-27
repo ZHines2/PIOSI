@@ -429,6 +429,7 @@ export class BattleEngine {
           const effectiveMultiplier = 1 - Math.exp(-unit.chain / 10);
           const initialChainDamage = Math.round(unit.attack * effectiveMultiplier);
           if (initialChainDamage > 0) {
+            this.logCallback(`${enemy.name} takes ${initialChainDamage} initial chain damage!`);
             this.applyChainDamage(enemy, initialChainDamage, effectiveMultiplier, new Set());
           }
         }
@@ -510,6 +511,7 @@ export class BattleEngine {
         // Compute next chain damage using the same effective multiplier.
         const nextDamage = Math.round(damage * effectiveMultiplier);
         if (nextDamage > 0 && nextDamage < damage) {
+          this.logCallback(`${adjacentEnemy.name} takes ${nextDamage} chain damage propagation!`);
           this.applyChainDamage(adjacentEnemy, nextDamage, effectiveMultiplier, visited);
         }
       }
