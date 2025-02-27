@@ -192,7 +192,7 @@
           const reaction = await getGriotReaction();
           display += `<p>${reaction}</p>`;
         }
-        // Get complete stats for the hero, including the new trick stat
+        // Get complete stats for the hero, including the new psych stat
         const stats = getCompleteStats(hero);
         display += `<p>
           Attack: ${stats.attack} | 
@@ -378,12 +378,11 @@
           `<p>Bulk: ${stats.bulk} ${
             buff.bulk ? `<span class="stat-up">+${buff.bulk}</span>` : ""
           }</p>`
-         );
+        );
         lines.push(
           `<p>Psych: ${stats.bulk} ${
             buff.psych ? `<span class="stat-up">+${buff.psych}</span>` : ""
           }</p>`
-
         );
         document.getElementById("mode-up-hero-display").innerHTML =
           lines.join("");
