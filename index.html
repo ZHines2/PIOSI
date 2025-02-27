@@ -158,7 +158,8 @@
           caprice: hero.caprice !== undefined ? hero.caprice : 0,
           fate: hero.fate !== undefined ? hero.fate : 0,
           rage: hero.rage !== undefined ? hero.rage : 0,
-          bulk: hero.bulk !== undefined ? hero.bulk : 0
+          bulk: hero.bulk !== undefined ? hero.bulk : 0,
+          pysch: hero.psych !== undefined ? hero.psych : 0
         };
       }
 
@@ -212,7 +213,8 @@
           Caprice: ${stats.caprice} | 
           Fate: ${stats.fate} | 
           Rage: ${stats.rage} | 
-          Bulk: ${stats.bulk}
+          Bulk: ${stats.bulk} |
+          Psych: ${stats.psych}
         </p>`;
         // Indicate selection status
         display += `<p>${
@@ -376,6 +378,12 @@
           `<p>Bulk: ${stats.bulk} ${
             buff.bulk ? `<span class="stat-up">+${buff.bulk}</span>` : ""
           }</p>`
+         );
+        lines.push(
+          `<p>Psych: ${stats.bulk} ${
+            buff.psych ? `<span class="stat-up">+${buff.psych}</span>` : ""
+          }</p>`
+
         );
         document.getElementById("mode-up-hero-display").innerHTML =
           lines.join("");
