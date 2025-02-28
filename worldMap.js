@@ -2,11 +2,12 @@
 // This script handles the world map functionality for PIOSI - THE SAGAS CONTINUE.
 // When the heroes beat level 20, they ascend to the world map (THE BROADLANDS) which shows destination nodes.
 // Nodes:
-//  - "Gratt ߁": Starting node (the team's current position).
-//  - "Gratt ߂": When selected, will load a new suite of levels.
-//  - "Gratt ߃": Placeholder node; if selected, displays "not yet accessible with current clearance level".
+//  - "Gratt ߁": Starting node representing the team's current position.
+//  - "Gratt ߂": When selected, will (ultimately) load a new suite of levels.
+//  - "Gratt ߃": Placeholder; if selected, displays "not yet accessible with current clearance level".
+//  - "Gratt ߷": When selected, opens level 99.
 
-let nodes = ["Gratt ߁", "Gratt ߂", "Gratt ߃"];
+let nodes = ["Gratt ߁", "Gratt ߂", "Gratt ߃", "Gratt ߷"];
 let currentIndex = 0;
 const worldMapEl = document.getElementById("world-map");
 
@@ -31,9 +32,9 @@ function renderNodes() {
   worldMapEl.innerHTML = html;
 }
 
-// Function to initialize the world map.
+// Initialize the world map.
 export function initWorldMap() {
-  currentIndex = 0; // Default starting position on "Gratt ߁"
+  currentIndex = 0; // Set default starting position on "Gratt ߁"
   renderNodes();
   console.log("World map initialized with nodes:", nodes);
 }
@@ -51,18 +52,22 @@ export function moveSelectionRight() {
 }
 
 // Handle selection (pressing Space) based on current node.
-export function selectCurrentNode() {
+export function selectCurrentNode(openLevel99) {
   const selectedNode = nodes[currentIndex];
   if (selectedNode === "Gratt ߂") {
     // Load new suite of levels.
     console.log("Transitioning to new suite of levels via", selectedNode);
     alert("Loading new suite of levels...");
-    // In a full game, you might transition to a new set of levels here.
+    // In a full game, you would transition to a new set of levels here.
   } else if (selectedNode === "Gratt ߃") {
     // Not accessible.
     alert("Not yet accessible with current clearance level");
+  } else if (selectedNode === "Gratt ߷") {
+        // Open level 99.
+        console.log("Opening level 99 via", selectedNode);
+        openLevel99(); // Call the function to open level 99
   } else {
-    // For "Gratt ߁", provide helpful feedback.
+    // For "Gratt ߁", the current location.
     alert(`${selectedNode} is your current location. Use arrow keys to navigate to a new destination.`);
   }
 }
