@@ -14,6 +14,8 @@
  *   For example, in level 1 a vittle can be defined that the player may interact with.
  */
 
+import { level21 } from './level21.js'; // Import the level 21 configuration
+
 // Helper function to generate a random integer within a range
 function getRandomInt(min, max) {
   min = Math.ceil(min);
@@ -454,6 +456,15 @@ export const levelSettings = [
       { name: "Eternal Overlord", symbol: "♛", attack: 60, range: 5, hp: 1000, agility: 7, x: 9, y: 9, dialogue: ["You cannot defeat me!", "I am eternal."] }
     ],
     layout: generateLevelLayout(17, 17, 2, 4, 3, 850).layout
+  },
+  {
+    level: 21,
+    title: "Level 21: Pseudo Endless Mode",
+    rows: 10,
+    cols: 10,
+    wallHP: 100,
+    generateEnemies: true,
+    enemyGenerator: (rows, cols, turnsTaken) => level21.enemyGenerator(rows, cols, turnsTaken)
   },
   {
     level: 99,

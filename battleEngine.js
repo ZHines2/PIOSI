@@ -269,7 +269,13 @@ export class BattleEngine {
       );
       // If the wall is destroyed, transition to the next level.
       if (this.wallHP <= 0 && !this.transitioningLevel) {
-        this.handleWallCollapse();
+        this.transitioningLevel = true;
+        this.logCallback('The Wall Collapses!');
+        setTimeout(() => {
+          if (typeof this.onLevelComplete === 'function') {
+            this.onLevelComplete();
+          }
+        }, 1500);
         return;
       }
       // Consume move points even if the hero does not change cells.
@@ -466,7 +472,13 @@ export class BattleEngine {
         );
         this.awaitingAttackDirection = false;
         if (this.wallHP <= 0 && !this.transitioningLevel) {
-          this.handleWallCollapse();
+          this.transitioningLevel = true;
+          this.logCallback('The Wall Collapses!');
+          setTimeout(() => {
+            if (typeof this.onLevelComplete === 'function') {
+              this.onLevelComplete();
+            }
+          }, 1500);
           return;
         }
         await this.shortPause();
@@ -777,16 +789,10 @@ export class BattleEngine {
   shortPause() {
     return new Promise(resolve => setTimeout(resolve, 300));
   }
-  
-  // New method to handle wall collapse and level transition.
-  handleWallCollapse() {
-    this.logCallback('The Wall Collapses!');
-    this.transitioningLevel = true;
-    // Delay before transitioning to allow any animations or logs to be visible.
-    setTimeout(() => {
-      if (typeof this.onLevelComplete === 'function') {
-        this.onLevelComplete();
-      }
-    }, 1500);
+
+  handleWallCollapse(turnsTaken) {
+    const { newEnemies, newWallHP } = level21.handleWallCollapse(turnsTaken, this.logCallback);
+    this.enemies.push(...newEnemies);
+    this.wallHP = newWallHP;
   }
 }
