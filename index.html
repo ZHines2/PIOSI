@@ -56,7 +56,6 @@
       <!-- WorldMap.js module will populate this screen -->
     </div>
 
-
     <!-- Game Over Screen -->
     <div id="game-over">
       <h1>Game Over</h1>
@@ -102,7 +101,6 @@
         selectCurrentNode,
       } from "./worldMap.js";
 
-
       // Global variables to manage game state
       let currentScreen = "title";
       let selectedHeroes = [];
@@ -124,6 +122,7 @@
         "ArrowDown",
         "Space"
       ];
+      const worldMapCheat = ["ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown", "ArrowLeft", "ArrowRight", "Space"]; // New cheat sequence
       let cheatBuffer = [];
 
       // For Mode Up selection
@@ -176,18 +175,18 @@
           burn: hero.burn !== undefined ? hero.burn : 0,
           sluj: hero.sluj !== undefined ? hero.sluj : 0,
           ghis: hero.ghis !== undefined ? hero.ghis : 0,
-          trick: hero.trick !== undefined ? hero.trick : 0,
-          yeet: hero.yeet !== undefined ? hero.yeet : 0,
-          swarm: hero.swarm !== undefined ? hero.swarm : 0,
-          spicy: hero.spicy !== undefined ? hero.spicy : 0,
-          armor: hero.armor !== undefined ? hero.armor : 0,
-          spore: hero.spore !== undefined ? hero.spore : 0,
-          chain: hero.chain !== undefined ? hero.chain : 0,
-          caprice: hero.caprice !== undefined ? hero.caprice : 0,
-          fate: hero.fate !== undefined ? hero.fate : 0,
-          rage: hero.rage !== undefined ? hero.rage : 0,
-          bulk: hero.bulk !== undefined ? hero.bulk : 0,
-          psych: hero.psych !== undefined ? hero.psych : 0
+          trick: hero.trick || 0,
+          yeet: hero.yeet || 0,
+          swarm: hero.swarm || 0,
+          spicy: hero.spicy || 0,
+          armor: hero.armor || 0,
+          spore: hero.spore || 0,
+          chain: hero.chain || 0,
+          caprice: hero.caprice || 0,
+          fate: hero.fate || 0,
+          rage: hero.rage || 0,
+          bulk: hero.bulk || 0,
+          psych: hero.psych || 0
         };
       }
 
@@ -498,7 +497,7 @@
         }
       }
 
-      /**
+     /**
        * Called when a level is completed and determines the next action.
        * Levels 1 to 19 trigger the Mode Up window, and level 20 summons world map.
        * Secret level (level 99) remains unchanged.
@@ -618,12 +617,12 @@
         backgroundMusic.pause();
         backgroundMusic.currentTime = 0;
 
-        // Stop Level 5 music if it is playing
+        // Stop Level 5 music
         const level5Music = document.getElementById("level-5-music");
         level5Music.pause();
         level5Music.currentTime = 0;
 
-        // Stop "ineedsome.mp3" if it is playing
+        // Stop "ineedsome.mp3"
         const level6Music = document.getElementById("level-6-music");
         level6Music.pause();
         level6Music.currentTime = 0;
@@ -649,10 +648,18 @@
         }
       }
 
+      /**
+       * Activate the world map screen.
+       */
+      function worldMapCheatCode() {
+          console.log("World Map cheat code detected! Opening THE BROADLANDS!");
+          showScreen("worldMap");
+      }
+
       // Global keydown listener handling various game screens and actions.
       document.addEventListener("keydown", async (event) => {
         cheatBuffer.push(event.code);
-        if (cheatBuffer.length > cheatSequence.length) {
+        if (cheatBuffer.length > Math.max(cheatSequence.length, worldMapCheat.length)) {
           cheatBuffer.shift();
         }
         if (cheatBuffer.join() === cheatSequence.join()) {
@@ -660,6 +667,14 @@
           cheatBuffer = [];
           return;
         }
+
+        // Check for the world map cheat code
+        if (cheatBuffer.slice(-worldMapCheat.length).join() === worldMapCheat.join()) {
+            worldMapCheatCode();
+            cheatBuffer = [];
+            return;
+        }
+
 
         // Handle key actions for game-over
         if (document.getElementById("game-over").style.display === "flex") {
