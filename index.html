@@ -66,6 +66,16 @@
       </p>
     </div>
 
+    <!-- Seed Input Modal -->
+    <div id="seed-input-modal" class="modal">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Enter Seed</h2>
+        <input type="number" id="seed-input" placeholder="Enter numeric seed" />
+        <button id="seed-submit">Submit</button>
+      </div>
+    </div>
+
     <!-- Audio elements -->
     <audio id="background-music" src="DarkAnoid.mp3" loop></audio>
     <audio id="hero-select-music" src="WoodenPath.mp3" loop></audio>
@@ -89,6 +99,7 @@
       import { heroes as allHeroes } from "./heroes.js";
       import { getLevel } from "./levels.js";
       import { getModeUpBuff, applyModeUp } from "./modeup.js";
+      import { startGameWithSeed } from "./startGameWithSeed.js";
 
       // Global variables to manage game state
       let currentScreen = "title";
@@ -111,6 +122,17 @@
         "ArrowDown",
         "Space"
       ];
+      const seedCheatSequence = [
+        "ArrowUp",
+        "ArrowUp",
+        "ArrowUp",
+        "ArrowDown",
+        "ArrowDown",
+        "ArrowDown",
+        "ArrowLeft",
+        "ArrowRight",
+        "Space"
+      ];
       let cheatBuffer = [];
 
       // For Mode Up selection
@@ -131,6 +153,8 @@
           screen === "victory" ? "block" : "none";
         document.getElementById("mode-up-window").style.display =
           screen === "modeUp" ? "flex" : "none";
+        document.getElementById("seed-input-modal").style.display =
+          screen === "seedInput" ? "block" : "none";
         currentScreen = screen;
       }
 
@@ -620,6 +644,17 @@
         }
       }
 
+      /**
+       * Activate the seed input modal when the seed cheat code is detected.
+       */
+      function activateSeedCheat() {
+        if (!cheatActive) {
+          cheatActive = true;
+          console.log("Seed cheat code detected! Activating seed input modal!");
+          showScreen("seedInput");
+        }
+      }
+
       // Global keydown listener handling various game screens and actions.
       document.addEventListener("keydown", async (event) => {
         cheatBuffer.push(event.code);
@@ -628,6 +663,11 @@
         }
         if (cheatBuffer.join() === cheatSequence.join()) {
           activateCheat();
+          cheatBuffer = [];
+          return;
+        }
+        if (cheatBuffer.join() === seedCheatSequence.join()) {
+          activateSeedCheat();
           cheatBuffer = [];
           return;
         }
@@ -764,6 +804,30 @@
           },
           Space: () => {
             applyCurrentModeUp();
+          }
+        },
+        seedInput: {
+          Space: () => {
+            const seedInputModal = document.getElementById("seed-input-modal");
+            const seedInput = document.getElementById("seed-input");
+            const seedSubmit = document.getElementById("seed-submit");
+
+            seedInputModal.style.display = "block";
+
+            seedSubmit.addEventListener("click", () => {
+              const seed = parseInt(seedInput.value, 10);
+              if (!isNaN(seed)) {
+                startGameWithSeed(party, logMessage, onLevelComplete, onGameOver, seed);
+                seedInputModal.style.display = "none";
+              } else {
+                alert("Please enter a valid numeric seed.");
+              }
+            });
+
+            const closeModal = document.querySelector(".close");
+            closeModal.addEventListener("click", () => {
+              seedInputModal.style.display = "none";
+            });
           }
         }
       };
