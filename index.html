@@ -51,6 +51,12 @@
       <p>Press Spacebar to Restart</p>
     </div>
 
+    <!-- World Map Screen -->
+    <div id="world-map" style="display:none; flex-direction: column; align-items: center;">
+      <!-- WorldMap.js module will populate this screen -->
+    </div>
+
+
     <!-- Game Over Screen -->
     <div id="game-over">
       <h1>Game Over</h1>
@@ -89,6 +95,13 @@
       import { heroes as allHeroes } from "./heroes.js";
       import { getLevel } from "./levels.js";
       import { getModeUpBuff, applyModeUp } from "./modeup.js";
+      import {
+        initWorldMap,
+        moveSelectionLeft,
+        moveSelectionRight,
+        selectCurrentNode,
+      } from "./worldMap.js";
+
 
       // Global variables to manage game state
       let currentScreen = "title";
@@ -117,22 +130,37 @@
       let modeUpIndex = 0;
       let livingHeroes = [];
 
-      /**
+           /**
        * Function to show a specific screen by setting display properties.
        */
       function showScreen(screen) {
-        document.getElementById("title-screen").style.display =
-          screen === "title" ? "flex" : "none";
-        document.getElementById("party-select").style.display =
-          screen === "party" ? "block" : "none";
-        document.getElementById("game-container").style.display =
-          screen === "battle" ? "block" : "none";
-        document.getElementById("victory").style.display =
-          screen === "victory" ? "block" : "none";
-        document.getElementById("mode-up-window").style.display =
-          screen === "modeUp" ? "flex" : "none";
+        // Hide all screens by default
+        document.getElementById("title-screen").style.display = "none";
+        document.getElementById("party-select").style.display = "none";
+        document.getElementById("game-container").style.display = "none";
+        document.getElementById("victory").style.display = "none";
+        document.getElementById("world-map").style.display = "none";
+        document.getElementById("mode-up-window").style.display = "none";
+        document.getElementById("game-over").style.display = "none";
+
+        if (screen === "title") {
+          document.getElementById("title-screen").style.display = "flex";
+        } else if (screen === "party") {
+          document.getElementById("party-select").style.display = "block";
+        } else if (screen === "battle") {
+          document.getElementById("game-container").style.display = "block";
+        } else if (screen === "victory") {
+          document.getElementById("victory").style.display = "block";
+        } else if (screen === "worldMap") {
+          document.getElementById("world-map").style.display = "flex";
+          // Initialize world map functionality when this screen is active
+          initWorldMap();
+        } else if (screen === "modeUp") {
+          document.getElementById("mode-up-window").style.display = "flex";
+        }
         currentScreen = screen;
       }
+
 
       /**
        * Helper function to generate a complete stats object.
@@ -472,7 +500,7 @@
 
       /**
        * Called when a level is completed and determines the next action.
-       * Levels 1 to 19 trigger the Mode Up window, and level 20 completes the game.
+       * Levels 1 to 19 trigger the Mode Up window, and level 20 summons world map.
        * Secret level (level 99) remains unchanged.
        */
       function onLevelComplete() {
@@ -480,13 +508,14 @@
           logMessage(`Level ${level} complete!`);
           showModeUpWindow();
         } else if (level === 20) {
-          logMessage("The final path is complete!");
-          showScreen("victory");
+          logMessage("Level 20 complete! Entering the world map...");
+          showScreen("worldMap");
         } else if (level === 99) {
           logMessage("The veil of introspection lifts...");
           logMessage("You've broken through! The eternal wall falls!");
           showScreen("victory");
         }
+
 
         // Fade out level 5 music if current level is 5
         if (level === 5) {
@@ -765,7 +794,19 @@
           Space: () => {
             applyCurrentModeUp();
           }
+        },
+        worldMap: {
+          ArrowLeft: () => {
+            moveSelectionLeft();
+          },
+          ArrowRight: () => {
+            moveSelectionRight();
+          },
+          Space: () => {
+            selectCurrentNode();
+          }
         }
+
       };
 
       // Minimal mobile support: Map a simple touch tap to a key event based on touch location.
