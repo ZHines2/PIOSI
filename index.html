@@ -165,30 +165,30 @@
        * Helper function to generate a complete stats object.
        * Even if a specific stat is 0 or undefined, we display it.
        */
-      function getCompleteStats(hero) {
-        return {
-          attack: hero.attack || 0,
-          range: hero.range || 0,
-          agility: hero.agility || 0,
-          hp: hero.hp || 0,
-          heal: hero.heal !== undefined ? hero.heal : 0,
-          burn: hero.burn !== undefined ? hero.burn : 0,
-          sluj: hero.sluj !== undefined ? hero.sluj : 0,
-          ghis: hero.ghis !== undefined ? hero.ghis : 0,
-          trick: hero.trick || 0,
-          yeet: hero.yeet || 0,
-          swarm: hero.swarm || 0,
-          spicy: hero.spicy || 0,
-          armor: hero.armor || 0,
-          spore: hero.spore || 0,
-          chain: hero.chain || 0,
-          caprice: hero.caprice || 0,
-          fate: hero.fate || 0,
-          rage: hero.rage || 0,
-          bulk: hero.bulk || 0,
-          psych: hero.psych || 0
-        };
-      }
+          function getCompleteStats(hero) {
+            return {
+              attack: hero.attack || 0,
+              range: hero.range || 0,
+              agility: hero.agility || 0,
+              hp: hero.hp || 0,
+              heal: hero.heal || 0,
+              burn: hero.burn || 0,
+              sluj: hero.sluj || 0,
+              ghis: hero.ghis || 0,
+              trick: hero.trick || 0,
+              yeet: hero.yeet || 0,
+              swarm: hero.swarm || 0,
+              spicy: hero.spicy || 0,
+              armor: hero.armor || 0,
+              spore: hero.spore || 0,
+              chain: hero.chain || 0,
+              caprice: hero.caprice || 0,
+              fate: hero.fate || 0,
+              rage: hero.rage || 0,
+              bulk: hero.bulk || 0,
+              psych: hero.psych || 0
+            };
+          }
 
       /**
        * Update the hero display in the party selection screen.
