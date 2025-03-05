@@ -4,13 +4,16 @@
  * This file implements the battle engine for PIOSI. It includes:
  * - Unit movement and attack logic (including knockback, chain, and swarm abilities).
  * - Healing item (vittle) and mushroom pickup.
- * - Hero death handling that triggers persistent death effects and now persists through levels.
+ * - Hero death handling that triggers persistent death effects with the "rise" stat.
+ *   If a hero has points in the rise stat when they die, they are resurrected on the next
+ *   level with HP equal to the rise value, the rise stat is reset to zero, and they still
+ *   trigger ankh boosts to all live heroes.
  * - The ankh stat boost now enhances one of attack, hp, agility, or range.
  */
 
 import { applyKnockback } from './applyKnockback.js';
 
-// New class to represent a persistent death effect.
+// Class to represent a persistent death effect.
 export class PersistentDeath {
   constructor() {
     this.isDead = true;
@@ -20,7 +23,7 @@ export class PersistentDeath {
 export class BattleEngine {
   constructor(party, enemies, fieldRows, fieldCols, wallHP, logCallback, onLevelComplete, onGameOver) {
     // Keep all heroes in the party array.
-    // NOTE: Heroes with persistent death will not be respawned.
+    // NOTE: Heroes with persistent death will not be respawned unless they have a "rise" stat.
     this.party = party;
     this.enemies = enemies;
     this.rows = fieldRows;
@@ -41,6 +44,8 @@ export class BattleEngine {
       hero.statusEffects = hero.statusEffects || {};
       // Persistent death marker may already exist.
       if (!hero.persistentDeath) hero.persistentDeath = null;
+      // Initialize rise stat if not set.
+      if (typeof hero.rise !== 'number') hero.rise = 0;
     });
     this.enemies.forEach(enemy => enemy.statusEffects = {});
     this.battlefield = this.initializeBattlefield();
@@ -68,7 +73,7 @@ export class BattleEngine {
     // Apply caprice and fate buffs only to live heroes.
     this.getLiveHeroes().forEach(hero => {
       if (hero.caprice && hero.caprice > 0) {
-        const stats = ['attack','range','agility','hp'];
+        const stats = ['attack', 'range', 'agility', 'hp'];
         for (let i = 0; i < hero.caprice; i++) {
           const randomStat = stats[Math.floor(Math.random() * stats.length)];
           hero[randomStat] += 1;
@@ -101,7 +106,8 @@ export class BattleEngine {
       for (let y = 0; y < this.rows && !placed; y++) {
         for (let x = 0; x < this.cols && !placed; x++) {
           if (field[y][x] === '.') {
-            hero.x = x; hero.y = y;
+            hero.x = x;
+            hero.y = y;
             field[y][x] = hero.symbol;
             placed = true;
           }
@@ -119,14 +125,17 @@ export class BattleEngine {
 
   createWall(field) {
     for (let i = 0; i < this.cols; i++) field[this.rows - 1][i] = 'ᚙ';
-    this.enemies.forEach(enemy => { if (enemy.symbol === '█') field[enemy.y][enemy.x] = enemy.symbol; });
+    this.enemies.forEach(enemy => {
+      if (enemy.symbol === '█') field[enemy.y][enemy.x] = enemy.symbol;
+    });
   }
 
   placeHealingItem(field) {
     let emptyCells = [];
-    for (let y = 0; y < this.rows - 1; y++)
+    for (let y = 0; y < this.rows - 1; y++) {
       for (let x = 0; x < this.cols; x++)
         if (field[y][x] === '.') emptyCells.push({ x, y });
+    }
     if (emptyCells.length) {
       const cell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
       field[cell.y][cell.x] = 'ౚ';
@@ -135,9 +144,10 @@ export class BattleEngine {
 
   placeMushroom(field) {
     let emptyCells = [];
-    for (let y = 0; y < this.rows - 1; y++)
+    for (let y = 0; y < this.rows - 1; y++) {
       for (let x = 0; x < this.cols; x++)
         if (field[y][x] === '.') emptyCells.push({ x, y });
+    }
     if (emptyCells.length) {
       const cell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
       field[cell.y][cell.x] = 'ඉ';
@@ -164,9 +174,16 @@ export class BattleEngine {
     return html;
   }
 
-  isWithinBounds(x, y) { return x >= 0 && x < this.cols && y >= 0 && y < this.rows; }
+  isWithinBounds(x, y) {
+    return x >= 0 && x < this.cols && y >= 0 && y < this.rows;
+  }
+
   isCellPassable(x, y) {
-    return (this.battlefield[y][x] === '.' || this.battlefield[y][x] === 'ౚ' || this.battlefield[y][x] === 'ඉ');
+    return (
+      this.battlefield[y][x] === '.' ||
+      this.battlefield[y][x] === 'ౚ' ||
+      this.battlefield[y][x] === 'ඉ'
+    );
   }
 
   moveUnit(dx, dy) {
@@ -177,8 +194,13 @@ export class BattleEngine {
     if (this.battlefield[newY][newX] === 'ᚙ' || this.battlefield[newY][newX] === '█') {
       this.wallHP -= unit.attack;
       this.logCallback(`${unit.name} attacks the wall for ${unit.attack} damage! (Wall HP: ${this.wallHP})`);
-      if (this.wallHP <= 0 && !this.transitioningLevel) { this.handleWallCollapse(); return; }
-      this.movePoints--; if (this.movePoints === 0) this.nextTurn(); return;
+      if (this.wallHP <= 0 && !this.transitioningLevel) {
+        this.handleWallCollapse();
+        return;
+      }
+      this.movePoints--;
+      if (this.movePoints === 0) this.nextTurn();
+      return;
     }
     if (this.battlefield[newY][newX] === 'ౚ') {
       const healingValue = 10 + (unit.spicy ? unit.spicy * 2 : 0);
@@ -192,7 +214,7 @@ export class BattleEngine {
       this.logCallback(`${unit.name} picks up a mushroom and heals for ${healingValue} HP! (New HP: ${unit.hp})`);
       this.battlefield[newY][newX] = '.';
       if (unit.spore && unit.spore > 0) {
-        const stats = ['attack','range','agility','hp'];
+        const stats = ['attack', 'range', 'agility', 'hp'];
         const randomStat = stats[Math.floor(Math.random() * stats.length)];
         unit[randomStat] += unit.spore;
         this.logCallback(`${unit.name} gains ${unit.spore} boost to ${randomStat} (Now: ${unit[randomStat]})`);
@@ -200,9 +222,11 @@ export class BattleEngine {
     }
     if (!this.isCellPassable(newX, newY)) return;
     this.battlefield[unit.y][unit.x] = '.';
-    unit.x = newX; unit.y = newY;
+    unit.x = newX;
+    unit.y = newY;
     this.battlefield[newY][newX] = unit.symbol;
-    this.movePoints--; if (this.movePoints === 0) this.nextTurn();
+    this.movePoints--;
+    if (this.movePoints === 0) this.nextTurn();
   }
 
   async attackInDirection(dx, dy, unit, recordAttackCallback) {
@@ -213,15 +237,21 @@ export class BattleEngine {
       if (!this.isWithinBounds(targetX, targetY)) break;
       const ally = this.party.find(h => h.x === targetX && h.y === targetY && h !== unit);
       if (ally) {
-        if (unit.heal && unit.heal > 0) { ally.hp += unit.heal; this.logCallback(`${unit.name} heals ${ally.name} for ${unit.heal} HP! (New HP: ${ally.hp})`); }
-        else if (unit.psych && unit.psych > 0) {
-          const stats = ['attack','range','agility','hp'];
+        if (unit.heal && unit.heal > 0) {
+          ally.hp += unit.heal;
+          this.logCallback(`${unit.name} heals ${ally.name} for ${unit.heal} HP! (New HP: ${ally.hp})`);
+        } else if (unit.psych && unit.psych > 0) {
+          const stats = ['attack', 'range', 'agility', 'hp'];
           const randomStat = stats[Math.floor(Math.random() * stats.length)];
-          ally[randomStat] += unit.psych; 
+          ally[randomStat] += unit.psych;
           this.logCallback(`${unit.name} uses psych on ${ally.name}, boosting ${randomStat} by ${unit.psych}! (New ${randomStat}: ${ally[randomStat]})`);
-        } else this.logCallback(`${unit.name} attacks ${ally.name} but nothing happens.`);
+        } else {
+          this.logCallback(`${unit.name} attacks ${ally.name} but nothing happens.`);
+        }
         this.awaitingAttackDirection = false;
-        await this.shortPause(); this.nextTurn(); return;
+        await this.shortPause();
+        this.nextTurn();
+        return;
       }
       const enemy = this.enemies.find(e => e.x === targetX && e.y === targetY);
       if (enemy) {
@@ -237,10 +267,16 @@ export class BattleEngine {
             this.logCallback(`${unit.name}'s trick lowers ${enemy.name}'s ${chosenStat} from ${orig} to ${enemy[chosenStat]}!`);
           }
         }
-        if (unit.burn) { enemy.statusEffects.burn = { damage: unit.burn, duration: 3 }; this.logCallback(`${enemy.name} is burning for ${unit.burn} damage for 3 turns!`); }
+        if (unit.burn) {
+          enemy.statusEffects.burn = { damage: unit.burn, duration: 3 };
+          this.logCallback(`${enemy.name} is burning for ${unit.burn} damage for 3 turns!`);
+        }
         if (unit.sluj) {
           if (!enemy.statusEffects.sluj) enemy.statusEffects.sluj = { level: unit.sluj, duration: 4, counter: 0 };
-          else { enemy.statusEffects.sluj.level += unit.sluj; enemy.statusEffects.sluj.duration = 4; }
+          else {
+            enemy.statusEffects.sluj.level += unit.sluj;
+            enemy.statusEffects.sluj.duration = 4;
+          }
           this.logCallback(`${enemy.name} is afflicted with slüj (level ${enemy.statusEffects.sluj.level}) for 4 turns!`);
         }
         if (unit.yeet && unit.yeet > 0) {
@@ -254,28 +290,42 @@ export class BattleEngine {
             this.applyChainDamage(enemy, initialChainDamage, effectiveMultiplier, new Set());
           }
         }
-        if (enemy.hp <= 0) { this.logCallback(`${enemy.name} is defeated!`); this.battlefield[targetY][targetX] = '.'; this.enemies = this.enemies.filter(e => e !== enemy); }
+        if (enemy.hp <= 0) {
+          this.logCallback(`${enemy.name} is defeated!`);
+          this.battlefield[targetY][targetX] = '.';
+          this.enemies = this.enemies.filter(e => e !== enemy);
+        }
         this.awaitingAttackDirection = false;
-        await this.shortPause(); this.nextTurn(); return;
+        await this.shortPause();
+        this.nextTurn();
+        return;
       }
       if (this.battlefield[targetY][targetX] === 'ᚙ' || this.battlefield[targetY][targetX] === '█') {
         this.wallHP -= unit.attack;
         this.logCallback(`${unit.name} attacks the wall for ${unit.attack} damage! (Wall HP: ${this.wallHP})`);
         this.awaitingAttackDirection = false;
-        if (this.wallHP <= 0 && !this.transitioningLevel) { this.handleWallCollapse(); return; }
-        await this.shortPause(); this.nextTurn(); return;
+        if (this.wallHP <= 0 && !this.transitioningLevel) {
+          this.handleWallCollapse();
+          return;
+        }
+        await this.shortPause();
+        this.nextTurn();
+        return;
       }
     }
     this.logCallback(`${unit.name} attacks, but nothing is in range.`);
     this.awaitingAttackDirection = false;
-    await this.shortPause(); this.nextTurn();
+    await this.shortPause();
+    this.nextTurn();
   }
 
   applyChainDamage(enemy, damage, effectiveMultiplier, visited = new Set()) {
     visited.add(enemy);
     const adjacentOffsets = [
-      { x: -1, y: 0 }, { x: 1, y: 0 }, { x: 0, y: -1 }, { x: 0, y: 1 },
-      { x: -1, y: -1 }, { x: -1, y: 1 }, { x: 1, y: -1 }, { x: 1, y: 1 }
+      { x: -1, y: 0 }, { x: 1, y: 0 },
+      { x: 0, y: -1 }, { x: 0, y: 1 },
+      { x: -1, y: -1 }, { x: -1, y: 1 },
+      { x: 1, y: -1 }, { x: 1, y: 1 }
     ];
     for (let offset of adjacentOffsets) {
       const adjX = enemy.x + offset.x, adjY = enemy.y + offset.y;
@@ -315,15 +365,24 @@ export class BattleEngine {
     if (!targetHero) return;
     const dx = targetHero.x - enemy.x, dy = targetHero.y - enemy.y;
     let stepX = 0, stepY = 0;
-    if (Math.abs(dx) >= Math.abs(dy)) stepX = dx > 0 ? 1 : dx < 0 ? -1 : 0; else stepY = dy > 0 ? 1 : dy < 0 ? -1 : 0;
+    if (Math.abs(dx) >= Math.abs(dy))
+      stepX = dx > 0 ? 1 : dx < 0 ? -1 : 0;
+    else
+      stepY = dy > 0 ? 1 : dy < 0 ? -1 : 0;
     if (!this.canMove(enemy.x + stepX, enemy.y + stepY)) {
-      if (stepX !== 0 && this.canMove(enemy.x, enemy.y + Math.sign(dy))) { stepY = dy > 0 ? 1 : -1; stepX = 0; }
-      else if (stepY !== 0 && this.canMove(enemy.x + Math.sign(dx), enemy.y)) { stepX = dx > 0 ? 1 : -1; stepY = 0; }
+      if (stepX !== 0 && this.canMove(enemy.x, enemy.y + Math.sign(dy))) {
+        stepY = dy > 0 ? 1 : -1;
+        stepX = 0;
+      } else if (stepY !== 0 && this.canMove(enemy.x + Math.sign(dx), enemy.y)) {
+        stepX = dx > 0 ? 1 : -1;
+        stepY = 0;
+      }
     }
     const newX = enemy.x + stepX, newY = enemy.y + stepY;
     if (this.canMove(newX, newY)) {
       this.battlefield[enemy.y][enemy.x] = '.';
-      enemy.x = newX; enemy.y = newY;
+      enemy.x = newX;
+      enemy.y = newY;
       this.battlefield[newY][newX] = enemy.symbol;
     }
   }
@@ -338,7 +397,9 @@ export class BattleEngine {
     });
   }
 
-  canMove(x, y) { return this.isWithinBounds(x, y) && this.isCellPassable(x, y); }
+  canMove(x, y) {
+    return this.isWithinBounds(x, y) && this.isCellPassable(x, y);
+  }
   
   enemyAttackAdjacent(enemy) {
     const directions = [[0, -1], [0, 1], [-1, 0], [1, 0]];
@@ -355,9 +416,10 @@ export class BattleEngine {
         }
         if (targetHero.hp <= 0) {
           this.handleHeroDeath(targetHero);
-          if (this.currentUnit >= this.party.length) this.currentUnit = 0;
+          if (this.currentUnit >= this.party.length)
+            this.currentUnit = 0;
         } else if (targetHero.rage && targetHero.rage > 0) {
-          const stats = ['attack','range','agility','hp'];
+          const stats = ['attack', 'range', 'agility', 'hp'];
           const randomStat = stats[Math.floor(Math.random() * stats.length)];
           if (targetHero.hasOwnProperty(randomStat)) {
             targetHero[randomStat] += targetHero.rage;
@@ -411,7 +473,10 @@ export class BattleEngine {
         this.logCallback(`${enemy.name} takes ${enemy.statusEffects.burn.damage} burn damage!`);
         enemy.hp -= enemy.statusEffects.burn.damage;
         enemy.statusEffects.burn.duration--;
-        if (enemy.hp <= 0) { this.logCallback(`${enemy.name} died from burn damage!`); this.battlefield[enemy.y][enemy.x] = '.'; }
+        if (enemy.hp <= 0) {
+          this.logCallback(`${enemy.name} died from burn damage!`);
+          this.battlefield[enemy.y][enemy.x] = '.';
+        }
       }
       if (enemy.statusEffects.sluj && enemy.statusEffects.sluj.duration > 0) {
         enemy.statusEffects.sluj.counter++;
@@ -423,16 +488,26 @@ export class BattleEngine {
         else if (level === 4) { trigger = true; damage = 1; }
         else if (level === 5) { trigger = true; damage = 2; }
         else if (level >= 6) { trigger = true; damage = 3; }
-        if (trigger) { this.logCallback(`${enemy.name} takes ${damage} slüj damage!`); enemy.hp -= damage; }
+        if (trigger) {
+          this.logCallback(`${enemy.name} takes ${damage} slüj damage!`);
+          enemy.hp -= damage;
+        }
         enemy.statusEffects.sluj.duration--;
-        if (enemy.hp <= 0) { this.logCallback(`${enemy.name} died from slüj damage!`); this.battlefield[enemy.y][enemy.x] = '.'; }
+        if (enemy.hp <= 0) {
+          this.logCallback(`${enemy.name} died from slüj damage!`);
+          this.battlefield[enemy.y][enemy.x] = '.';
+        }
       }
     });
   }
 
   applySwarmDamage() {
-    const adjacentOffsets = [ { x: -1, y: 0 }, { x: 1, y: 0 }, { x: 0, y: -1 }, { x: 0, y: 1 },
-      { x: -1, y: -1 }, { x: -1, y: 1 }, { x: 1, y: -1 }, { x: 1, y: 1 } ];
+    const adjacentOffsets = [
+      { x: -1, y: 0 }, { x: 1, y: 0 },
+      { x: 0, y: -1 }, { x: 0, y: 1 },
+      { x: -1, y: -1 }, { x: -1, y: 1 },
+      { x: 1, y: -1 }, { x: 1, y: 1 }
+    ];
     this.getLiveHeroes().forEach(hero => {
       if (hero.swarm && typeof hero.swarm === 'number') {
         adjacentOffsets.forEach(offset => {
@@ -454,16 +529,27 @@ export class BattleEngine {
     });
   }
 
-  // NEW: Handle hero death so it persists through levels, while triggering an ankh boost on live heroes.
+  // NEW: Handle hero death with consideration for the "rise" stat.
+  // If a hero has a nonzero rise stat, they are resurrected on the next level with HP equal to the rise value,
+  // the rise stat is reset to zero, and ankh boosts are applied to all live heroes.
   handleHeroDeath(hero) {
+    if (hero.rise > 0) {
+      this.logCallback(`Hero ${hero.name} falls but rises with ${hero.rise} HP!`);
+      hero.hp = hero.rise;
+      hero.rise = 0;
+      this.applyAnkhBoost();
+      return;
+    }
     if (hero.persistentDeath) return;
-    this.logCallback(`Hero ${hero.name} has fallen. Applying persistent death and ankh effects...`);
+    this.logCallback(`Hero ${hero.name} has fallen permanently. Applying persistent death and ankh effects...`);
     hero.statusEffects.death = true;
     hero.persistentDeath = new PersistentDeath();
     this.battlefield[hero.y][hero.x] = '.';
-    // Instead of removing from the party array, persistent death is marked.
-    // When initializing heroes in a new level, only heroes without a persistentDeath marker are placed.
-    // Apply ankh effects to all live heroes.
+    this.applyAnkhBoost();
+  }
+
+  // Apply ankh boost to all live heroes.
+  applyAnkhBoost() {
     this.getLiveHeroes().forEach(h => {
       if (h.ankh && typeof h.ankh === 'number' && h.ankh > 0) {
         const stats = ['attack', 'hp', 'agility', 'range'];
