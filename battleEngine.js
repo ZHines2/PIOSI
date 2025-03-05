@@ -189,6 +189,10 @@ export class BattleEngine {
   moveUnit(dx, dy) {
     if (this.awaitingAttackDirection || this.movePoints <= 0 || this.transitioningLevel) return;
     const unit = this.getLiveHeroes()[this.currentUnit];
+    if (unit.hp <= 0) {
+      this.logCallback(`${unit.name} is dead and cannot move.`);
+      return;
+    }
     const newX = unit.x + dx, newY = unit.y + dy;
     if (!this.isWithinBounds(newX, newY)) return;
     if (this.battlefield[newY][newX] === 'ᚙ' || this.battlefield[newY][newX] === '█') {
@@ -231,6 +235,10 @@ export class BattleEngine {
 
   async attackInDirection(dx, dy, unit, recordAttackCallback) {
     if (this.transitioningLevel) return;
+    if (unit.hp <= 0) {
+      this.logCallback(`${unit.name} is dead and cannot attack.`);
+      return;
+    }
     await recordAttackCallback(`${unit.name} attacked in direction (${dx}, ${dy}).`);
     for (let i = 1; i <= unit.range; i++) {
       const targetX = unit.x + dx * i, targetY = unit.y + dy * i;
