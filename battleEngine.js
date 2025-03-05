@@ -47,7 +47,7 @@ export class BattleEngine {
       // Initialize rise stat if not set.
       if (typeof hero.rise !== 'number') hero.rise = 0;
     });
-    this.enemies.forEach(enemy => enemy.statusEffects = {});
+    this.enemies.forEach(enemy => enemy.statusEffects = {};
     this.battlefield = this.initializeBattlefield();
   }
 
@@ -546,6 +546,14 @@ export class BattleEngine {
     hero.persistentDeath = new PersistentDeath();
     this.battlefield[hero.y][hero.x] = '.';
     this.applyAnkhBoost();
+
+    // Adjust currentUnit if the dead hero was the current unit
+    const liveHeroes = this.getLiveHeroes();
+    if (liveHeroes.length > 0) {
+        if (this.currentUnit >= liveHeroes.length) {
+            this.currentUnit = 0;
+        }
+    }
   }
 
   // Apply ankh boost to all live heroes.
