@@ -204,8 +204,8 @@ export const heroes = [
     symbol: "ꚤ",
     attack: 1,
     range: 1,
-    agility: 2,  // Increased agility from 1 to 2 for better turn order.
-    hp: 3,       // Increased HP from 1 to 3 for survivability.
+    agility: 1,  
+    hp: 1,  
     heal: 1,
     burn: 1,
     sluj: 1,
