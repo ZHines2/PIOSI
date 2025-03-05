@@ -221,11 +221,21 @@ export const heroes = [
   {
     name: "Kemetic",
     symbol: "𓋇",
-    attack: 9,
-    range: 3,
+    attack: 5,
+    range: 5,
     agility: 5,
-    hp: 55,
+    hp: 25,
     // The new ankh stat will cause boosts on hero deaths.
-    ankh: 3
+    ankh: 5
+  },
+  // New hero "Greenjay"
+  {
+    name: "Greenjay",
+    symbol: "࿈",
+    attack: 5,
+    range: 2,
+    agility: 4,
+    hp: 30,
+    rise: 5 // new rise stat
   }
 ];
