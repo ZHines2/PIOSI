@@ -609,10 +609,13 @@ export class BattleEngine {
           );
         }
         
-        if (targetHero.hp <= 0) {
+      if (targetHero.hp <= 0) {
           this.logCallback(`${targetHero.name} is defeated!`);
+          // Apply ankh effects before removing the hero.
+          this.applyAnkhEffect(targetHero.name);
           this.battlefield[targetHero.y][targetHero.x] = '.';
           this.party = this.party.filter(h => h !== targetHero);
+          // Ensure currentUnit remains within bounds after filtering.
           if (this.currentUnit >= this.party.length) {
             this.currentUnit = 0;
           }
@@ -774,6 +777,18 @@ export class BattleEngine {
       }
     });
   }
+// NEW: Helper method to apply the ankh effect when a hero dies.
+applyAnkhEffect(defeatedHeroName) {
+  this.logCallback(`Hero ${defeatedHeroName} has fallen. Applying ankh effects...`);
+  this.party.forEach(hero => {
+    if (hero.ankh && typeof hero.ankh === 'number' && hero.ankh > 0) {
+      hero.attack += hero.ankh;
+      this.logCallback(
+        `${hero.name} gains an ankh boost of ${hero.ankh} attack (New attack: ${hero.attack}).`
+      );
+    }
+  });
+}
 
   shortPause() {
     return new Promise(resolve => setTimeout(resolve, 300));
