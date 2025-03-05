@@ -12,6 +12,9 @@ Each level is defined by a set of properties. Here are the key properties you ne
 - `cols`: The number of columns in the level grid.
 - `wallHP`: The health points of the wall that players need to break through.
 - `enemies`: An array of enemy configurations.
+- `generateEnemies`: A boolean indicating if enemies should be generated dynamically.
+- `enemyGenerator`: A function to dynamically generate enemies.
+- `layout`: A 2D array representing the level layout.
 
 ## Enemy Configuration
 
@@ -25,6 +28,7 @@ Each enemy is defined by a set of properties. Here are the key properties you ne
 - `agility`: The agility of the enemy, which determines how many moves they can make per turn.
 - `x`: The x-coordinate of the enemy's starting position.
 - `y`: The y-coordinate of the enemy's starting position.
+- `dialogue`: An array of dialogue lines for the enemy.
 
 ## Dynamic Enemy Generation
 
@@ -47,8 +51,20 @@ function enemyGenerator(rows, cols) {
   }
   return enemies;
 }
+```
 
+## Level Layout
 
+The `layout` property is a 2D array representing the level layout. Each cell in the array can be `null` (empty) or an object representing a wall or other obstacle. Here is an example of a level layout:
+
+```javascript
+const layout = [
+  [null, null, null, null, null],
+  [null, { type: "wall", hp: 50 }, null, { type: "wall", hp: 50 }, null],
+  [null, null, null, null, null],
+  [null, { type: "wall", hp: 50 }, null, { type: "wall", hp: 50 }, null],
+  [null, null, null, null, null]
+];
 ```
 
 ## Best Practices
@@ -133,6 +149,37 @@ Here are some examples of level configurations:
     }
     return enemies;
   }
+}
+```
+
+### Example 4: Level with Layout
+
+```javascript
+{
+  level: 4,
+  title: "Level 4: The Maze",
+  rows: 5,
+  cols: 5,
+  wallHP: 50,
+  layout: [
+    [null, null, null, null, null],
+    [null, { type: "wall", hp: 50 }, null, { type: "wall", hp: 50 }, null],
+    [null, null, null, null, null],
+    [null, { type: "wall", hp: 50 }, null, { type: "wall", hp: 50 }, null],
+    [null, null, null, null, null]
+  ],
+  enemies: [
+    {
+      name: "Maze Guardian",
+      symbol: "M",
+      attack: 5,
+      range: 1,
+      hp: 30,
+      agility: 2,
+      x: 2,
+      y: 2
+    }
+  ]
 }
 ```
 
