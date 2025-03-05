@@ -9,11 +9,13 @@
  * Updates:
  * - The Wizard now gains an increase to his "chain" stat.
  * - The Sycophant's mode up now gives him +1 in every stat.
- * - The Berserker now increases his "rage" stat with mode up.
- * - The Jester now increases his "trick" stat with mode up.
- * - Added the new "ankh" stat for heroes. Heroes that have a nonzero "ankh" stat
- *   (for instance, Kemetic) may get their "ankh" stat increased during mode up.
- * - Now including the "rise" stat for heroes like Greenjay.
+ *  - The Berserker now increases his "rage" stat with mode up.
+ *  - The Jester now increases his "trick" stat with mode up.
+ *  - Added the new "ankh" stat for heroes. Heroes that have a nonzero "ankh" stat
+ *    (for instance, Kemetic) may get their "ankh" stat increased during mode up.
+ *  - Now including the "rise" stat for heroes like Greenjay.
+ *  - After mode up, if a hero had been marked as dead but now has a nonzero "rise" stat
+ *    (or gains a rise buff), the hero's death marker is removed, allowing the hero to come back.
  */
 
 /**
@@ -168,6 +170,16 @@ export function applyModeUp(chosenHero, level, party, logCallback) {
         }
         hero[stat] += buff[stat];
       }
+    }
+    // If a hero was previously marked as dead (persistentDeath exists) but now has a nonzero rise,
+    // remove the death marker so that they can come back.
+    if (hero.persistentDeath && hero.rise > 0) {
+      hero.persistentDeath = null;
+      // Optionally, clear any death status effects.
+      if (hero.statusEffects) {
+        delete hero.statusEffects.death;
+      }
+      logCallback(`${hero.name} has been revived by Rise!`);
     }
   });
 
