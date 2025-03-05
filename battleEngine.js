@@ -9,6 +9,8 @@
  *   level with HP equal to the rise value, the rise stat is reset to zero, and they still
  *   trigger ankh boosts to all live heroes.
  * - The ankh stat boost now enhances one of attack, hp, agility, or range.
+ * - A dedicated turn order based on initiative (agility) so that if a high-agility hero dies,
+ *   they’re properly removed from the order.
  */
 
 import { applyKnockback } from './applyKnockback.js';
@@ -22,8 +24,7 @@ export class PersistentDeath {
 
 export class BattleEngine {
   constructor(party, enemies, fieldRows, fieldCols, wallHP, logCallback, onLevelComplete, onGameOver) {
-    // Keep all heroes in the party array.
-    // NOTE: Heroes with persistent death will not be respawned unless they have a "rise" stat.
+    // The party and enemies
     this.party = party;
     this.enemies = enemies;
     this.rows = fieldRows;
@@ -33,29 +34,49 @@ export class BattleEngine {
     this.onLevelComplete = onLevelComplete;
     this.onGameOver = onGameOver;
 
-    this.currentUnit = 0;
-    // Only live heroes get move points.
-    this.movePoints = this.getLiveHeroes().length ? this.getLiveHeroes()[0].agility : 0;
+    // Turn order and initiative tracking
+    this.turnOrder = [];
+    this.currentTurnIndex = 0;
     this.awaitingAttackDirection = false;
     this.transitioningLevel = false;
 
-    // Initialize status effects for all heroes and enemies.
+    // Initialize status for all heroes and enemies.
     this.party.forEach(hero => {
       hero.statusEffects = hero.statusEffects || {};
-      // Persistent death marker may already exist.
       if (!hero.persistentDeath) hero.persistentDeath = null;
-      // Initialize rise stat if not set.
       if (typeof hero.rise !== 'number') hero.rise = 0;
     });
     this.enemies.forEach(enemy => enemy.statusEffects = {});
+    
+    // Build the battlefield
     this.battlefield = this.initializeBattlefield();
+    
+    // Build the initial turn order based on hero agility.
+    this.initializeTurnOrder();
   }
-
-  // Returns the list of heroes that are not persistently dead.
+  
+  // Returns only live heroes (not permanently dead)
   getLiveHeroes() {
     return this.party.filter(hero => !hero.persistentDeath);
   }
-
+  
+  // Returns the current hero (whose turn it is) based on turn order.
+  getCurrentUnit() {
+    if (this.turnOrder.length === 0) return null;
+    return this.turnOrder[this.currentTurnIndex];
+  }
+  
+  // Build the turn order based on the current live heroes, sorted by agility.
+  initializeTurnOrder() {
+    const liveHeroes = this.getLiveHeroes();
+    if (liveHeroes.length === 0) return;
+    this.turnOrder = [...liveHeroes].sort((a, b) => b.agility - a.agility);
+    this.currentTurnIndex = 0;
+    this.movePoints = this.getCurrentUnit().agility;
+    this.logCallback(`Turn order: ${this.turnOrder.map(hero => hero.name).join(', ')}`);
+  }
+  
+  // Battlefield initialization and entity placement.
   initializeBattlefield() {
     const field = Array.from({ length: this.rows }, () => Array(this.cols).fill('.'));
     this.placeHeroes(field);
@@ -70,7 +91,8 @@ export class BattleEngine {
         }
       }
     }
-    // Apply caprice and fate buffs only to live heroes.
+    
+    // Apply buffs to live heroes.
     this.getLiveHeroes().forEach(hero => {
       if (hero.caprice && hero.caprice > 0) {
         const stats = ['attack', 'range', 'agility', 'hp'];
@@ -96,9 +118,10 @@ export class BattleEngine {
         }
       }
     });
+    
     return field;
   }
-
+  
   placeHeroes(field) {
     // Only place live heroes.
     this.getLiveHeroes().forEach(hero => {
@@ -115,21 +138,21 @@ export class BattleEngine {
       }
     });
   }
-
+  
   placeEnemies(field) {
     this.enemies.forEach(enemy => {
       enemy.statusEffects = {};
       field[enemy.y][enemy.x] = enemy.symbol;
     });
   }
-
+  
   createWall(field) {
     for (let i = 0; i < this.cols; i++) field[this.rows - 1][i] = 'ᚙ';
     this.enemies.forEach(enemy => {
       if (enemy.symbol === '█') field[enemy.y][enemy.x] = enemy.symbol;
     });
   }
-
+  
   placeHealingItem(field) {
     let emptyCells = [];
     for (let y = 0; y < this.rows - 1; y++) {
@@ -141,7 +164,7 @@ export class BattleEngine {
       field[cell.y][cell.x] = 'ౚ';
     }
   }
-
+  
   placeMushroom(field) {
     let emptyCells = [];
     for (let y = 0; y < this.rows - 1; y++) {
@@ -153,7 +176,7 @@ export class BattleEngine {
       field[cell.y][cell.x] = 'ඉ';
     }
   }
-
+  
   drawBattlefield() {
     let html = '';
     for (let y = 0; y < this.rows; y++) {
@@ -163,21 +186,22 @@ export class BattleEngine {
         let cellClass = '';
         if (cellContent === 'ౚ' || cellContent === 'ඉ') cellClass += ' healing-item';
         if (this.enemies.some(enemy => enemy.symbol === cellContent)) cellClass += ' enemy';
-        if (this.getLiveHeroes()[this.currentUnit] &&
-            this.getLiveHeroes()[this.currentUnit].x === x &&
-            this.getLiveHeroes()[this.currentUnit].y === y)
+        
+        const currentUnit = this.getCurrentUnit();
+        if (currentUnit && currentUnit.x === x && currentUnit.y === y)
           cellClass += this.awaitingAttackDirection ? ' attack-mode' : ' active';
+          
         html += `<div class="cell${cellClass}">${cellContent}</div>`;
       }
       html += '</div>';
     }
     return html;
   }
-
+  
   isWithinBounds(x, y) {
     return x >= 0 && x < this.cols && y >= 0 && y < this.rows;
   }
-
+  
   isCellPassable(x, y) {
     return (
       this.battlefield[y][x] === '.' ||
@@ -185,12 +209,16 @@ export class BattleEngine {
       this.battlefield[y][x] === 'ඉ'
     );
   }
-
+  
   moveUnit(dx, dy) {
     if (this.awaitingAttackDirection || this.movePoints <= 0 || this.transitioningLevel) return;
-    const unit = this.getLiveHeroes()[this.currentUnit];
+    
+    const unit = this.getCurrentUnit();
+    if (!unit) return;
+    
     const newX = unit.x + dx, newY = unit.y + dy;
     if (!this.isWithinBounds(newX, newY)) return;
+    
     if (this.battlefield[newY][newX] === 'ᚙ' || this.battlefield[newY][newX] === '█') {
       this.wallHP -= unit.attack;
       this.logCallback(`${unit.name} attacks the wall for ${unit.attack} damage! (Wall HP: ${this.wallHP})`);
@@ -202,12 +230,14 @@ export class BattleEngine {
       if (this.movePoints === 0) this.nextTurn();
       return;
     }
+    
     if (this.battlefield[newY][newX] === 'ౚ') {
       const healingValue = 10 + (unit.spicy ? unit.spicy * 2 : 0);
       unit.hp += healingValue;
       this.logCallback(`${unit.name} picks up a vittle and heals for ${healingValue} HP! (New HP: ${unit.hp})`);
       this.battlefield[newY][newX] = '.';
     }
+    
     if (this.battlefield[newY][newX] === 'ඉ') {
       const healingValue = 5;
       unit.hp += healingValue;
@@ -220,7 +250,9 @@ export class BattleEngine {
         this.logCallback(`${unit.name} gains ${unit.spore} boost to ${randomStat} (Now: ${unit[randomStat]})`);
       }
     }
+    
     if (!this.isCellPassable(newX, newY)) return;
+    
     this.battlefield[unit.y][unit.x] = '.';
     unit.x = newX;
     unit.y = newY;
@@ -228,13 +260,14 @@ export class BattleEngine {
     this.movePoints--;
     if (this.movePoints === 0) this.nextTurn();
   }
-
+  
   async attackInDirection(dx, dy, unit, recordAttackCallback) {
     if (this.transitioningLevel) return;
     await recordAttackCallback(`${unit.name} attacked in direction (${dx}, ${dy}).`);
     for (let i = 1; i <= unit.range; i++) {
       const targetX = unit.x + dx * i, targetY = unit.y + dy * i;
       if (!this.isWithinBounds(targetX, targetY)) break;
+      
       const ally = this.party.find(h => h.x === targetX && h.y === targetY && h !== unit);
       if (ally) {
         if (unit.heal && unit.heal > 0) {
@@ -253,6 +286,7 @@ export class BattleEngine {
         this.nextTurn();
         return;
       }
+      
       const enemy = this.enemies.find(e => e.x === targetX && e.y === targetY);
       if (enemy) {
         enemy.hp -= unit.attack;
@@ -300,6 +334,7 @@ export class BattleEngine {
         this.nextTurn();
         return;
       }
+      
       if (this.battlefield[targetY][targetX] === 'ᚙ' || this.battlefield[targetY][targetX] === '█') {
         this.wallHP -= unit.attack;
         this.logCallback(`${unit.name} attacks the wall for ${unit.attack} damage! (Wall HP: ${this.wallHP})`);
@@ -318,7 +353,7 @@ export class BattleEngine {
     await this.shortPause();
     this.nextTurn();
   }
-
+  
   applyChainDamage(enemy, damage, effectiveMultiplier, visited = new Set()) {
     visited.add(enemy);
     const adjacentOffsets = [
@@ -347,7 +382,7 @@ export class BattleEngine {
       }
     }
   }
-
+  
   enemyTurn() {
     if (this.transitioningLevel) return;
     this.enemies.forEach(enemy => {
@@ -359,7 +394,7 @@ export class BattleEngine {
     });
     this.logCallback('Enemy turn completed.');
   }
-
+  
   moveEnemy(enemy) {
     const targetHero = this.findClosestHero(enemy);
     if (!targetHero) return;
@@ -386,7 +421,7 @@ export class BattleEngine {
       this.battlefield[newY][newX] = enemy.symbol;
     }
   }
-
+  
   findClosestHero(enemy) {
     const liveHeroes = this.getLiveHeroes();
     if (liveHeroes.length === 0) return null;
@@ -396,7 +431,7 @@ export class BattleEngine {
       return (dHero < dCurrent ? hero : closest);
     });
   }
-
+  
   canMove(x, y) {
     return this.isWithinBounds(x, y) && this.isCellPassable(x, y);
   }
@@ -405,7 +440,7 @@ export class BattleEngine {
     const directions = [[0, -1], [0, 1], [-1, 0], [1, 0]];
     directions.forEach(([dx, dy]) => {
       const tx = enemy.x + dx, ty = enemy.y + dy;
-      const targetHero = this.party.find(hero => hero.x === tx && hero.y === ty);
+      const targetHero = this.party.find(hero => hero.x === tx && hero.y === ty && !hero.persistentDeath);
       if (targetHero) {
         if (targetHero.armor && targetHero.armor > 0) {
           targetHero.armor--;
@@ -416,8 +451,6 @@ export class BattleEngine {
         }
         if (targetHero.hp <= 0) {
           this.handleHeroDeath(targetHero);
-          if (this.currentUnit >= this.party.length)
-            this.currentUnit = 0;
         } else if (targetHero.rage && targetHero.rage > 0) {
           const stats = ['attack', 'range', 'agility', 'hp'];
           const randomStat = stats[Math.floor(Math.random() * stats.length)];
@@ -429,7 +462,7 @@ export class BattleEngine {
       }
     });
   }
-
+  
   nextTurn() {
     if (this.transitioningLevel) return;
     this.applyStatusEffects();
@@ -440,25 +473,27 @@ export class BattleEngine {
       if (typeof this.onGameOver === 'function') this.onGameOver();
       return;
     }
+    
     this.awaitingAttackDirection = false;
-    do {
-      this.currentUnit++;
-      if (this.currentUnit >= liveHeroes.length) {
-        this.currentUnit = 0;
-        this.logCallback('Enemy turn begins.');
-        this.enemyTurn();
-        this.applyStatusEffects();
-        if (this.getLiveHeroes().length === 0) {
-          this.logCallback('All heroes defeated! Game Over.');
-          if (typeof this.onGameOver === 'function') this.onGameOver();
-          return;
-        }
+    // Advance turn index.
+    this.currentTurnIndex++;
+    if (this.currentTurnIndex >= this.turnOrder.length) {
+      this.currentTurnIndex = 0;
+      this.logCallback('Enemy turn begins.');
+      this.enemyTurn();
+      // Rebuild turn order after enemy turn in case agility values or heroes have changed.
+      this.initializeTurnOrder();
+      if (this.getLiveHeroes().length === 0) {
+        this.logCallback('All heroes defeated! Game Over.');
+        if (typeof this.onGameOver === 'function') this.onGameOver();
+        return;
       }
-    } while(this.getLiveHeroes()[this.currentUnit].persistentDeath);
-    this.movePoints = this.getLiveHeroes()[this.currentUnit].agility;
-    this.logCallback(`Now it's ${this.getLiveHeroes()[this.currentUnit].name}'s turn.`);
+    }
+    const currentHero = this.getCurrentUnit();
+    this.movePoints = currentHero ? currentHero.agility : 0;
+    this.logCallback(`Now it's ${currentHero.name}'s turn.`);
   }
-
+  
   applyStatusEffects() {
     this.getLiveHeroes().forEach(hero => {
       if (hero.statusEffects.burn && hero.statusEffects.burn.duration > 0) {
@@ -500,7 +535,7 @@ export class BattleEngine {
       }
     });
   }
-
+  
   applySwarmDamage() {
     const adjacentOffsets = [
       { x: -1, y: 0 }, { x: 1, y: 0 },
@@ -528,10 +563,7 @@ export class BattleEngine {
       }
     });
   }
-
-  // NEW: Handle hero death with consideration for the "rise" stat.
-  // If a hero has a nonzero rise stat, they are resurrected on the next level with HP equal to the rise value,
-  // the rise stat is reset to zero, and ankh boosts are applied to all live heroes.
+  
   handleHeroDeath(hero) {
     if (hero.rise > 0) {
       this.logCallback(`Hero ${hero.name} falls but rises with ${hero.rise} HP!`);
@@ -546,9 +578,19 @@ export class BattleEngine {
     hero.persistentDeath = new PersistentDeath();
     this.battlefield[hero.y][hero.x] = '.';
     this.applyAnkhBoost();
+    
+    // Remove the hero from the turn order.
+    this.turnOrder = this.turnOrder.filter(h => h !== hero);
+    if (this.turnOrder.length === 0) {
+      // game over will be handled on nextTurn()
+      return;
+    }
+    // Adjust currentTurnIndex if needed.
+    if (this.currentTurnIndex >= this.turnOrder.length) {
+      this.currentTurnIndex = 0;
+    }
   }
-
-  // Apply ankh boost to all live heroes.
+  
   applyAnkhBoost() {
     this.getLiveHeroes().forEach(h => {
       if (h.ankh && typeof h.ankh === 'number' && h.ankh > 0) {
@@ -559,7 +601,7 @@ export class BattleEngine {
       }
     });
   }
-
+  
   shortPause() {
     return new Promise(resolve => setTimeout(resolve, 300));
   }
