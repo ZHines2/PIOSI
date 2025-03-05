@@ -77,7 +77,7 @@ export const heroes = [
     hp: 22,
     heal: 1, // Slight healing property.
     meat: true, // Indicates meat-related interactions.
-    bulk: 1 // New bulk stat for Meatwalker
+    bulk: 1 // New bulk stat for Meatwalker.
   },
   {
     name: "Soothscribe",
@@ -87,7 +87,7 @@ export const heroes = [
     agility: 3,
     hp: 11,
     tarot: true, // Can fetch tarot cards for special actions.
-    fate: 1 // Pefc2
+    fate: 1
   },
   {
     name: "Nonsequiteur",
@@ -97,7 +97,7 @@ export const heroes = [
     agility: 3,
     hp: 10,
     nonseq: true, // Delivers random, non-sequitur interactions.
-    caprice: 1 // New stat for random stat increment
+    caprice: 1 // New stat for random stat increment.
   },
   {
     name: "Griot",
@@ -136,7 +136,7 @@ export const heroes = [
     agility: 3,
     hp: 12,
     shrink: true, // Indicates shrink-related behavior.
-    psych: 1 // New psych stat for Shrink
+    psych: 1 // New psych stat for Shrink.
   },
   {
     name: "Sycophant",
@@ -147,7 +147,6 @@ export const heroes = [
     hp: 15
   },
   // New hero "Yeetrian" with knockback stat "yeet".
-  // The knockback (or "yeet") stat indicates the hero's ability to push enemies.
   {
     name: "Yeetrian",
     symbol: "⛓",
@@ -205,8 +204,8 @@ export const heroes = [
     symbol: "ꚤ",
     attack: 1,
     range: 1,
-    agility: 1,  // Increased agility from 1 to 2 for better turn order.
-    hp: 1,       // Increased HP from 1 to 3 for survivability.
+    agility: 2,  // Increased agility from 1 to 2 for better turn order.
+    hp: 3,       // Increased HP from 1 to 3 for survivability.
     heal: 1,
     burn: 1,
     sluj: 1,
@@ -217,5 +216,16 @@ export const heroes = [
     armor: 1,
     spore: 1,
     chain: 1    // Added chain stat to Pæg.
+  },
+  // New hero "Kemetic"
+  {
+    name: "Kemetic",
+    symbol: "𓋇",
+    attack: 9,
+    range: 3,
+    agility: 5,
+    hp: 55,
+    // The new ankh stat will cause boosts on hero deaths.
+    ankh: 3
   }
 ];
