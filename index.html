@@ -51,6 +51,11 @@
       <p>Press Spacebar to Restart</p>
     </div>
 
+    <!-- World Map Screen -->
+    <div id="world-map" style="display:none; flex-direction: column; align-items: center;">
+      <!-- WorldMap.js module will populate this screen -->
+    </div>
+
     <!-- Game Over Screen -->
     <div id="game-over">
       <h1>Game Over</h1>
@@ -89,6 +94,12 @@
       import { heroes as allHeroes } from "./heroes.js";
       import { getLevel } from "./levels.js";
       import { getModeUpBuff, applyModeUp } from "./modeup.js";
+      import {
+        initWorldMap,
+        moveSelectionLeft,
+        moveSelectionRight,
+        selectCurrentNode,
+      } from "./worldMap.js";
 
       // Global variables to manage game state
       let currentScreen = "title";
@@ -111,57 +122,75 @@
         "ArrowDown",
         "Space"
       ];
+      const worldMapCheat = ["ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown", "ArrowLeft", "ArrowRight", "Space"]; // New cheat sequence
       let cheatBuffer = [];
 
       // For Mode Up selection
       let modeUpIndex = 0;
       let livingHeroes = [];
 
-      /**
+           /**
        * Function to show a specific screen by setting display properties.
        */
       function showScreen(screen) {
-        document.getElementById("title-screen").style.display =
-          screen === "title" ? "flex" : "none";
-        document.getElementById("party-select").style.display =
-          screen === "party" ? "block" : "none";
-        document.getElementById("game-container").style.display =
-          screen === "battle" ? "block" : "none";
-        document.getElementById("victory").style.display =
-          screen === "victory" ? "block" : "none";
-        document.getElementById("mode-up-window").style.display =
-          screen === "modeUp" ? "flex" : "none";
+        // Hide all screens by default
+        document.getElementById("title-screen").style.display = "none";
+        document.getElementById("party-select").style.display = "none";
+        document.getElementById("game-container").style.display = "none";
+        document.getElementById("victory").style.display = "none";
+        document.getElementById("world-map").style.display = "none";
+        document.getElementById("mode-up-window").style.display = "none";
+        document.getElementById("game-over").style.display = "none";
+
+        if (screen === "title") {
+          document.getElementById("title-screen").style.display = "flex";
+        } else if (screen === "party") {
+          document.getElementById("party-select").style.display = "block";
+        } else if (screen === "battle") {
+          document.getElementById("game-container").style.display = "block";
+        } else if (screen === "victory") {
+          document.getElementById("victory").style.display = "block";
+        } else if (screen === "worldMap") {
+          document.getElementById("world-map").style.display = "flex";
+          // Initialize world map functionality when this screen is active
+          initWorldMap();
+        } else if (screen === "modeUp") {
+          document.getElementById("mode-up-window").style.display = "flex";
+        }
         currentScreen = screen;
       }
+
 
       /**
        * Helper function to generate a complete stats object.
        * Even if a specific stat is 0 or undefined, we display it.
        */
-      function getCompleteStats(hero) {
-        return {
-          attack: hero.attack || 0,
-          range: hero.range || 0,
-          agility: hero.agility || 0,
-          hp: hero.hp || 0,
-          heal: hero.heal !== undefined ? hero.heal : 0,
-          burn: hero.burn !== undefined ? hero.burn : 0,
-          sluj: hero.sluj !== undefined ? hero.sluj : 0,
-          ghis: hero.ghis !== undefined ? hero.ghis : 0,
-          trick: hero.trick !== undefined ? hero.trick : 0,
-          yeet: hero.yeet !== undefined ? hero.yeet : 0,
-          swarm: hero.swarm !== undefined ? hero.swarm : 0,
-          spicy: hero.spicy !== undefined ? hero.spicy : 0,
-          armor: hero.armor !== undefined ? hero.armor : 0,
-          spore: hero.spore !== undefined ? hero.spore : 0,
-          chain: hero.chain !== undefined ? hero.chain : 0,
-          caprice: hero.caprice !== undefined ? hero.caprice : 0,
-          fate: hero.fate !== undefined ? hero.fate : 0,
-          rage: hero.rage !== undefined ? hero.rage : 0,
-          bulk: hero.bulk !== undefined ? hero.bulk : 0,
-          psych: hero.psych !== undefined ? hero.psych : 0
-        };
-      }
+          function getCompleteStats(hero) {
+            return {
+              attack: hero.attack || 0,
+              range: hero.range || 0,
+              agility: hero.agility || 0,
+              hp: hero.hp || 0,
+              heal: hero.heal || 0,
+              burn: hero.burn || 0,
+              sluj: hero.sluj || 0,
+              ghis: hero.ghis || 0,
+              trick: hero.trick || 0,
+              yeet: hero.yeet || 0,
+              swarm: hero.swarm || 0,
+              spicy: hero.spicy || 0,
+              armor: hero.armor || 0,
+              spore: hero.spore || 0,
+              chain: hero.chain || 0,
+              caprice: hero.caprice || 0,
+              fate: hero.fate || 0,
+              rage: hero.rage || 0,
+              bulk: hero.bulk || 0,
+              psych: hero.psych || 0,
+              ankh: hero.ankh || 0,
+              rise: hero.rise || 0
+            };
+          }
 
       /**
        * Update the hero display in the party selection screen.
@@ -214,7 +243,9 @@
           Fate: ${stats.fate} | 
           Rage: ${stats.rage} | 
           Bulk: ${stats.bulk} |
-          Psych: ${stats.psych}
+          Psych: ${stats.psych} |
+          Ankh: ${stats.ankh} |
+          Rise: ${stats.rise}
         </p>`;
         // Indicate selection status
         display += `<p>${
@@ -380,8 +411,18 @@
           }</p>`
         );
         lines.push(
-          `<p>Psych: ${stats.bulk} ${
+          `<p>Psych: ${stats.psych} ${
             buff.psych ? `<span class="stat-up">+${buff.psych}</span>` : ""
+          }</p>`
+        );
+        lines.push(
+          `<p>Ankh: ${stats.ankh} ${
+            buff.ankh ? `<span class="stat-up">+${buff.ankh}</span>` : ""
+          }</p>`
+        );
+         lines.push(
+          `<p>Rise: ${stats.rise} ${
+            buff.rise ? `<span class="stat-up">+${buff.rise}</span>` : ""
           }</p>`
         );
         document.getElementById("mode-up-hero-display").innerHTML =
@@ -468,11 +509,18 @@
           const level6Music = document.getElementById("level-6-music");
           level6Music.play().catch(() => {});
         }
+
+        // Handle level 99 correctly by starting the battle
+        if (level === 99) {
+          logMessage("Entering Level 99: The Hidden Arena!");
+          showScreen("battle");
+          return;
+        }
       }
 
-      /**
+     /**
        * Called when a level is completed and determines the next action.
-       * Levels 1 to 19 trigger the Mode Up window, and level 20 completes the game.
+       * Levels 1 to 19 trigger the Mode Up window, and level 20 summons world map.
        * Secret level (level 99) remains unchanged.
        */
       function onLevelComplete() {
@@ -480,13 +528,14 @@
           logMessage(`Level ${level} complete!`);
           showModeUpWindow();
         } else if (level === 20) {
-          logMessage("The final path is complete!");
-          showScreen("victory");
+          logMessage("Level 20 complete! Entering the world map...");
+          showScreen("worldMap");
         } else if (level === 99) {
           logMessage("The veil of introspection lifts...");
           logMessage("You've broken through! The eternal wall falls!");
           showScreen("victory");
         }
+
 
         // Fade out level 5 music if current level is 5
         if (level === 5) {
@@ -589,12 +638,12 @@
         backgroundMusic.pause();
         backgroundMusic.currentTime = 0;
 
-        // Stop Level 5 music if it is playing
+        // Stop Level 5 music
         const level5Music = document.getElementById("level-5-music");
         level5Music.pause();
         level5Music.currentTime = 0;
 
-        // Stop "ineedsome.mp3" if it is playing
+        // Stop "ineedsome.mp3"
         const level6Music = document.getElementById("level-6-music");
         level6Music.pause();
         level6Music.currentTime = 0;
@@ -620,10 +669,18 @@
         }
       }
 
+      /**
+       * Activate the world map screen.
+       */
+      function worldMapCheatCode() {
+          console.log("World Map cheat code detected! Opening THE BROADLANDS!");
+          showScreen("worldMap");
+      }
+
       // Global keydown listener handling various game screens and actions.
       document.addEventListener("keydown", async (event) => {
         cheatBuffer.push(event.code);
-        if (cheatBuffer.length > cheatSequence.length) {
+        if (cheatBuffer.length > Math.max(cheatSequence.length, worldMapCheat.length)) {
           cheatBuffer.shift();
         }
         if (cheatBuffer.join() === cheatSequence.join()) {
@@ -631,6 +688,14 @@
           cheatBuffer = [];
           return;
         }
+
+        // Check for the world map cheat code
+        if (cheatBuffer.slice(-worldMapCheat.length).join() === worldMapCheat.join()) {
+            worldMapCheatCode();
+            cheatBuffer = [];
+            return;
+        }
+
 
         // Handle key actions for game-over
         if (document.getElementById("game-over").style.display === "flex") {
@@ -765,7 +830,19 @@
           Space: () => {
             applyCurrentModeUp();
           }
+        },
+        worldMap: {
+          ArrowLeft: () => {
+            moveSelectionLeft();
+          },
+          ArrowRight: () => {
+            moveSelectionRight();
+          },
+          Space: () => {
+            selectCurrentNode(activateCheat);
+          }
         }
+
       };
 
       // Minimal mobile support: Map a simple touch tap to a key event based on touch location.
