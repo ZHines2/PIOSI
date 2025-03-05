@@ -4,14 +4,23 @@
  * This file implements the battle engine for PIOSI. It includes:
  * - Unit movement and attack logic (including knockback, chain, and swarm abilities).
  * - Healing item (vittle) and mushroom pickup.
- * - Hero death handling that triggers the ankh stat effect.
+ * - Hero death handling that triggers persistent death effects and now persists through levels.
+ * - The ankh stat boost now enhances one of attack, hp, agility, or range.
  */
 
 import { applyKnockback } from './applyKnockback.js';
 
+// New class to represent a persistent death effect.
+export class PersistentDeath {
+  constructor() {
+    this.isDead = true;
+  }
+}
+
 export class BattleEngine {
   constructor(party, enemies, fieldRows, fieldCols, wallHP, logCallback, onLevelComplete, onGameOver) {
     // Keep all heroes in the party array.
+    // NOTE: Heroes with persistent death will not be respawned.
     this.party = party;
     this.enemies = enemies;
     this.rows = fieldRows;
@@ -22,13 +31,24 @@ export class BattleEngine {
     this.onGameOver = onGameOver;
 
     this.currentUnit = 0;
-    this.movePoints = this.party.length ? this.party[0].agility : 0;
+    // Only live heroes get move points.
+    this.movePoints = this.getLiveHeroes().length ? this.getLiveHeroes()[0].agility : 0;
     this.awaitingAttackDirection = false;
     this.transitioningLevel = false;
 
-    this.party.forEach(hero => hero.statusEffects = hero.statusEffects || {});
+    // Initialize status effects for all heroes and enemies.
+    this.party.forEach(hero => {
+      hero.statusEffects = hero.statusEffects || {};
+      // Persistent death marker may already exist.
+      if (!hero.persistentDeath) hero.persistentDeath = null;
+    });
     this.enemies.forEach(enemy => enemy.statusEffects = {});
     this.battlefield = this.initializeBattlefield();
+  }
+
+  // Returns the list of heroes that are not persistently dead.
+  getLiveHeroes() {
+    return this.party.filter(hero => !hero.persistentDeath);
   }
 
   initializeBattlefield() {
@@ -45,7 +65,8 @@ export class BattleEngine {
         }
       }
     }
-    this.party.forEach(hero => {
+    // Apply caprice and fate buffs only to live heroes.
+    this.getLiveHeroes().forEach(hero => {
       if (hero.caprice && hero.caprice > 0) {
         const stats = ['attack','range','agility','hp'];
         for (let i = 0; i < hero.caprice; i++) {
@@ -55,7 +76,7 @@ export class BattleEngine {
         }
       }
     });
-    this.party.forEach(hero => {
+    this.getLiveHeroes().forEach(hero => {
       if (hero.fate && hero.fate > 0) {
         const fates = [
           { stat: 'attack', change: 1 }, { stat: 'attack', change: -1 },
@@ -74,7 +95,8 @@ export class BattleEngine {
   }
 
   placeHeroes(field) {
-    this.party.forEach(hero => {
+    // Only place live heroes.
+    this.getLiveHeroes().forEach(hero => {
       let placed = false;
       for (let y = 0; y < this.rows && !placed; y++) {
         for (let x = 0; x < this.cols && !placed; x++) {
@@ -102,8 +124,9 @@ export class BattleEngine {
 
   placeHealingItem(field) {
     let emptyCells = [];
-    for (let y = 0; y < this.rows - 1; y++) for (let x = 0; x < this.cols; x++)
-      if (field[y][x] === '.') emptyCells.push({ x, y });
+    for (let y = 0; y < this.rows - 1; y++)
+      for (let x = 0; x < this.cols; x++)
+        if (field[y][x] === '.') emptyCells.push({ x, y });
     if (emptyCells.length) {
       const cell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
       field[cell.y][cell.x] = 'ౚ';
@@ -112,8 +135,9 @@ export class BattleEngine {
 
   placeMushroom(field) {
     let emptyCells = [];
-    for (let y = 0; y < this.rows - 1; y++) for (let x = 0; x < this.cols; x++)
-      if (field[y][x] === '.') emptyCells.push({ x, y });
+    for (let y = 0; y < this.rows - 1; y++)
+      for (let x = 0; x < this.cols; x++)
+        if (field[y][x] === '.') emptyCells.push({ x, y });
     if (emptyCells.length) {
       const cell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
       field[cell.y][cell.x] = 'ඉ';
@@ -129,7 +153,9 @@ export class BattleEngine {
         let cellClass = '';
         if (cellContent === 'ౚ' || cellContent === 'ඉ') cellClass += ' healing-item';
         if (this.enemies.some(enemy => enemy.symbol === cellContent)) cellClass += ' enemy';
-        if (this.party[this.currentUnit] && this.party[this.currentUnit].x === x && this.party[this.currentUnit].y === y)
+        if (this.getLiveHeroes()[this.currentUnit] &&
+            this.getLiveHeroes()[this.currentUnit].x === x &&
+            this.getLiveHeroes()[this.currentUnit].y === y)
           cellClass += this.awaitingAttackDirection ? ' attack-mode' : ' active';
         html += `<div class="cell${cellClass}">${cellContent}</div>`;
       }
@@ -145,7 +171,7 @@ export class BattleEngine {
 
   moveUnit(dx, dy) {
     if (this.awaitingAttackDirection || this.movePoints <= 0 || this.transitioningLevel) return;
-    const unit = this.party[this.currentUnit];
+    const unit = this.getLiveHeroes()[this.currentUnit];
     const newX = unit.x + dx, newY = unit.y + dy;
     if (!this.isWithinBounds(newX, newY)) return;
     if (this.battlefield[newY][newX] === 'ᚙ' || this.battlefield[newY][newX] === '█') {
@@ -169,7 +195,7 @@ export class BattleEngine {
         const stats = ['attack','range','agility','hp'];
         const randomStat = stats[Math.floor(Math.random() * stats.length)];
         unit[randomStat] += unit.spore;
-        this.logCallback(`${unit.name} gains ${unit.spore} boost to ${randomStat} (New ${randomStat}: ${unit[randomStat]})`);
+        this.logCallback(`${unit.name} gains ${unit.spore} boost to ${randomStat} (Now: ${unit[randomStat]})`);
       }
     }
     if (!this.isCellPassable(newX, newY)) return;
@@ -303,17 +329,16 @@ export class BattleEngine {
   }
 
   findClosestHero(enemy) {
-    if (this.party.length === 0) return null;
-    return this.party.reduce((closest, hero) => {
+    const liveHeroes = this.getLiveHeroes();
+    if (liveHeroes.length === 0) return null;
+    return liveHeroes.reduce((closest, hero) => {
       const dCurrent = Math.abs(closest.x - enemy.x) + Math.abs(closest.y - enemy.y);
       const dHero = Math.abs(hero.x - enemy.x) + Math.abs(hero.y - enemy.y);
       return (dHero < dCurrent ? hero : closest);
     });
   }
 
-  canMove(x, y) {
-    return this.isWithinBounds(x, y) && this.isCellPassable(x, y);
-  }
+  canMove(x, y) { return this.isWithinBounds(x, y) && this.isCellPassable(x, y); }
   
   enemyAttackAdjacent(enemy) {
     const directions = [[0, -1], [0, 1], [-1, 0], [1, 0]];
@@ -347,7 +372,7 @@ export class BattleEngine {
     if (this.transitioningLevel) return;
     this.applyStatusEffects();
     this.applySwarmDamage();
-    const liveHeroes = this.party.filter(hero => !hero.statusEffects.death);
+    const liveHeroes = this.getLiveHeroes();
     if (liveHeroes.length === 0) {
       this.logCallback('All heroes defeated! Game Over.');
       if (typeof this.onGameOver === 'function') this.onGameOver();
@@ -356,25 +381,24 @@ export class BattleEngine {
     this.awaitingAttackDirection = false;
     do {
       this.currentUnit++;
-      if (this.currentUnit >= this.party.length) {
+      if (this.currentUnit >= liveHeroes.length) {
         this.currentUnit = 0;
         this.logCallback('Enemy turn begins.');
         this.enemyTurn();
         this.applyStatusEffects();
-        if (this.party.filter(hero => !hero.statusEffects.death).length === 0) {
+        if (this.getLiveHeroes().length === 0) {
           this.logCallback('All heroes defeated! Game Over.');
           if (typeof this.onGameOver === 'function') this.onGameOver();
           return;
         }
       }
-    } while(this.party[this.currentUnit].statusEffects.death);
-    this.movePoints = this.party[this.currentUnit].agility;
-    this.logCallback(`Now it's ${this.party[this.currentUnit].name}'s turn.`);
+    } while(this.getLiveHeroes()[this.currentUnit].persistentDeath);
+    this.movePoints = this.getLiveHeroes()[this.currentUnit].agility;
+    this.logCallback(`Now it's ${this.getLiveHeroes()[this.currentUnit].name}'s turn.`);
   }
 
   applyStatusEffects() {
-    this.party.forEach(hero => {
-      if (hero.statusEffects.death) return;
+    this.getLiveHeroes().forEach(hero => {
       if (hero.statusEffects.burn && hero.statusEffects.burn.duration > 0) {
         this.logCallback(`${hero.name} takes ${hero.statusEffects.burn.damage} burn damage!`);
         hero.hp -= hero.statusEffects.burn.damage;
@@ -409,7 +433,7 @@ export class BattleEngine {
   applySwarmDamage() {
     const adjacentOffsets = [ { x: -1, y: 0 }, { x: 1, y: 0 }, { x: 0, y: -1 }, { x: 0, y: 1 },
       { x: -1, y: -1 }, { x: -1, y: 1 }, { x: 1, y: -1 }, { x: 1, y: 1 } ];
-    this.party.forEach(hero => {
+    this.getLiveHeroes().forEach(hero => {
       if (hero.swarm && typeof hero.swarm === 'number') {
         adjacentOffsets.forEach(offset => {
           const targetX = hero.x + offset.x, targetY = hero.y + offset.y;
@@ -430,16 +454,22 @@ export class BattleEngine {
     });
   }
 
+  // NEW: Handle hero death so it persists through levels, while triggering an ankh boost on live heroes.
   handleHeroDeath(hero) {
-    if (hero.statusEffects.death) return;
-    this.logCallback(`Hero ${hero.name} has fallen. Applying ankh effects...`);
+    if (hero.persistentDeath) return;
+    this.logCallback(`Hero ${hero.name} has fallen. Applying persistent death and ankh effects...`);
     hero.statusEffects.death = true;
+    hero.persistentDeath = new PersistentDeath();
     this.battlefield[hero.y][hero.x] = '.';
-    this.party = this.party.filter(h => !h.statusEffects.death);
-    this.party.forEach(h => {
+    // Instead of removing from the party array, persistent death is marked.
+    // When initializing heroes in a new level, only heroes without a persistentDeath marker are placed.
+    // Apply ankh effects to all live heroes.
+    this.getLiveHeroes().forEach(h => {
       if (h.ankh && typeof h.ankh === 'number' && h.ankh > 0) {
-        h.attack += h.ankh;
-        this.logCallback(`${h.name} gains an ankh boost of ${h.ankh} attack (Now: ${h.attack}).`);
+        const stats = ['attack', 'hp', 'agility', 'range'];
+        const randomStat = stats[Math.floor(Math.random() * stats.length)];
+        h[randomStat] += h.ankh;
+        this.logCallback(`${h.name} gains an ankh boost of ${h.ankh} ${randomStat} (Now: ${h[randomStat]}).`);
       }
     });
   }
