@@ -13,6 +13,7 @@
  * - The Jester now increases his "trick" stat with mode up.
  * - Added the new "ankh" stat for heroes. Heroes that have a nonzero "ankh" stat
  *   (for instance, Kemetic) may get their "ankh" stat increased during mode up.
+ * - Now including the "rise" stat for heroes like Greenjay.
  */
 
 /**
@@ -105,6 +106,9 @@ export function getModeUpBuff(chosenHero, level) {
     case "Kemetic":
       // Kemetic gets a boost in his ankh stat.
       return { ankh: 1 * buffIncrement };
+    case "Greenjay":
+      // Greenjay gains an increase to his rise stat.
+      return { rise: 1 * buffIncrement };
     default:
       // Fallback for heroes with no defined buff – boost a generic stat.
       return { ghis: 1 * buffIncrement };
@@ -144,6 +148,7 @@ export function applyModeUp(chosenHero, level, party, logCallback) {
   if (buff.bulk) messageParts.push(`+${buff.bulk} Bulk`);
   if (buff.psych) messageParts.push(`+${buff.psych} Psych`);
   if (buff.ankh) messageParts.push(`+${buff.ankh} Ankh`);
+  if (buff.rise) messageParts.push(`+${buff.rise} Rise`);
 
   const message = messageParts.length > 0
     ? `${chosenHero.name} empowers the party with ${messageParts.join(", ")}!`
