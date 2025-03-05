@@ -47,7 +47,7 @@ export class BattleEngine {
       // Initialize rise stat if not set.
       if (typeof hero.rise !== 'number') hero.rise = 0;
     });
-    this.enemies.forEach(enemy => enemy.statusEffects = {};
+    this.enemies.forEach(enemy => enemy.statusEffects = {});
     this.battlefield = this.initializeBattlefield();
   }
 
