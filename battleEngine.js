@@ -11,10 +11,21 @@
  *
  * New in this version:
  * - Healing item (vittle) functionality has been added.
+ *   Healing items are represented by the symbol 'ౚ' on the battlefield.
+ *   If a hero moves onto a cell containing a vittle, the hero consumes it and
+ *   recovers a fixed amount of HP.
  * - Healing mushroom functionality has been added.
- * - Wizard chain ability updated.
- * - New ankh stat functionality (boosting surviving heroes when one dies).
- * - NEW: Adjustments to turn index logic so that defeated heroes do not disrupt hero turn order.
+ *   Mushrooms are represented by the symbol 'ඉ' on the battlefield.
+ *
+ * - Wizard chain ability updated:
+ *   The wizard's "chain" stat now is converted into an effective damage multiplier
+ *   using the formula:
+ *       effectiveMultiplier = 1 - Math.exp(-chain / 10)
+ *   For example, starting at chain = 5, the multiplier is ≈0.393 (39.3% of base damage),
+ *   and a mode up increase to chain = 6 raises it to ≈0.451. This new metric provides a
+ *   balanced, non-linear scaling to justify the numbering.
+ *
+ * For detailed guidelines on creating new levels, refer to the Level Creation Rubric in docs/level-creation.md.
  */
 
 import { applyKnockback } from './applyKnockback.js';
@@ -427,7 +438,16 @@ export class BattleEngine {
           this.logCallback(`${enemy.name} is defeated!`);
           this.battlefield[targetY][targetX] = '.';
           this.enemies = this.enemies.filter(e => e !== enemy);
-          // Ankh effect is not applicable for enemy defeats.
+
+          // Check if the hero has the "bulk" stat and raise a random stat.
+          if (unit.bulk && unit.bulk > 0) {
+            const stats = ['attack', 'range', 'agility', 'hp'];
+            const randomStat = stats[Math.floor(Math.random() * stats.length)];
+            unit[randomStat] += unit.bulk;
+            this.logCallback(
+              `${unit.name}'s bulk raises their ${randomStat} by ${unit.bulk}! (New ${randomStat}: ${unit[randomStat]})`
+            );
+          }
         }
         this.awaitingAttackDirection = false;
         await this.shortPause();
@@ -591,11 +611,8 @@ export class BattleEngine {
         
         if (targetHero.hp <= 0) {
           this.logCallback(`${targetHero.name} is defeated!`);
-          // NEW: When a hero dies, apply any ankh effects before removing the hero.
-          this.applyAnkhEffect(targetHero.name);
           this.battlefield[targetHero.y][targetHero.x] = '.';
           this.party = this.party.filter(h => h !== targetHero);
-          // Ensure currentUnit remains within bounds after filtering.
           if (this.currentUnit >= this.party.length) {
             this.currentUnit = 0;
           }
@@ -633,8 +650,7 @@ export class BattleEngine {
       if (typeof this.onGameOver === 'function') this.onGameOver();
       return;
     }
-    
-    // NEW: Validate currentUnit to ensure it's within bounds after heroes have been removed.
+
     if (this.currentUnit >= this.party.length) {
       this.currentUnit = 0;
     }
@@ -773,19 +789,5 @@ export class BattleEngine {
         this.onLevelComplete();
       }
     }, 1500);
-  }
-
-  // NEW: New helper method to apply the ankh effect when a hero dies.
-  // For each surviving hero that has an ankh stat, boost their attack by the ankh value.
-  applyAnkhEffect(defeatedHeroName) {
-    this.logCallback(`Hero ${defeatedHeroName} has fallen. Applying ankh effects...`);
-    this.party.forEach(hero => {
-      if (hero.ankh && typeof hero.ankh === 'number' && hero.ankh > 0) {
-        hero.attack += hero.ankh;
-        this.logCallback(
-          `${hero.name} gains an ankh boost of ${hero.ankh} attack (New attack: ${hero.attack}).`
-        );
-      }
-    });
   }
 }
