@@ -443,7 +443,7 @@ export class BattleEngine {
     this.awaitingAttackDirection = false;
     do {
       this.currentUnit++;
-      if (this.currentUnit >= liveHeroes.length) {
+      if (this.currentUnit >= this.party.length) {
         this.currentUnit = 0;
         this.logCallback('Enemy turn begins.');
         this.enemyTurn();
@@ -454,9 +454,9 @@ export class BattleEngine {
           return;
         }
       }
-    } while(this.getLiveHeroes()[this.currentUnit].persistentDeath);
-    this.movePoints = this.getLiveHeroes()[this.currentUnit].agility;
-    this.logCallback(`Now it's ${this.getLiveHeroes()[this.currentUnit].name}'s turn.`);
+    } while(this.party[this.currentUnit].persistentDeath);
+    this.movePoints = this.party[this.currentUnit].agility;
+    this.logCallback(`Now it's ${this.party[this.currentUnit].name}'s turn.`);
   }
 
   applyStatusEffects() {
