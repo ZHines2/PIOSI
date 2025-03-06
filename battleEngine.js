@@ -315,6 +315,16 @@ export class BattleEngine {
             this.applyChainDamage(enemy, initialChainDamage, effectiveMultiplier, new Set());
           }
         }
+   // Check if the hero has the "bulk" stat and raise a random stat.
+          if (unit.bulk && unit.bulk > 0) {
+            const stats = ['attack', 'range', 'agility', 'hp'];
+            const randomStat = stats[Math.floor(Math.random() * stats.length)];
+            unit[randomStat] += unit.bulk;
+            this.logCallback(
+              `${unit.name}'s bulk raises their ${randomStat} by ${unit.bulk}! (New ${randomStat}: ${unit[randomStat]})`
+            );
+          }
+        }
         if (enemy.hp <= 0) {
           this.logCallback(`${enemy.name} is defeated!`);
           this.battlefield[targetY][targetX] = '.';
@@ -372,18 +382,7 @@ export class BattleEngine {
       }
     }
   }
-
-   // Check if the hero has the "bulk" stat and raise a random stat.
-          if (unit.bulk && unit.bulk > 0) {
-            const stats = ['attack', 'range', 'agility', 'hp'];
-            const randomStat = stats[Math.floor(Math.random() * stats.length)];
-            unit[randomStat] += unit.bulk;
-            this.logCallback(
-              `${unit.name}'s bulk raises their ${randomStat} by ${unit.bulk}! (New ${randomStat}: ${unit[randomStat]})`
-            );
-          }
-        }
-
+  
   enemyTurn() {
     if (this.transitioningLevel) return;
     this.enemies.forEach(enemy => {
