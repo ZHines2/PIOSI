@@ -46,8 +46,14 @@ export class BattleEngine {
       if (!hero.persistentDeath) hero.persistentDeath = null;
       // Initialize rise stat if not set.
       if (typeof hero.rise !== 'number') hero.rise = 0;
+       // Initialize dodge stat if not set.
+      if (typeof hero.dodge !== 'number') hero.dodge = 0;
     });
-    this.enemies.forEach(enemy => enemy.statusEffects = {});
+    this.enemies.forEach(enemy => {
+      enemy.statusEffects = {};
+      // Initialize dodge stat if not set.
+      if (typeof enemy.dodge !== 'number') enemy.dodge = 0;
+    });
     this.battlefield = this.initializeBattlefield();
   }
 
@@ -263,6 +269,17 @@ export class BattleEngine {
       }
       const enemy = this.enemies.find(e => e.x === targetX && e.y === targetY);
       if (enemy) {
+         // DODGE CHECK START
+        let dodgeChance = enemy.dodge / (100 + enemy.dodge); // Diminishing returns
+        dodgeChance = Math.min(dodgeChance, 0.5); // Cap dodge chance at 50%
+        if (Math.random() < dodgeChance) {
+          this.logCallback(`${enemy.name} dodges ${unit.name}'s attack!`);
+          this.awaitingAttackDirection = false;
+          await this.shortPause();
+          this.nextTurn();
+          return; // Skip the rest of the attack logic
+        }
+        // DODGE CHECK END
         enemy.hp -= unit.attack;
         this.logCallback(`${unit.name} attacks ${enemy.name} for ${unit.attack} damage! (HP left: ${enemy.hp})`);
         if (unit.trick > 0) {
@@ -415,6 +432,14 @@ export class BattleEngine {
       const tx = enemy.x + dx, ty = enemy.y + dy;
       const targetHero = this.party.find(hero => hero.x === tx && hero.y === ty);
       if (targetHero) {
+         // DODGE CHECK START
+        let dodgeChance = targetHero.dodge / (100 + targetHero.dodge); // Diminishing returns
+        dodgeChance = Math.min(dodgeChance, 0.5); // Cap dodge chance at 50%
+        if (Math.random() < dodgeChance) {
+          this.logCallback(`${targetHero.name} dodges ${enemy.name}'s attack!`);
+          return; // Skip the rest of the attack logic
+        }
+        // DODGE CHECK END
         if (targetHero.armor && targetHero.armor > 0) {
           targetHero.armor--;
           this.logCallback(`${enemy.name} attacks ${targetHero.name} but their armor absorbs it (Remaining Armor: ${targetHero.armor})`);
