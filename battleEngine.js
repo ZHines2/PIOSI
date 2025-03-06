@@ -326,6 +326,13 @@ export class BattleEngine {
           this.logCallback(`${enemy.name} is defeated!`);
           this.battlefield[targetY][targetX] = '.';
           this.enemies = this.enemies.filter(e => e !== enemy);
+          // Bulk stat check: Raise a random stat when an enemy is defeated
+          if (unit.bulk && unit.bulk > 0) {
+            const stats = ['attack', 'range', 'agility', 'hp'];
+            const randomStat = stats[Math.floor(Math.random() * stats.length)];
+            unit[randomStat] += unit.bulk;
+            this.logCallback(`${unit.name}'s bulk raises their ${randomStat} by ${unit.bulk}! (New ${randomStat}: ${unit[randomStat]})`);
+          }
         }
         this.awaitingAttackDirection = false;
         await this.shortPause();
