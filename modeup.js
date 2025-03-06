@@ -111,6 +111,9 @@ export function getModeUpBuff(chosenHero, level) {
     case "Greenjay":
       // Greenjay gains an increase to his rise stat.
       return { rise: 1 * buffIncrement };
+    case "Sysiphuge":
+      // Sysiphuge's dodge increases.
+      return { dodge: 1 * buffIncrement };
     default:
       // Fallback for heroes with no defined buff – boost a generic stat.
       return { ghis: 1 * buffIncrement };
@@ -151,6 +154,7 @@ export function applyModeUp(chosenHero, level, party, logCallback) {
   if (buff.psych) messageParts.push(`+${buff.psych} Psych`);
   if (buff.ankh) messageParts.push(`+${buff.ankh} Ankh`);
   if (buff.rise) messageParts.push(`+${buff.rise} Rise`);
+  if (buff.dodge) messageParts.push(`+${buff.dodge} Dodge`);
 
   const message = messageParts.length > 0
     ? `${chosenHero.name} empowers the party with ${messageParts.join(", ")}!`
