@@ -237,5 +237,15 @@ export const heroes = [
     agility: 4,
     hp: 30,
     rise: 5 // new rise stat
+  },
+    // New hero "Sysiphuge"
+  {
+    name: "Sysiphuge",
+    symbol: "₾",
+    attack: 4,
+    range: 1,
+    agility: 4,
+    hp: 16,
+    dodge: 4
   }
 ];
