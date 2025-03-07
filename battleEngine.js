@@ -523,6 +523,7 @@ export class BattleEngine {
         if (enemy.hp <= 0) {
           this.logCallback(`${enemy.name} died from burn damage!`);
           this.battlefield[enemy.y][enemy.x] = '.';
+          this.enemies = this.enemies.filter(e => e !== enemy);
         }
       }
       if (enemy.statusEffects.sluj && enemy.statusEffects.sluj.duration > 0) {
@@ -543,6 +544,8 @@ export class BattleEngine {
         if (enemy.hp <= 0) {
           this.logCallback(`${enemy.name} died from slüj damage!`);
           this.battlefield[enemy.y][enemy.x] = '.';
+          // Remove enemy from list so they don't reappear next turn with negative HP.
+          this.enemies = this.enemies.filter(e => e !== enemy);
         }
       }
     });
