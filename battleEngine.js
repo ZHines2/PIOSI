@@ -12,6 +12,7 @@
  */
 
 import { applyKnockback } from './applyKnockback.js';
+import { applySlujEffect } from './sluj.js';
 
 // Class to represent a persistent death effect.
 export class PersistentDeath {
@@ -46,7 +47,7 @@ export class BattleEngine {
       if (!hero.persistentDeath) hero.persistentDeath = null;
       // Initialize rise stat if not set.
       if (typeof hero.rise !== 'number') hero.rise = 0;
-       // Initialize dodge stat if not set.
+      // Initialize dodge stat if not set.
       if (typeof hero.dodge !== 'number') hero.dodge = 0;
     });
     this.enemies.forEach(enemy => {
@@ -139,8 +140,9 @@ export class BattleEngine {
   placeHealingItem(field) {
     let emptyCells = [];
     for (let y = 0; y < this.rows - 1; y++) {
-      for (let x = 0; x < this.cols; x++)
+      for (let x = 0; x < this.cols; x++) {
         if (field[y][x] === '.') emptyCells.push({ x, y });
+      }
     }
     if (emptyCells.length) {
       const cell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
@@ -151,8 +153,9 @@ export class BattleEngine {
   placeMushroom(field) {
     let emptyCells = [];
     for (let y = 0; y < this.rows - 1; y++) {
-      for (let x = 0; x < this.cols; x++)
+      for (let x = 0; x < this.cols; x++) {
         if (field[y][x] === '.') emptyCells.push({ x, y });
+      }
     }
     if (emptyCells.length) {
       const cell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
@@ -171,8 +174,9 @@ export class BattleEngine {
         if (this.enemies.some(enemy => enemy.symbol === cellContent)) cellClass += ' enemy';
         if (this.getLiveHeroes()[this.currentUnit] &&
             this.getLiveHeroes()[this.currentUnit].x === x &&
-            this.getLiveHeroes()[this.currentUnit].y === y)
+            this.getLiveHeroes()[this.currentUnit].y === y) {
           cellClass += this.awaitingAttackDirection ? ' attack-mode' : ' active';
+        }
         html += `<div class="cell${cellClass}">${cellContent}</div>`;
       }
       html += '</div>';
@@ -315,17 +319,11 @@ export class BattleEngine {
             this.applyChainDamage(enemy, initialChainDamage, effectiveMultiplier, new Set());
           }
         }
+        // Check for enemy defeat (including from slüj damage applied earlier)
         if (enemy.hp <= 0) {
-          this.logCallback(`${enemy.name} is defeated!`);
-          this.battlefield[targetY][targetX] = '.';
+          this.logCallback(`${enemy.name} is defeated by its slüj effect!`);
+          this.battlefield[enemy.y][enemy.x] = '.';
           this.enemies = this.enemies.filter(e => e !== enemy);
-          // Bulk stat check: Raise a random stat when an enemy is defeated
-          if (unit.bulk && unit.bulk > 0) {
-            const stats = ['attack', 'range', 'agility', 'hp'];
-            const randomStat = stats[Math.floor(Math.random() * stats.length)];
-            unit[randomStat] += unit.bulk;
-            this.logCallback(`${unit.name}'s bulk raises their ${randomStat} by ${unit.bulk}! (New ${randomStat}: ${unit[randomStat]})`);
-          }
         }
         this.awaitingAttackDirection = false;
         await this.shortPause();
@@ -385,6 +383,20 @@ export class BattleEngine {
     this.enemies.forEach(enemy => {
       for (let moves = 0; moves < enemy.agility; moves++) this.moveEnemy(enemy);
       this.enemyAttackAdjacent(enemy);
+      
+      // Apply the slüj effect for each enemy.
+      if (enemy.statusEffects.sluj) {
+        applySlujEffect(enemy, this.logCallback);
+      }
+      
+      // Kill logic for enemies affected by slüj damage.
+      if (enemy.hp <= 0) {
+        this.logCallback(`${enemy.name} is defeated by its slüj effect!`);
+        this.battlefield[enemy.y][enemy.x] = '.';
+        this.enemies = this.enemies.filter(e => e !== enemy);
+        return;
+      }
+      
       if (Array.isArray(enemy.dialogue) && enemy.dialogue.length > 0) {
         this.logCallback(`${enemy.name} says: "${enemy.dialogue[Math.floor(Math.random() * enemy.dialogue.length)]}"`);
       }
@@ -519,28 +531,7 @@ export class BattleEngine {
           this.enemies = this.enemies.filter(e => e !== enemy);
         }
       }
-      if (enemy.statusEffects.sluj && enemy.statusEffects.sluj.duration > 0) {
-        enemy.statusEffects.sluj.counter++;
-        let damage = 0, trigger = false;
-        const level = enemy.statusEffects.sluj.level;
-        if (level === 1 && enemy.statusEffects.sluj.counter % 4 === 0) { trigger = true; damage = 1; }
-        else if (level === 2 && enemy.statusEffects.sluj.counter % 3 === 0) { trigger = true; damage = 1; }
-        else if (level === 3 && enemy.statusEffects.sluj.counter % 2 === 0) { trigger = true; damage = 1; }
-        else if (level === 4) { trigger = true; damage = 1; }
-        else if (level === 5) { trigger = true; damage = 2; }
-        else if (level >= 6) { trigger = true; damage = 3; }
-        if (trigger) {
-          this.logCallback(`${enemy.name} takes ${damage} slüj damage!`);
-          enemy.hp -= damage;
-        }
-        enemy.statusEffects.sluj.duration--;
-        if (enemy.hp <= 0) {
-          this.logCallback(`${enemy.name} died from slüj damage!`);
-          this.battlefield[enemy.y][enemy.x] = '.';
-          // Remove enemy from list so they don't reappear next turn with negative HP.
-          this.enemies = this.enemies.filter(e => e !== enemy);
-        }
-      }
+      // The slüj effect is now handled via the imported applySlujEffect() in enemyTurn().
     });
   }
 
