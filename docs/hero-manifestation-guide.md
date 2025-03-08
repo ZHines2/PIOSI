@@ -32,6 +32,7 @@ Some heroes have special properties that give them unique abilities. Here are so
 - `psych`: The hero can boost ally stats.
 - `ankh`: The hero can provide boosts on hero deaths.
 - `rise`: The hero can revive with HP equal to the rise value.
+- `bomba`: When a hero with a bomba stat is adjacent to an enemy attacked by another hero, the enemy takes additional damage equal to the bomba stat.
 
 ## Best Practices
 
@@ -249,6 +250,21 @@ Here are some examples of hero configurations:
   hp: 30,
   rise: 5, // New rise stat.
   description: "Greenjay's rise stat allows him to revive with HP equal to the rise value, making him a resilient hero who can continue fighting even after falling."
+}
+```
+
+### Example 14: Bombador
+
+```javascript
+{
+  name: "Bombador",
+  symbol: "❦",
+  attack: 2,
+  range: 1,
+  agility: 6,
+  hp: 20,
+  bomba: 5, // Bomba stat, that does bonus damage to adjacent enemies that are attacked by another hero.
+  description: "Bombador's bomba stat allows him to deal additional damage to enemies adjacent to those attacked by other heroes, making him a valuable asset in coordinated attacks."
 }
 ```
 
