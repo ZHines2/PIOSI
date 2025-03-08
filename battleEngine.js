@@ -24,7 +24,7 @@ export class PersistentDeath {
 export class BattleEngine {
   constructor(party, enemies, fieldRows, fieldCols, wallHP, logCallback, onLevelComplete, onGameOver) {
     // Keep all heroes in the party array.
-    // NOTE: Heroes with persistent death will not be respawned unless they have a "rise" stat.
+    // NOTE: Heroes with persistent death will no longer be referenced in the battlefield.
     this.party = party;
     this.enemies = enemies;
     this.rows = fieldRows;
@@ -253,7 +253,8 @@ export class BattleEngine {
     for (let i = 1; i <= unit.range; i++) {
       const targetX = unit.x + dx * i, targetY = unit.y + dy * i;
       if (!this.isWithinBounds(targetX, targetY)) break;
-      const ally = this.party.find(h => h.x === targetX && h.y === targetY && h !== unit);
+      // Use only live heroes for targeting; dead heroes never register.
+      const ally = this.getLiveHeroes().find(h => h.x === targetX && h.y === targetY && h !== unit);
       if (ally) {
         if (unit.heal && unit.heal > 0) {
           ally.hp += unit.heal;
@@ -266,6 +267,15 @@ export class BattleEngine {
         } else {
           this.logCallback(`${unit.name} attacks ${ally.name} but nothing happens.`);
         }
+        this.awaitingAttackDirection = false;
+        await this.shortPause();
+        this.nextTurn();
+        return;
+      }
+      // If a hero is found at the targeted cell but is dead, treat it as an empty cell.
+      const deadHero = this.party.find(h => h.x === targetX && h.y === targetY && h.persistentDeath);
+      if (deadHero) {
+        this.logCallback(`${unit.name} attacks an empty cell where ${deadHero.name} once stood.`);
         this.awaitingAttackDirection = false;
         await this.shortPause();
         this.nextTurn();
@@ -326,7 +336,7 @@ export class BattleEngine {
         ];
         adjacentOffsets.forEach(offset => {
           const adjX = enemy.x + offset.x, adjY = enemy.y + offset.y;
-          const adjacentHero = this.party.find(h => h.x === adjX && h.y === adjY && h.bomba && h.bomba > 0);
+          const adjacentHero = this.getLiveHeroes().find(h => h.x === adjX && h.y === adjY && h.bomba && h.bomba > 0);
           if (adjacentHero) {
             enemy.hp -= adjacentHero.bomba;
             this.logCallback(`${adjacentHero.name}'s bomba deals ${adjacentHero.bomba} additional damage to ${enemy.name}! (HP left: ${enemy.hp})`);
@@ -460,16 +470,17 @@ export class BattleEngine {
   
   enemyAttackAdjacent(enemy) {
     const directions = [[0, -1], [0, 1], [-1, 0], [1, 0]];
+    // Use only live heroes when determining targets.
     directions.forEach(([dx, dy]) => {
       const tx = enemy.x + dx, ty = enemy.y + dy;
-      const targetHero = this.party.find(hero => hero.x === tx && hero.y === ty);
+      const targetHero = this.getLiveHeroes().find(hero => hero.x === tx && hero.y === ty);
       if (targetHero) {
          // DODGE CHECK START
-        let dodgeChance = targetHero.dodge / (100 + targetHero.dodge); // Diminishing returns
-        dodgeChance = Math.min(dodgeChance, 0.5); // Cap dodge chance at 50%
+        let dodgeChance = targetHero.dodge / (100 + targetHero.dodge);
+        dodgeChance = Math.min(dodgeChance, 0.5);
         if (Math.random() < dodgeChance) {
           this.logCallback(`${targetHero.name} dodges ${enemy.name}'s attack!`);
-          return; // Skip the rest of the attack logic
+          return;
         }
         // DODGE CHECK END
         if (targetHero.armor && targetHero.armor > 0) {
@@ -544,7 +555,7 @@ export class BattleEngine {
           this.enemies = this.enemies.filter(e => e !== enemy);
         }
       }
-      // The slüj effect is now handled via the imported applySlujEffect() in enemyTurn().
+      // The slüj effect is handled via the imported applySlujEffect() in enemyTurn().
     });
   }
 
@@ -576,9 +587,7 @@ export class BattleEngine {
     });
   }
 
-  // NEW: Handle hero death with consideration for the "rise" stat.
-  // If a hero has a nonzero rise stat, they are resurrected on the next level with HP equal to the rise value,
-  // the rise stat is reset to zero, and ankh boosts are applied to all live heroes.
+  // Updated handleHeroDeath method to ensure a dead hero's cell is cleared.
   handleHeroDeath(hero) {
     if (hero.rise > 0) {
       this.logCallback(`Hero ${hero.name} falls but rises with ${hero.rise} HP!`);
@@ -591,7 +600,10 @@ export class BattleEngine {
     this.logCallback(`Hero ${hero.name} has fallen permanently. Applying persistent death and ankh effects...`);
     hero.statusEffects.death = true;
     hero.persistentDeath = new PersistentDeath();
+    // Clear the cell so the dead hero is no longer represented on the battlefield.
     this.battlefield[hero.y][hero.x] = '.';
+    // Optionally, remove the hero from future selections.
+    // this.party = this.party.filter(h => h !== hero);
     this.applyAnkhBoost();
   }
 
