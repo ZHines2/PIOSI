@@ -247,5 +247,15 @@ export const heroes = [
     agility: 4,
     hp: 16,
     dodge: 4
+  },
+   // New hero "Bombador"
+  {
+    name: "Bombador",
+    symbol: "❦",
+    attack: 2,
+    range: 1,
+    agility: 6,
+    hp: 20,
+    bomba: 5 // bomba stat, that does bonus damages to ajacent enemies that are attacked by another hero
   }
 ];
