@@ -319,6 +319,19 @@ export class BattleEngine {
             this.applyChainDamage(enemy, initialChainDamage, effectiveMultiplier, new Set());
           }
         }
+        // Check for adjacent heroes with a non-zero "bomba" stat
+        const adjacentOffsets = [
+          { x: -1, y: 0 }, { x: 1, y: 0 },
+          { x: 0, y: -1 }, { x: 0, y: 1 }
+        ];
+        adjacentOffsets.forEach(offset => {
+          const adjX = enemy.x + offset.x, adjY = enemy.y + offset.y;
+          const adjacentHero = this.party.find(h => h.x === adjX && h.y === adjY && h.bomba && h.bomba > 0);
+          if (adjacentHero) {
+            enemy.hp -= adjacentHero.bomba;
+            this.logCallback(`${adjacentHero.name}'s bomba deals ${adjacentHero.bomba} additional damage to ${enemy.name}! (HP left: ${enemy.hp})`);
+          }
+        });
         // Check for enemy defeat (including from slüj damage applied earlier)
         if (enemy.hp <= 0) {
           this.logCallback(`${enemy.name} is defeated by its slüj effect!`);
