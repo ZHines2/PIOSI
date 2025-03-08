@@ -189,7 +189,8 @@
               psych: hero.psych || 0,
               ankh: hero.ankh || 0,
               rise: hero.rise || 0,
-              dodge: hero.dodge || 0
+              dodge: hero.dodge || 0,
+              bomba: hero.bomba || 0
             };
           }
 
@@ -248,6 +249,7 @@
           Ankh: ${stats.ankh} |
           Rise: ${stats.rise} |
           Dodge: ${stats.dodge} |
+          Bomba: ${stats.bomba} |
         </p>`;
         // Indicate selection status
         display += `<p>${
@@ -430,6 +432,11 @@
         lines.push(
           `<p>Dodge: ${stats.dodge} ${
             buff.dodge ? `<span class="stat-up">+${buff.dodge}</span>` : ""
+          }</p>`
+        );
+        lines.push(
+          `<p>Bomba: ${stats.bomba} ${
+            buff.bomba ? `<span class="stat-up">+${buff.bomba}</span>` : ""
           }</p>`
         );
         document.getElementById("mode-up-hero-display").innerHTML =
