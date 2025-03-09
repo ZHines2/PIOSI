@@ -1,18 +1,14 @@
 /**
  * summitMode.js
  *
- * Revised as a turn-by-turn simulation.
- * In this simulation:
- * - All heroes are randomly placed on a 50×50 grid.
- * - Each hero starts on its own team.
- * - The simulation processes one hero turn at a time.
- *   • For each hero (if alive), if an enemy (hero on a different team) is within attack range (default 1), they attack.
- *   • Otherwise, the hero moves one step toward the closest enemy.
- * - When a hero defeats another (reducing its HP to 0 or below), the defeated hero is restored
- *   to its original spawn HP and immediately joins the attacker's team.
- * - Victory is declared when one team controls all heroes.
+ * Revised as a turn-by-turn simulation where each hero’s turn is processed in order based on highest agility.
+ * During a hero's turn, the hero can move up to a number of spaces equal to its agility.
+ * At any step, if an enemy is within attack range (default attack range; hero.range), the hero attacks for its attack stat value.
+ * When a hero defeats an enemy (reducing its HP to 0 or below), the defeated hero’s HP is restored to its original value
+ * and immediately joins the attacker's team.
+ * Victory is declared when one team controls all heroes.
  *
- * After each hero turn, the grid is rendered on a fixed 800×600 canvas so you see the change before the next turn.
+ * The simulation renders the grid on an 800×600 canvas so you can see each individual move before processing the next turn.
  */
 
 import { heroes as allHeroes } from "./heroes.js";
@@ -23,6 +19,7 @@ export class SummitMode {
     this.onGameOver = onGameOver;
     this.onVictory = onVictory;
     this.logLines = [];
+    // Log callback that also updates the UI.
     this.logCallback = (message) => {
       this.logLines.push(message);
       if (this.logLines.length > 50) this.logLines.shift();
@@ -32,7 +29,7 @@ export class SummitMode {
       }
     };
 
-    // Create a copy of heroes with random initial positions.
+    // Initialize heroes with random positions and set their attributes.
     this.allHeroes = allHeroes.map((hero, index) => {
       const spawnHp = hero.hp || 100;
       return {
@@ -42,19 +39,22 @@ export class SummitMode {
         hp: spawnHp,
         originalHp: spawnHp,
         maxHp: hero.maxHp || spawnHp,
-        team: index, // each hero starts on its own team
+        team: index, // Each hero starts on its own team.
         defeatedBy: null,
         attack: hero.attack || 10,
+        // 'range' represents the attack range; default to 1.
         range: hero.range || 1,
+        // 'agility' determines both turn order and how many spaces the hero can move in one turn.
+        agility: hero.agility || 1,
         name: hero.name,
         symbol: hero.symbol
       };
     });
 
-    // Prepare turn tracking: we'll process one hero turn at a time.
-    this.turnIndex = 0;
-    this.turnOrder = []; // will be computed at each full round.
-    this.delay = 500; // delay (in ms) between turns
+    // Prepare turn tracking.
+    this.turnOrder = []; // Will be computed at each full round.
+    this.turnIndex = 0;  // Index in the turn order.
+    this.delay = 500;    // Delay (in ms) between turns.
   }
 
   /**
@@ -65,27 +65,27 @@ export class SummitMode {
     this.updateTurnOrder();
     this.drawCanvas();
     this.printStatus();
-    this.processTurn(); 
+    this.processTurn();
   }
 
   /**
-   * Update the turn order (sorted by hero order in the array of alive heroes).
+   * Update the turn order by sorting all alive heroes in descending order of agility.
    */
   updateTurnOrder() {
-    this.turnOrder = this.allHeroes.filter(hero => hero.hp > 0);
-    // Optional sorting (e.g. by agility) could be added here.
+    this.turnOrder = this.allHeroes.filter(hero => hero.hp > 0)
+      .sort((a, b) => b.agility - a.agility);
     this.turnIndex = 0;
   }
 
   /**
-   * Process a single hero turn and then update the grid.
-   * Uses a recursive setTimeout to schedule the next turn.
+   * Process a single hero's turn.
+   * The current hero can move up to hero.agility spaces. At each step, if an enemy is in range, the hero attacks.
+   * After processing the turn, update the grid and schedule the next turn.
    */
   processTurn() {
-    // Refresh the turn order if we've processed all heroes in the round.
+    // Refresh turn order when a round is complete.
     if (this.turnIndex >= this.turnOrder.length) {
       this.updateTurnOrder();
-      // If no hero is alive, end simulation.
       if (this.turnOrder.length === 0) {
         this.logCallback("No alive heroes remain. Ending simulation.");
         if (this.onGameOver) this.onGameOver();
@@ -94,15 +94,13 @@ export class SummitMode {
     }
 
     let hero = this.turnOrder[this.turnIndex];
-
-    // If hero is dead (could happen mid-round), skip.
     if (hero.hp <= 0) {
       this.turnIndex++;
       this.scheduleNextTurn();
       return;
     }
     
-    // Determine enemies: heroes on a different team that are alive.
+    // Determine enemies: heroes on a different team who are alive.
     const enemies = this.allHeroes.filter(h => h.team !== hero.team && h.hp > 0);
     if (enemies.length === 0) {
       this.logCallback(`Victory: Team ${hero.team} now controls all heroes!`);
@@ -110,40 +108,48 @@ export class SummitMode {
       return;
     }
     
-    // Find the closest enemy using Manhattan distance.
-    let target = null;
-    let minDist = Infinity;
-    for (let enemy of enemies) {
-      const dist = Math.abs(hero.x - enemy.x) + Math.abs(hero.y - enemy.y);
-      if (dist < minDist) {
-        minDist = dist;
-        target = enemy;
+    // Determine number of moves available this turn based on agility.
+    let movesLeft = hero.agility;
+    let acted = false; // Whether the hero has attacked.
+
+    // Process moves one step at a time.
+    while (movesLeft > 0 && !acted) {
+      // Recompute target each step.
+      let target = null;
+      let minDist = Infinity;
+      for (let enemy of enemies) {
+        const dist = Math.abs(hero.x - enemy.x) + Math.abs(hero.y - enemy.y);
+        if (dist < minDist) {
+          minDist = dist;
+          target = enemy;
+        }
       }
-    }
-    
-    // Process attack or move.
-    const attackRange = hero.range;
-    if (minDist <= attackRange) {
-      this.logCallback(`${hero.name} (Team ${hero.team}) attacks ${target.name} (Team ${target.team}) for ${hero.attack} damage.`);
-      target.hp -= hero.attack;
-      if (target.hp <= 0) {
-        this.logCallback(`${target.name} is defeated by ${hero.name} and joins Team ${hero.team}. HP restored to ${target.originalHp}.`);
-        target.team = hero.team;
-        target.hp = target.originalHp;
-        target.defeatedBy = hero.name;
-      }
-    } else {
-      // Move one step toward the target without collision checking.
-      let dx = target.x - hero.x;
-      let dy = target.y - hero.y;
-      if (Math.abs(dx) >= Math.abs(dy)) {
-        hero.x += dx > 0 ? 1 : -1;
+      
+      // If target is within attack range, attack and end turn.
+      if (minDist <= hero.range) {
+        this.logCallback(`${hero.name} (Team ${hero.team}) attacks ${target.name} (Team ${target.team}) for ${hero.attack} damage.`);
+        target.hp -= hero.attack;
+        acted = true;
+        if (target.hp <= 0) {
+          this.logCallback(`${target.name} is defeated by ${hero.name} and joins Team ${hero.team}. HP restored to ${target.originalHp}.`);
+          target.team = hero.team;
+          target.hp = target.originalHp;
+          target.defeatedBy = hero.name;
+        }
       } else {
-        hero.y += dy > 0 ? 1 : -1;
+        // Move one step toward target.
+        let dx = target.x - hero.x;
+        let dy = target.y - hero.y;
+        if (Math.abs(dx) >= Math.abs(dy)) {
+          hero.x += dx > 0 ? 1 : -1;
+        } else {
+          hero.y += dy > 0 ? 1 : -1;
+        }
+        this.logCallback(`${hero.name} moves to (${hero.x}, ${hero.y}).`);
+        movesLeft--;
       }
-      this.logCallback(`${hero.name} moves to (${hero.x}, ${hero.y}).`);
     }
-    
+
     this.printStatus();
     this.drawCanvas();
     this.turnIndex++;
@@ -182,13 +188,13 @@ export class SummitMode {
     const ctx = canvas.getContext("2d");
     ctx.clearRect(0, 0, canvas.width, canvas.height);
   
-    // Define tile dimensions for isometric view.
+    // Define tile dimensions.
     const tileWidth = 32;
     const tileHeight = 16;
-    // Overall grid dimensions in isometric projection.
+    // Compute overall grid size in isometric projection.
     const isoGridWidth = (this.mapSize + this.mapSize) * tileWidth / 2;
     const isoGridHeight = this.mapSize * tileHeight;
-    // Center the grid on the canvas.
+    // Center the grid.
     const offsetX = (canvas.width - isoGridWidth) / 2;
     const offsetY = (canvas.height - isoGridHeight) / 2;
   
@@ -205,6 +211,7 @@ export class SummitMode {
         ctx.closePath();
         ctx.fillStyle = this.getTeamColor(hero.team);
         ctx.fill();
+        // Draw hero's symbol in the center.
         ctx.fillStyle = "black";
         ctx.font = "10px sans-serif";
         ctx.textAlign = "center";
@@ -214,7 +221,7 @@ export class SummitMode {
   }
   
   /**
-   * Generate a team color based on team number (cycles through 50 hues).
+   * Generate a color based on team number, cycling through 50 hues.
    */
   getTeamColor(team) {
     const hue = (team * 360 / 50) % 360;
