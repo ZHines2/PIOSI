@@ -1,11 +1,14 @@
 /**
  * summitMode.js
  *
- * Revised to prevent hero overlapping through unique starting positions and to draw an isometric grid.
- * The grid is rendered using isometric projection before drawing heroes.
+ * Updated for simulation mode.
+ * In this simulation mode, heroes are randomly placed onto a 50×50 grid without overlapping,
+ * using a unique assignInitialPositions() function. Each simulation round, heroes move toward
+ * the nearest enemy (or attack if in range) with collision prevention. An isometric grid is
+ * drawn in the canvas before rendering the heroes.
  *
- * When a hero is defeated, its HP is restored to its original spawn value and joins the attacker's team.
- * Victory is declared when one team controls all heroes.
+ * When a hero is defeated, its HP is restored and it is added to the attacker's team.
+ * Victory is declared when one team remains.
  */
 
 import { heroes as allHeroes } from "./heroes.js";
@@ -16,20 +19,20 @@ export class SummitMode {
     this.mapSize = 50;
     this.onGameOver = onGameOver;
     this.onVictory = onVictory;
-    // Internal log storage: keep only the last 50 log entries.
+    // Keeping a limited internal log.
     this.logLines = [];
     this.logCallback = (message) => {
       this.logLines.push(message);
       if (this.logLines.length > 50) {
         this.logLines.shift();
       }
-      // Update the log container (assumes an element with id "summit-log")
+      // Update the log container (assumes element with id "summit-log").
       const logBox = document.getElementById("summit-log");
       if (logBox) {
         logBox.innerHTML = this.logLines.join("<br>");
       }
     };
-    // Copy heroes and store their original HP (spawn HP) along with their properties.
+    // Work on a copy of the heroes array and store their original HP.
     this.allHeroes = allHeroes.map((hero, index) => {
       const spawnHp = hero.hp || 100;
       return {
@@ -37,11 +40,12 @@ export class SummitMode {
         originalHp: spawnHp,
         hp: spawnHp,
         maxHp: hero.maxHp || spawnHp,
-        team: index,  // each hero starts on its own team
+        team: index, // each hero starts on its own team.
         defeatedBy: null,
-        // Ensure that name and symbol properties are preserved.
         name: hero.name,
-        symbol: hero.symbol
+        symbol: hero.symbol,
+        range: hero.range || 1,
+        attack: hero.attack || 10
       };
     });
     this.round = 1;
@@ -50,18 +54,14 @@ export class SummitMode {
 
   /**
    * Start the simulation.
-   * Assigns each hero a unique starting position without overlaps.
+   * Assigns each hero a unique starting position and begins simulation rounds.
    */
   start() {
-    this.logCallback("Starting Summit Mode battle royale simulation...");
+    this.logCallback("Starting Summit Mode simulation...");
     // Attempt to assign unique initial positions.
     if (!this.assignInitialPositions()) {
-      this.logCallback("Failed to assign initial positions uniquely. Retrying...");
-      // You could trigger a retry here if needed.
-      if (!this.assignInitialPositions()) {
-        this.logCallback("Unable to assign unique positions after retry. Aborting simulation.");
-        return;
-      }
+      this.logCallback("Failed to assign unique starting positions. Aborting simulation.");
+      return;
     }
     this.drawCanvas();
     this.printStatus();
@@ -71,17 +71,17 @@ export class SummitMode {
 
   /**
    * Assign unique starting positions to each hero.
-   * Returns true if successful, false otherwise.
+   * Returns true if successful.
    */
   assignInitialPositions() {
-    // Create an array of all possible grid slots (2,500 total on a 50x50 grid).
+    // Create an array of all possible grid slots (2,500 total in a 50x50 grid).
     const freeSlots = [];
     for (let x = 0; x < this.mapSize; x++) {
       for (let y = 0; y < this.mapSize; y++) {
         freeSlots.push({ x, y });
       }
     }
-    // Shuffle freeSlots using Fisher–Yates shuffle.
+    // Shuffle freeSlots using Fisher-Yates.
     for (let i = freeSlots.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [freeSlots[i], freeSlots[j]] = [freeSlots[j], freeSlots[i]];
@@ -90,7 +90,7 @@ export class SummitMode {
       this.logCallback("Error: Not enough free positions available.");
       return false;
     }
-    // Assign the first n slots to heroes.
+    // Assign the first N slots to heroes.
     this.allHeroes.forEach((hero, index) => {
       const slot = freeSlots[index];
       hero.x = slot.x;
@@ -100,8 +100,8 @@ export class SummitMode {
   }
   
   /**
-   * Simulate one simulation round where each alive hero takes a turn.
-   * Collision detection is applied during movement.
+   * Simulate one round where each alive hero takes a turn.
+   * Collision detection is applied, and movement or attacks occur based on proximity.
    */
   simulationRound() {
     this.logCallback(`--- Round ${this.round} ---`);
@@ -109,15 +109,14 @@ export class SummitMode {
     const turnOrder = this.allHeroes.filter(hero => hero.hp > 0);
     
     for (let hero of turnOrder) {
-      // Skip if hero is dead.
-      if (hero.hp <= 0) continue; 
+      if (hero.hp <= 0) continue; // Skip dead heroes.
       
-      // Define enemies as heroes on a different team that are alive.
+      // Find enemies (heroes on a different team that are alive).
       const enemies = this.allHeroes.filter(h => h.team !== hero.team && h.hp > 0);
       
-      // If no enemy remains, victory is achieved.
+      // If no enemy remains, declare victory.
       if (enemies.length === 0) {
-        this.logCallback(`Victory: Team ${hero.team} now controls all heroes!`);
+        this.logCallback(`Victory: Team ${hero.team} wins!`);
         this.stopSimulation();
         if (this.onVictory) this.onVictory();
         return;
@@ -134,21 +133,20 @@ export class SummitMode {
         }
       }
       
-      // Use hero.range as attack range; if not defined, default to 1.
-      const attackRange = hero.range || 1;
+      // If within attack range, attack; otherwise, move towards target.
+      const attackRange = hero.range;
       if (minDist <= attackRange) {
-        // Attack phase.
         this.logCallback(`${hero.name} (Team ${hero.team}) attacks ${target.name} (Team ${target.team}) for ${hero.attack} damage.`);
         target.hp -= hero.attack;
         anyAction = true;
         if (target.hp <= 0) {
-          this.logCallback(`${target.name} is defeated by ${hero.name} and joins Team ${hero.team}. HP restored to original value (${target.originalHp}).`);
+          this.logCallback(`${target.name} is defeated by ${hero.name} and joins Team ${hero.team}. HP restored to ${target.originalHp}.`);
           target.team = hero.team;
           target.hp = target.originalHp;
           target.defeatedBy = hero.name;
         }
       } else {
-        // Movement phase: calculate intended new position toward the target.
+        // Calculate a new position toward target.
         let dx = target.x - hero.x;
         let dy = target.y - hero.y;
         let newX = hero.x;
@@ -156,9 +154,8 @@ export class SummitMode {
         
         if (Math.abs(dx) > Math.abs(dy)) {
           newX = hero.x + (dx > 0 ? 1 : -1);
-          newY = hero.y;
-          // If the intended cell is occupied, try moving vertically.
-          if (this.isOccupied(newX, newY, hero)) {
+          // If occupied, try vertical movement.
+          if (this.isOccupied(newX, hero.y, hero)) {
             newX = hero.x;
             newY = hero.y + (dy > 0 ? 1 : -1);
             if (this.isOccupied(newX, newY, hero)) {
@@ -166,11 +163,10 @@ export class SummitMode {
               newY = hero.y;
             }
           }
-        } else if (dy !== 0) {
+        } else {
           newY = hero.y + (dy > 0 ? 1 : -1);
-          newX = hero.x;
-          // If the intended cell is occupied, try horizontal movement.
-          if (this.isOccupied(newX, newY, hero)) {
+          // If occupied, try horizontal movement.
+          if (this.isOccupied(hero.x, newY, hero)) {
             newY = hero.y;
             newX = hero.x + (dx > 0 ? 1 : -1);
             if (this.isOccupied(newX, newY, hero)) {
@@ -178,16 +174,7 @@ export class SummitMode {
               newY = hero.y;
             }
           }
-        } else if (dx !== 0) {
-          newX = hero.x + (dx > 0 ? 1 : -1);
-          newY = hero.y;
-          if (this.isOccupied(newX, newY, hero)) {
-            newX = hero.x;
-            newY = hero.y;
-          }
         }
-        
-        // Apply movement if new position is available.
         if (newX !== hero.x || newY !== hero.y) {
           hero.x = newX;
           hero.y = newY;
@@ -200,7 +187,7 @@ export class SummitMode {
     }
     this.round++;
     this.printStatus();
-    this.drawCanvas(); // update visual canvas each round
+    this.drawCanvas();
     if (!anyAction) {
       this.logCallback("No actions possible. Ending simulation.");
       this.stopSimulation();
@@ -209,14 +196,14 @@ export class SummitMode {
   }
   
   /**
-   * Helper method to check if a cell at (x, y) is occupied by any other alive hero.
+   * Check if a given cell (x, y) is occupied by another alive hero.
    */
   isOccupied(x, y, movingHero) {
     return this.allHeroes.some(hero => hero.hp > 0 && hero !== movingHero && hero.x === x && hero.y === y);
   }
 
   /**
-   * Stop the simulation loop.
+   * Stop the simulation.
    */
   stopSimulation() {
     if (this.interval) {
@@ -236,14 +223,14 @@ export class SummitMode {
 
   /**
    * Draw the battlefield on a canvas element using isometric projection.
-   * First, the isometric grid lines are drawn; then the heroes are rendered.
+   * The grid is scaled dynamically so it always fits within the canvas.
    */
   drawCanvas() {
     const container = document.getElementById("summit-battlefield");
     let canvas = container.querySelector("canvas");
     if (!canvas) {
-      // Create the canvas element if it doesn't exist.
       canvas = document.createElement("canvas");
+      // Let canvas size be the full size of container.
       canvas.width = container.clientWidth;
       canvas.height = container.clientHeight;
       container.innerHTML = "";
@@ -252,64 +239,68 @@ export class SummitMode {
     const ctx = canvas.getContext("2d");
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Set font to "Sono" imported via CSS.
+    // Set the font – ensure "Sono" is imported via CSS.
     ctx.font = "10px 'Sono', sans-serif";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
 
-    // Define tile dimensions for isometric view.
-    const tileWidth = 32;
-    const tileHeight = 16;
-    // Overall grid dimensions in isometric projection.
-    const isoGridWidth = (this.mapSize + this.mapSize) * tileWidth / 2;
-    const isoGridHeight = this.mapSize * tileHeight;
-    // Center the grid on the canvas.
-    const offsetX = (canvas.width - isoGridWidth) / 2;
-    const offsetY = (canvas.height - isoGridHeight) / 2;
+    // Define base tile dimensions.
+    const baseTileWidth = 32;
+    const baseTileHeight = 16;
+    const isoGridWidth = (this.mapSize + this.mapSize) * baseTileWidth / 2;
+    const isoGridHeight = this.mapSize * baseTileHeight;
+    
+    // Calculate scale factor to ensure grid fits in canvas.
+    const scaleX = canvas.width / isoGridWidth;
+    const scaleY = canvas.height / isoGridHeight;
+    const scale = Math.min(scaleX, scaleY);
 
-    // Draw isometric grid lines.
+    // Adjust tile dimensions based on scale factor.
+    const tileWidth = baseTileWidth * scale;
+    const tileHeight = baseTileHeight * scale;
+    const scaledGridWidth = isoGridWidth * scale;
+    const scaledGridHeight = isoGridHeight * scale;
+    const offsetX = (canvas.width - scaledGridWidth) / 2;
+    const offsetY = (canvas.height - scaledGridHeight) / 2;
+
     ctx.strokeStyle = "#333";
     ctx.lineWidth = 0.5;
-    // Draw vertical-ish lines.
+    // Draw vertical-ish grid lines.
     for (let i = 0; i <= this.mapSize; i++) {
-      let startX = (i - 0) * tileWidth / 2 + offsetX + isoGridWidth / 2;
-      let startY = (i + 0) * tileHeight / 2 + offsetY;
-      let endX = (i - this.mapSize) * tileWidth / 2 + offsetX + isoGridWidth / 2;
-      let endY = (i + this.mapSize) * tileHeight / 2 + offsetY;
+      let startX = (i * tileWidth / 2) + offsetX + scaledGridWidth / 2;
+      let startY = (i * tileHeight / 2) + offsetY;
+      let endX = ((i - this.mapSize) * tileWidth / 2) + offsetX + scaledGridWidth / 2;
+      let endY = ((i + this.mapSize) * tileHeight / 2) + offsetY;
       ctx.beginPath();
       ctx.moveTo(startX, startY);
       ctx.lineTo(endX, endY);
       ctx.stroke();
     }
-    // Draw horizontal-ish lines.
+    // Draw horizontal-ish grid lines.
     for (let i = 0; i <= this.mapSize; i++) {
-      let startX = (0 - i) * tileWidth / 2 + offsetX + isoGridWidth / 2;
-      let startY = (0 + i) * tileHeight / 2 + offsetY;
-      let endX = (this.mapSize - i) * tileWidth / 2 + offsetX + isoGridWidth / 2;
-      let endY = (this.mapSize + i) * tileHeight / 2 + offsetY;
+      let startX = ((-i) * tileWidth / 2) + offsetX + scaledGridWidth / 2;
+      let startY = (i * tileHeight / 2) + offsetY;
+      let endX = (((this.mapSize) - i) * tileWidth / 2) + offsetX + scaledGridWidth / 2;
+      let endY = ((this.mapSize + i) * tileHeight / 2) + offsetY;
       ctx.beginPath();
       ctx.moveTo(startX, startY);
       ctx.lineTo(endX, endY);
       ctx.stroke();
     }
 
-    // Draw each hero on the isometric canvas.
+    // Draw each hero as a diamond with the hero symbol centered.
     this.allHeroes.forEach(hero => {
       if (hero.hp > 0) {
-        // Convert grid coordinates to isometric projection.
-        let isoX = (hero.x - hero.y) * tileWidth / 2 + offsetX + isoGridWidth / 2;
+        let isoX = (hero.x - hero.y) * tileWidth / 2 + offsetX + scaledGridWidth / 2;
         let isoY = (hero.x + hero.y) * tileHeight / 2 + offsetY;
-        // Draw a diamond representing the hero.
         ctx.beginPath();
         ctx.moveTo(isoX, isoY - tileHeight / 2);
         ctx.lineTo(isoX + tileWidth / 2, isoY);
         ctx.lineTo(isoX, isoY + tileHeight / 2);
         ctx.lineTo(isoX - tileWidth / 2, isoY);
         ctx.closePath();
-        // Fill with team color.
         ctx.fillStyle = this.getTeamColor(hero.team);
         ctx.fill();
-        // Draw the hero's symbol (or first letter of the name) at the center.
         ctx.fillStyle = "black";
         ctx.fillText(hero.symbol ? hero.symbol[0] : hero.name[0], isoX, isoY);
       }
@@ -317,7 +308,7 @@ export class SummitMode {
   }
 
   /**
-   * Generate a color based on team number.
+   * Generate a team color based on team number.
    * Cycles through 50 hues.
    */
   getTeamColor(team) {
