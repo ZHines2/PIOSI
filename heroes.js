@@ -259,3 +259,41 @@ export const heroes = [
     bomba: 5 // bomba stat, that does bonus damages to ajacent enemies that are attacked by another hero
   }
 ];
+
+/**
+ * Handles the hero selection logic specifically for Summit Mode.
+ * This function cycles through all available heroes and allows the player to choose one.
+ */
+export function selectHeroForSummitMode() {
+  let selectedHeroIndex = 0;
+  const heroList = document.getElementById("hero-list");
+  const confirmButton = document.getElementById("confirm-hero");
+
+  function updateHeroDisplay() {
+    const hero = heroes[selectedHeroIndex];
+    heroList.innerHTML = `<p>${hero.name} (${hero.symbol})</p>`;
+  }
+
+  function handleKeyDown(event) {
+    if (event.key === "ArrowLeft") {
+      selectedHeroIndex = (selectedHeroIndex - 1 + heroes.length) % heroes.length;
+      updateHeroDisplay();
+    } else if (event.key === "ArrowRight") {
+      selectedHeroIndex = (selectedHeroIndex + 1) % heroes.length;
+      updateHeroDisplay();
+    } else if (event.key === "Enter") {
+      confirmSelection();
+    }
+  }
+
+  function confirmSelection() {
+    document.removeEventListener("keydown", handleKeyDown);
+    confirmButton.removeEventListener("click", confirmSelection);
+    // Proceed with the selected hero for Summit Mode
+    startSummitModeWithHero(selectedHeroIndex);
+  }
+
+  document.addEventListener("keydown", handleKeyDown);
+  confirmButton.addEventListener("click", confirmSelection);
+  updateHeroDisplay();
+}

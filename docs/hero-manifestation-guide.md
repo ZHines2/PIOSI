@@ -301,4 +301,18 @@ Here is a list of 10 possible fates that can be applied to heroes:
 9. Increase healing power
 10. Decrease healing power
 
+## Summit Mode
+
+### Overview
+
+Summit Mode is a new game mode where all heroes compete at the same time on a large 50x50 map. The player controls one hero of their choice, while the others are controlled by the computer.
+
+### Rules
+
+- Each hero takes a turn moving on the map, with the turn order determined by their agility stat.
+- Heroes with higher agility take their turns before those with lower agility.
+- If two heroes have the same agility, the turn order can be randomized or based on their initial placement.
+- When the player is defeated by any hero, it is game over.
+- If a computer-controlled hero is defeated, they join the player's team and their turn is controlled by the player.
+
 By following these guidelines and best practices, you can create heroes that are balanced, engaging, and fun for players. Happy hero designing!
