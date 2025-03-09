@@ -34,21 +34,25 @@ export class BattleEngine {
     this.onLevelComplete = onLevelComplete;
     this.onGameOver = onGameOver;
 
-    // Instead of using an index on the full party array, we use an index for live heroes.
-    this.currentLiveIndex = 0;
-    
+    this.currentUnit = 0;
+    // Only live heroes get move points.
+    this.movePoints = this.getLiveHeroes().length ? this.getLiveHeroes()[0].agility : 0;
     this.awaitingAttackDirection = false;
     this.transitioningLevel = false;
 
     // Initialize status effects for all heroes and enemies.
     this.party.forEach(hero => {
       hero.statusEffects = hero.statusEffects || {};
+      // Persistent death marker may already exist.
       if (!hero.persistentDeath) hero.persistentDeath = null;
+      // Initialize rise stat if not set.
       if (typeof hero.rise !== 'number') hero.rise = 0;
+      // Initialize dodge stat if not set.
       if (typeof hero.dodge !== 'number') hero.dodge = 0;
     });
     this.enemies.forEach(enemy => {
       enemy.statusEffects = {};
+      // Initialize dodge stat if not set.
       if (typeof enemy.dodge !== 'number') enemy.dodge = 0;
     });
     this.battlefield = this.initializeBattlefield();
@@ -168,11 +172,9 @@ export class BattleEngine {
         let cellClass = '';
         if (cellContent === 'ౚ' || cellContent === 'ඉ') cellClass += ' healing-item';
         if (this.enemies.some(enemy => enemy.symbol === cellContent)) cellClass += ' enemy';
-        // Mark the active hero's cell (picked from live heroes by currentLiveIndex)
-        const liveHeroes = this.getLiveHeroes();
-        if (liveHeroes[this.currentLiveIndex] &&
-            liveHeroes[this.currentLiveIndex].x === x &&
-            liveHeroes[this.currentLiveIndex].y === y) {
+        if (this.getLiveHeroes()[this.currentUnit] &&
+            this.getLiveHeroes()[this.currentUnit].x === x &&
+            this.getLiveHeroes()[this.currentUnit].y === y) {
           cellClass += this.awaitingAttackDirection ? ' attack-mode' : ' active';
         }
         html += `<div class="cell${cellClass}">${cellContent}</div>`;
@@ -196,10 +198,9 @@ export class BattleEngine {
 
   moveUnit(dx, dy) {
     if (this.awaitingAttackDirection || this.movePoints <= 0 || this.transitioningLevel) return;
-    const liveHeroes = this.getLiveHeroes();
-    const unit = liveHeroes[this.currentLiveIndex];
-    if (!unit || unit.hp <= 0) {
-      this.logCallback(`No live hero available to move.`);
+    const unit = this.getLiveHeroes()[this.currentUnit];
+    if (unit.hp <= 0) {
+      this.logCallback(`${unit.name} is dead and cannot move.`);
       return;
     }
     const newX = unit.x + dx, newY = unit.y + dy;
@@ -252,6 +253,7 @@ export class BattleEngine {
     for (let i = 1; i <= unit.range; i++) {
       const targetX = unit.x + dx * i, targetY = unit.y + dy * i;
       if (!this.isWithinBounds(targetX, targetY)) break;
+      // Use only live heroes for targeting; dead heroes never register.
       const ally = this.getLiveHeroes().find(h => h.x === targetX && h.y === targetY && h !== unit);
       if (ally) {
         if (unit.heal && unit.heal > 0) {
@@ -270,6 +272,7 @@ export class BattleEngine {
         this.nextTurn();
         return;
       }
+      // If a hero is found at the targeted cell but is dead, treat it as an empty cell.
       const deadHero = this.party.find(h => h.x === targetX && h.y === targetY && h.persistentDeath);
       if (deadHero) {
         this.logCallback(`${unit.name} attacks an empty cell where ${deadHero.name} once stood.`);
@@ -280,71 +283,75 @@ export class BattleEngine {
       }
       const enemy = this.enemies.find(e => e.x === targetX && e.y === targetY);
       if (enemy) {
-         let dodgeChance = enemy.dodge / (100 + enemy.dodge);
-         dodgeChance = Math.min(dodgeChance, 0.5);
-         if (Math.random() < dodgeChance) {
-           this.logCallback(`${enemy.name} dodges ${unit.name}'s attack!`);
-           this.awaitingAttackDirection = false;
-           await this.shortPause();
-           this.nextTurn();
-           return;
-         }
-         enemy.hp -= unit.attack;
-         this.logCallback(`${unit.name} attacks ${enemy.name} for ${unit.attack} damage! (HP left: ${enemy.hp})`);
-         if (unit.trick > 0) {
-           const debuffableStats = ["attack", "range", "agility", "hp"];
-           const availableStats = debuffableStats.filter(stat => typeof enemy[stat] === "number");
-           if (availableStats.length > 0) {
-             const chosenStat = availableStats[Math.floor(Math.random() * availableStats.length)];
-             const orig = enemy[chosenStat];
-             enemy[chosenStat] = Math.max(0, enemy[chosenStat] - unit.trick);
-             this.logCallback(`${unit.name}'s trick lowers ${enemy.name}'s ${chosenStat} from ${orig} to ${enemy[chosenStat]}!`);
-           }
-         }
-         if (unit.burn) {
-           enemy.statusEffects.burn = { damage: unit.burn, duration: 3 };
-           this.logCallback(`${enemy.name} is burning for ${unit.burn} damage for 3 turns!`);
-         }
-         if (unit.sluj) {
-           if (!enemy.statusEffects.sluj) enemy.statusEffects.sluj = { level: unit.sluj, duration: 4, counter: 0 };
-           else {
-             enemy.statusEffects.sluj.level += unit.sluj;
-             enemy.statusEffects.sluj.duration = 4;
-           }
-           this.logCallback(`${enemy.name} is afflicted with slüj (level ${enemy.statusEffects.sluj.level}) for 4 turns!`);
-         }
-         if (unit.yeet && unit.yeet > 0) {
-           applyKnockback(enemy, dx, dy, unit.yeet, unit.attack, this.battlefield, this.logCallback, this.isWithinBounds.bind(this));
-         }
-         if (unit.chain) {
-           const effectiveMultiplier = 1 - Math.exp(-unit.chain / 10);
-           const initialChainDamage = Math.round(unit.attack * effectiveMultiplier);
-           if (initialChainDamage > 0) {
-             this.logCallback(`${enemy.name} takes ${initialChainDamage} chain damage!`);
-             this.applyChainDamage(enemy, initialChainDamage, effectiveMultiplier, new Set());
-           }
-         }
-         const adjacentOffsets = [
-           { x: -1, y: 0 }, { x: 1, y: 0 },
-           { x: 0, y: -1 }, { x: 0, y: 1 }
-         ];
-         adjacentOffsets.forEach(offset => {
-           const adjX = enemy.x + offset.x, adjY = enemy.y + offset.y;
-           const adjacentHero = this.getLiveHeroes().find(h => h.x === adjX && h.y === adjY && h.bomba && h.bomba > 0);
-           if (adjacentHero) {
-             enemy.hp -= adjacentHero.bomba;
-             this.logCallback(`${adjacentHero.name}'s bomba deals ${adjacentHero.bomba} additional damage to ${enemy.name}! (HP left: ${enemy.hp})`);
-           }
-         });
-         if (enemy.hp <= 0) {
-           this.logCallback(`${enemy.name} is defeated by its slüj effect!`);
-           this.battlefield[enemy.y][enemy.x] = '.';
-           this.enemies = this.enemies.filter(e => e !== enemy);
-         }
-         this.awaitingAttackDirection = false;
-         await this.shortPause();
-         this.nextTurn();
-         return;
+         // DODGE CHECK START
+        let dodgeChance = enemy.dodge / (100 + enemy.dodge); // Diminishing returns
+        dodgeChance = Math.min(dodgeChance, 0.5); // Cap dodge chance at 50%
+        if (Math.random() < dodgeChance) {
+          this.logCallback(`${enemy.name} dodges ${unit.name}'s attack!`);
+          this.awaitingAttackDirection = false;
+          await this.shortPause();
+          this.nextTurn();
+          return; // Skip the rest of the attack logic
+        }
+        // DODGE CHECK END
+        enemy.hp -= unit.attack;
+        this.logCallback(`${unit.name} attacks ${enemy.name} for ${unit.attack} damage! (HP left: ${enemy.hp})`);
+        if (unit.trick > 0) {
+          const debuffableStats = ["attack", "range", "agility", "hp"];
+          const availableStats = debuffableStats.filter(stat => typeof enemy[stat] === "number");
+          if (availableStats.length > 0) {
+            const chosenStat = availableStats[Math.floor(Math.random() * availableStats.length)];
+            const orig = enemy[chosenStat];
+            enemy[chosenStat] = Math.max(0, enemy[chosenStat] - unit.trick);
+            this.logCallback(`${unit.name}'s trick lowers ${enemy.name}'s ${chosenStat} from ${orig} to ${enemy[chosenStat]}!`);
+          }
+        }
+        if (unit.burn) {
+          enemy.statusEffects.burn = { damage: unit.burn, duration: 3 };
+          this.logCallback(`${enemy.name} is burning for ${unit.burn} damage for 3 turns!`);
+        }
+        if (unit.sluj) {
+          if (!enemy.statusEffects.sluj) enemy.statusEffects.sluj = { level: unit.sluj, duration: 4, counter: 0 };
+          else {
+            enemy.statusEffects.sluj.level += unit.sluj;
+            enemy.statusEffects.sluj.duration = 4;
+          }
+          this.logCallback(`${enemy.name} is afflicted with slüj (level ${enemy.statusEffects.sluj.level}) for 4 turns!`);
+        }
+        if (unit.yeet && unit.yeet > 0) {
+          applyKnockback(enemy, dx, dy, unit.yeet, unit.attack, this.battlefield, this.logCallback, this.isWithinBounds.bind(this));
+        }
+        if (unit.chain) {
+          const effectiveMultiplier = 1 - Math.exp(-unit.chain / 10);
+          const initialChainDamage = Math.round(unit.attack * effectiveMultiplier);
+          if (initialChainDamage > 0) {
+            this.logCallback(`${enemy.name} takes ${initialChainDamage} chain damage!`);
+            this.applyChainDamage(enemy, initialChainDamage, effectiveMultiplier, new Set());
+          }
+        }
+        // Check for adjacent heroes with a non-zero "bomba" stat
+        const adjacentOffsets = [
+          { x: -1, y: 0 }, { x: 1, y: 0 },
+          { x: 0, y: -1 }, { x: 0, y: 1 }
+        ];
+        adjacentOffsets.forEach(offset => {
+          const adjX = enemy.x + offset.x, adjY = enemy.y + offset.y;
+          const adjacentHero = this.getLiveHeroes().find(h => h.x === adjX && h.y === adjY && h.bomba && h.bomba > 0);
+          if (adjacentHero) {
+            enemy.hp -= adjacentHero.bomba;
+            this.logCallback(`${adjacentHero.name}'s bomba deals ${adjacentHero.bomba} additional damage to ${enemy.name}! (HP left: ${enemy.hp})`);
+          }
+        });
+        // Check for enemy defeat (including from slüj damage applied earlier)
+        if (enemy.hp <= 0) {
+          this.logCallback(`${enemy.name} is defeated by its slüj effect!`);
+          this.battlefield[enemy.y][enemy.x] = '.';
+          this.enemies = this.enemies.filter(e => e !== enemy);
+        }
+        this.awaitingAttackDirection = false;
+        await this.shortPause();
+        this.nextTurn();
+        return;
       }
       if (this.battlefield[targetY][targetX] === 'ᚙ' || this.battlefield[targetY][targetX] === '█') {
         this.wallHP -= unit.attack;
@@ -399,15 +406,20 @@ export class BattleEngine {
     this.enemies.forEach(enemy => {
       for (let moves = 0; moves < enemy.agility; moves++) this.moveEnemy(enemy);
       this.enemyAttackAdjacent(enemy);
+      
+      // Apply the slüj effect for each enemy.
       if (enemy.statusEffects.sluj) {
         applySlujEffect(enemy, this.logCallback);
       }
+      
+      // Kill logic for enemies affected by slüj damage.
       if (enemy.hp <= 0) {
         this.logCallback(`${enemy.name} is defeated by its slüj effect!`);
         this.battlefield[enemy.y][enemy.x] = '.';
         this.enemies = this.enemies.filter(e => e !== enemy);
         return;
       }
+      
       if (Array.isArray(enemy.dialogue) && enemy.dialogue.length > 0) {
         this.logCallback(`${enemy.name} says: "${enemy.dialogue[Math.floor(Math.random() * enemy.dialogue.length)]}"`);
       }
@@ -458,16 +470,19 @@ export class BattleEngine {
   
   enemyAttackAdjacent(enemy) {
     const directions = [[0, -1], [0, 1], [-1, 0], [1, 0]];
+    // Use only live heroes when determining targets.
     directions.forEach(([dx, dy]) => {
       const tx = enemy.x + dx, ty = enemy.y + dy;
       const targetHero = this.getLiveHeroes().find(hero => hero.x === tx && hero.y === ty);
       if (targetHero) {
+         // DODGE CHECK START
         let dodgeChance = targetHero.dodge / (100 + targetHero.dodge);
         dodgeChance = Math.min(dodgeChance, 0.5);
         if (Math.random() < dodgeChance) {
           this.logCallback(`${targetHero.name} dodges ${enemy.name}'s attack!`);
           return;
         }
+        // DODGE CHECK END
         if (targetHero.armor && targetHero.armor > 0) {
           targetHero.armor--;
           this.logCallback(`${enemy.name} attacks ${targetHero.name} but their armor absorbs it (Remaining Armor: ${targetHero.armor})`);
@@ -477,8 +492,8 @@ export class BattleEngine {
         }
         if (targetHero.hp <= 0) {
           this.handleHeroDeath(targetHero);
-          if (this.currentLiveIndex >= this.getLiveHeroes().length)
-            this.currentLiveIndex = 0;
+          if (this.currentUnit >= this.party.length)
+            this.currentUnit = 0;
         } else if (targetHero.rage && targetHero.rage > 0) {
           const stats = ['attack', 'range', 'agility', 'hp'];
           const randomStat = stats[Math.floor(Math.random() * stats.length)];
@@ -502,10 +517,22 @@ export class BattleEngine {
       return;
     }
     this.awaitingAttackDirection = false;
-    // Instead of incrementing an index on the full party, we update currentLiveIndex.
-    this.currentLiveIndex = (this.currentLiveIndex + 1) % liveHeroes.length;
-    this.movePoints = liveHeroes[this.currentLiveIndex].agility;
-    this.logCallback(`Now it's ${liveHeroes[this.currentLiveIndex].name}'s turn.`);
+    do {
+      this.currentUnit++;
+      if (this.currentUnit >= this.party.length) {
+        this.currentUnit = 0;
+        this.logCallback('Enemy turn begins.');
+        this.enemyTurn();
+        this.applyStatusEffects();
+        if (this.getLiveHeroes().length === 0) {
+          this.logCallback('All heroes defeated! Game Over.');
+          if (typeof this.onGameOver === 'function') this.onGameOver();
+          return;
+        }
+      }
+    } while(this.party[this.currentUnit].persistentDeath);
+    this.movePoints = this.party[this.currentUnit].agility;
+    this.logCallback(`Now it's ${this.party[this.currentUnit].name}'s turn.`);
   }
 
   applyStatusEffects() {
@@ -528,6 +555,7 @@ export class BattleEngine {
           this.enemies = this.enemies.filter(e => e !== enemy);
         }
       }
+      // The slüj effect is handled via the imported applySlujEffect() in enemyTurn().
     });
   }
 
@@ -559,7 +587,7 @@ export class BattleEngine {
     });
   }
 
-  // Updated handleHeroDeath method to clear a dead hero's cell.
+  // Updated handleHeroDeath method to ensure a dead hero's cell is cleared.
   handleHeroDeath(hero) {
     if (hero.rise > 0) {
       this.logCallback(`Hero ${hero.name} falls but rises with ${hero.rise} HP!`);
@@ -572,7 +600,10 @@ export class BattleEngine {
     this.logCallback(`Hero ${hero.name} has fallen permanently. Applying persistent death and ankh effects...`);
     hero.statusEffects.death = true;
     hero.persistentDeath = new PersistentDeath();
+    // Clear the cell so the dead hero is no longer represented on the battlefield.
     this.battlefield[hero.y][hero.x] = '.';
+    // Optionally, remove the hero from future selections.
+    // this.party = this.party.filter(h => h !== hero);
     this.applyAnkhBoost();
   }
 
