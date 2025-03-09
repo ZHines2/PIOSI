@@ -1,12 +1,10 @@
 /**
  * summitMode.js
  *
- * Revised to prevent hero overlapping during combat by:
- * • Assigning each hero a unique random position on a 50×50 grid (2,500 slots)
- * • Drawing an isometric grid for improved visualization
+ * Revised to prevent hero overlapping through unique starting positions and to draw an isometric grid.
+ * The grid is rendered using isometric projection before drawing heroes.
  *
- * When a hero is defeated, its HP is restored to its original spawn value,
- * and it immediately joins the attacker's team.
+ * When a hero is defeated, its HP is restored to its original spawn value and joins the attacker's team.
  * Victory is declared when one team controls all heroes.
  */
 
@@ -92,7 +90,7 @@ export class SummitMode {
       this.logCallback("Error: Not enough free positions available.");
       return false;
     }
-    // Assign the first slots to heroes.
+    // Assign the first n slots to heroes.
     this.allHeroes.forEach((hero, index) => {
       const slot = freeSlots[index];
       hero.x = slot.x;
@@ -111,7 +109,8 @@ export class SummitMode {
     const turnOrder = this.allHeroes.filter(hero => hero.hp > 0);
     
     for (let hero of turnOrder) {
-      if (hero.hp <= 0) continue; // skip dead heroes
+      // Skip if hero is dead.
+      if (hero.hp <= 0) continue; 
       
       // Define enemies as heroes on a different team that are alive.
       const enemies = this.allHeroes.filter(h => h.team !== hero.team && h.hp > 0);
@@ -128,7 +127,7 @@ export class SummitMode {
       let target = null;
       let minDist = Infinity;
       for (let enemy of enemies) {
-        let dist = Math.abs(hero.x - enemy.x) + Math.abs(hero.y - enemy.y);
+        const dist = Math.abs(hero.x - enemy.x) + Math.abs(hero.y - enemy.y);
         if (dist < minDist) {
           minDist = dist;
           target = enemy;
@@ -237,7 +236,7 @@ export class SummitMode {
 
   /**
    * Draw the battlefield on a canvas element using isometric projection.
-   * This updated method now draws grid lines before rendering each hero for clearer visualization.
+   * First, the isometric grid lines are drawn; then the heroes are rendered.
    */
   drawCanvas() {
     const container = document.getElementById("summit-battlefield");
@@ -261,18 +260,18 @@ export class SummitMode {
     // Define tile dimensions for isometric view.
     const tileWidth = 32;
     const tileHeight = 16;
-    // Compute overall grid size in isometric projection.
+    // Overall grid dimensions in isometric projection.
     const isoGridWidth = (this.mapSize + this.mapSize) * tileWidth / 2;
     const isoGridHeight = this.mapSize * tileHeight;
-    // Center the grid in the canvas.
+    // Center the grid on the canvas.
     const offsetX = (canvas.width - isoGridWidth) / 2;
     const offsetY = (canvas.height - isoGridHeight) / 2;
 
-    // Draw grid lines for visualization.
+    // Draw isometric grid lines.
     ctx.strokeStyle = "#333";
     ctx.lineWidth = 0.5;
+    // Draw vertical-ish lines.
     for (let i = 0; i <= this.mapSize; i++) {
-      // vertical-ish grid line
       let startX = (i - 0) * tileWidth / 2 + offsetX + isoGridWidth / 2;
       let startY = (i + 0) * tileHeight / 2 + offsetY;
       let endX = (i - this.mapSize) * tileWidth / 2 + offsetX + isoGridWidth / 2;
@@ -282,8 +281,8 @@ export class SummitMode {
       ctx.lineTo(endX, endY);
       ctx.stroke();
     }
+    // Draw horizontal-ish lines.
     for (let i = 0; i <= this.mapSize; i++) {
-      // horizontal-ish grid line
       let startX = (0 - i) * tileWidth / 2 + offsetX + isoGridWidth / 2;
       let startY = (0 + i) * tileHeight / 2 + offsetY;
       let endX = (this.mapSize - i) * tileWidth / 2 + offsetX + isoGridWidth / 2;
@@ -297,6 +296,7 @@ export class SummitMode {
     // Draw each hero on the isometric canvas.
     this.allHeroes.forEach(hero => {
       if (hero.hp > 0) {
+        // Convert grid coordinates to isometric projection.
         let isoX = (hero.x - hero.y) * tileWidth / 2 + offsetX + isoGridWidth / 2;
         let isoY = (hero.x + hero.y) * tileHeight / 2 + offsetY;
         // Draw a diamond representing the hero.
@@ -306,10 +306,10 @@ export class SummitMode {
         ctx.lineTo(isoX, isoY + tileHeight / 2);
         ctx.lineTo(isoX - tileWidth / 2, isoY);
         ctx.closePath();
-        // Use team color to differentiate heroes.
+        // Fill with team color.
         ctx.fillStyle = this.getTeamColor(hero.team);
         ctx.fill();
-        // Draw the hero's symbol (or first letter of the name) in the center.
+        // Draw the hero's symbol (or first letter of the name) at the center.
         ctx.fillStyle = "black";
         ctx.fillText(hero.symbol ? hero.symbol[0] : hero.name[0], isoX, isoY);
       }
