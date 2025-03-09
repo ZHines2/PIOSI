@@ -1,203 +1,139 @@
 /**
  * summitMode.js
  *
- * This file handles Summit Mode in PIOSI.
- * In Summit Mode, a special hero selection screen is shown where the player chooses one hero.
- * The selected hero is placed on a 50×50 grid along with all other heroes (at random positions),
- * and battle begins using the existing grid-based BattleEngine mechanics.
+ * This file handles Summit Mode in PIOSI – reimagined as a battle royale simulation.
+ * In this simulation:
+ * - All heroes are randomly placed on a 50×50 grid.
+ * - Each hero starts on its own team.
+ * - During each round, every hero takes a turn:
+ *    • If an enemy (a hero on a different team) is within attack range, they attack.
+ *    • Otherwise, they move one step toward the closest enemy.
+ * - If a hero defeats another (reducing its HP to 0 or below), the defeated hero is
+ *   restored to full HP and immediately joins the attacker's team.
+ * - Victory is achieved when one team controls all heroes.
  *
- * When a hero (enemy) is defeated, if it is not already in the playable squad, it is added.
- * Additionally, when an enemy hero becomes controllable, its HP is restored to full.
- * The game is over when all playable heroes are defeated.
+ * Future improvements could include visual team colors (selectable from a pool of 50) and
+ * player controls to override the simulation.
  */
 
 import { heroes as allHeroes } from "./heroes.js";
-import { BattleEngine } from "./battleEngine.js";
 
 export class SummitMode {
-  constructor(logCallback, onGameOver) {
+  constructor(logCallback, onGameOver, onVictory) {
     this.mapSize = 50;
     this.logCallback = logCallback;
     this.onGameOver = onGameOver;
-    // Work on a copy of all heroes so that modifications here do not affect the base definitions.
-    this.allHeroes = allHeroes.map(hero => ({ ...hero }));
-    // Index of hero chosen by the player, default is 0.
-    this.selectedHeroIndex = 0;
-    // The battle engine instance (uses base BattleEngine mechanics).
-    this.battleEngine = null;
-    // Bind selection key handling method.
-    this.handleSelectionKeyDown = this.handleSelectionKeyDown.bind(this);
+    this.onVictory = onVictory;
+    // Copy heroes and initialize with simulation-specific properties
+    this.allHeroes = allHeroes.map((hero, index) => ({
+      ...hero,
+      x: Math.floor(Math.random() * this.mapSize),
+      y: Math.floor(Math.random() * this.mapSize),
+      hp: hero.hp || 100,
+      maxHp: hero.maxHp || 100,
+      team: index, // each hero starts as its own team
+      defeatedBy: null // track the last hero that defeated this hero 
+    }));
+    this.round = 1;
+    this.interval = null;
   }
 
   /**
-   * Begins Summit Mode by displaying the hero selection screen.
+   * Start the simulation.
    */
   start() {
-    this.logCallback("Entering Summit Mode selection screen...");
-    this.showHeroSelectionScreen();
-    document.addEventListener("keydown", this.handleSelectionKeyDown);
+    this.logCallback("Starting Summit Mode battle royale simulation...");
+    this.printStatus();
+    // Run a simulation round every 500ms
+    this.interval = setInterval(() => this.simulationRound(), 500);
   }
 
   /**
-   * Render the hero selection screen in the summit-mode container.
+   * Simulate one round where each alive hero takes a turn.
    */
-  showHeroSelectionScreen() {
-    const container = document.getElementById("summit-mode");
-    container.innerHTML = `
-      <h1>Summit Mode - Select Your Hero</h1>
-      <div id="summit-selection" style="display:flex; justify-content:center; align-items:center;"></div>
-      <div id="summit-stats" style="margin-top:10px; text-align:center;"></div>
-      <p style="text-align:center;">Use Left/Right arrows to select a hero. Press Space to confirm.</p>
-    `;
-    this.renderSelection();
-  }
-
-  /**
-   * Display hero icons in the selection area, highlighting the selected hero.
-   */
-  renderSelection() {
-    const selectionDiv = document.getElementById("summit-selection");
-    selectionDiv.innerHTML = "";
-    this.allHeroes.forEach((hero, idx) => {
-      const heroDiv = document.createElement("div");
-      heroDiv.style.margin = "5px";
-      heroDiv.style.padding = "10px";
-      heroDiv.style.border = idx === this.selectedHeroIndex ? "2px solid yellow" : "2px solid gray";
-      heroDiv.style.backgroundColor = "#222";
-      heroDiv.style.color = "#fff";
-      heroDiv.style.fontSize = "1.5em";
-      // Display hero symbol if provided; otherwise, first letter of the hero's name.
-      heroDiv.textContent = hero.symbol || hero.name.charAt(0);
-      selectionDiv.appendChild(heroDiv);
-    });
-    this.renderHeroStats();
-  }
-
-  /**
-   * Display detailed stats for the currently highlighted hero.
-   */
-  renderHeroStats() {
-    const statsDiv = document.getElementById("summit-stats");
-    const hero = this.allHeroes[this.selectedHeroIndex];
-    let statsHtml = `<strong>${hero.name}</strong><br>`;
-    statsHtml += `Attack: ${hero.attack || 0} | HP: ${hero.hp || 0} | Agility: ${hero.agility || 0} | Range: ${hero.range || 0}`;
-    statsDiv.innerHTML = statsHtml;
-  }
-
-  /**
-   * Handle keydown events on the hero selection screen.
-   * Left/Right arrows cycle through heroes; Space confirms selection.
-   */
-  handleSelectionKeyDown(e) {
-    if (!this.isSummitModeActive()) return; // Process keys only if summit-mode is visible
-    if (e.code === "ArrowLeft") {
-      this.selectedHeroIndex = (this.selectedHeroIndex - 1 + this.allHeroes.length) % this.allHeroes.length;
-      this.renderSelection();
-      e.preventDefault();
-    } else if (e.code === "ArrowRight") {
-      this.selectedHeroIndex = (this.selectedHeroIndex + 1) % this.allHeroes.length;
-      this.renderSelection();
-      e.preventDefault();
-    } else if (e.code === "Space") {
-      document.removeEventListener("keydown", this.handleSelectionKeyDown);
-      this.logCallback(`Selected hero: ${this.allHeroes[this.selectedHeroIndex].name}`);
-      this.initializeBattle();
-      e.preventDefault();
-    }
-  }
-
-  /**
-   * Determines if the summit-mode container is currently active.
-   */
-  isSummitModeActive() {
-    const container = document.getElementById("summit-mode");
-    return container && container.style.display !== "none";
-  }
-
-  /**
-   * Initialize the battle phase.
-   * The selected hero is marked as controlled and placed on a random grid position.
-   * All heroes are randomly positioned and sorted by agility for turn order.
-   * The BattleEngine is instantiated with additional defeat handling for summing heroes.
-   */
-  initializeBattle() {
-    // Position heroes randomly and mark playable vs. non-playable.
-    this.allHeroes.forEach((hero, idx) => {
-      hero.x = Math.floor(Math.random() * this.mapSize);
-      hero.y = Math.floor(Math.random() * this.mapSize);
-      // Initially, only the selected hero is controlled by the player.
-      hero.controlledByPlayer = (idx === this.selectedHeroIndex);
-    });
-    // Sort heroes by agility descending.
-    this.allHeroes.sort((a, b) => (b.agility || 0) - (a.agility || 0));
-
-    // Clear the UI and render the battle layout.
-    const container = document.getElementById("summit-mode");
-    container.innerHTML = `
-      <h1>Summit Mode - Battle</h1>
-      <div id="summit-battlefield" style="margin:10px auto; width:500px; height:500px; border:1px solid #fff;"></div>
-      <div id="summit-status" style="text-align:center;"></div>
-      <p style="text-align:center;">Use arrow keys to move, Space to attack.</p>
-    `;
-
-    // Instantiate the BattleEngine, providing callbacks for turn completion and defeat handling.
-    this.battleEngine = new BattleEngine(
-      this.allHeroes,
-      [], // In Summit Mode, all heroes (playable and enemy) are in one array.
-      this.mapSize,
-      this.mapSize,
-      0, // wallHP is set to 0 or can be customized.
-      this.logCallback,
-      this.onTurnComplete.bind(this),
-      this.onHeroDefeated.bind(this)
-    );
-
-    // Start the battle loop.
-    this.battleEngine.nextTurn();
-  }
-
-  /**
-   * Callback triggered after each turn.
-   * Updates the battlefield view and status using the BattleEngine's functions.
-   */
-  onTurnComplete() {
-    if (this.battleEngine) {
-      const statusDiv = document.getElementById("summit-status");
-      const currentHero = this.battleEngine.getCurrentHero();
-      statusDiv.textContent = `Turn: ${currentHero.name} at (${currentHero.x}, ${currentHero.y}) ${currentHero.controlledByPlayer ? "[Player]" : "[Enemy]"}`;
-      // Render the battlefield grid.
-      const battlefieldDiv = document.getElementById("summit-battlefield");
-      battlefieldDiv.innerHTML = this.battleEngine.drawBattlefield();
-    }
-  }
-
-  /**
-   * Called when a hero is defeated.
-   *
-   * If the defeated hero is controlled by the player and it is the last playable hero, then game over.
-   * If an enemy hero is defeated, it is added to the playable squad (controlledByPlayer=true)
-   * and its HP is restored to full.
-   */
-  onHeroDefeated(defeatedHero) {
-    if (defeatedHero.controlledByPlayer) {
-      // Check if any playable hero remains.
-      const playableHeroes = this.allHeroes.filter(hero => hero.controlledByPlayer && (hero.hp || 0) > 0);
-      if (playableHeroes.length === 0) {
-        this.logCallback("Game Over! All playable heroes have been defeated.");
-        this.onGameOver();
-      } else {
-        this.logCallback(`${defeatedHero.name} has fallen, but playable heroes remain.`);
-        // Remove the defeated hero from further turns.
-        this.battleEngine.removeHero(defeatedHero);
+  simulationRound() {
+    this.logCallback(`--- Round ${this.round} ---`);
+    let anyAction = false;
+    const turnOrder = this.allHeroes.filter(hero => hero.hp > 0);
+    
+    for (let hero of turnOrder) {
+      if (hero.hp <= 0) continue; // skip dead heroes
+      // Enemies are heroes on a different team and still alive.
+      const enemies = this.allHeroes.filter(h => h.team !== hero.team && h.hp > 0);
+      
+      // If no enemy remains, victory is achieved!
+      if (enemies.length === 0) {
+        this.logCallback(`Victory: Team ${hero.team} now controls all heroes!`);
+        this.stopSimulation();
+        if (this.onVictory) this.onVictory();
+        return;
       }
-    } else {
-      // An enemy hero was defeated:
-      this.logCallback(`${defeatedHero.name} has been defeated and joins your team! Restoring full HP.`);
-      defeatedHero.controlledByPlayer = true;
-      // Restore enemy hero's HP. If a maxHp property exists, use that; otherwise, set to a default value.
-      defeatedHero.hp = defeatedHero.maxHp !== undefined ? defeatedHero.maxHp : 100;
-      // Note: You might want to preserve original HP values in your hero definitions.
-      // The enemy now becomes a playable unit.
+      
+      // Find the closest enemy using Manhattan distance.
+      let target = null;
+      let minDist = Infinity;
+      for (let enemy of enemies) {
+        let dist = Math.abs(hero.x - enemy.x) + Math.abs(hero.y - enemy.y);
+        if (dist < minDist) {
+          minDist = dist;
+          target = enemy;
+        }
+      }
+      
+      // Use hero.range as attack range; if not defined, default to 1.
+      const attackRange = hero.range || 1;
+      if (minDist <= attackRange) {
+        // Attack phase.
+        this.logCallback(`${hero.name} (Team ${hero.team}) attacks ${target.name} (Team ${target.team}) for ${hero.attack} damage.`);
+        target.hp -= hero.attack;
+        anyAction = true;
+        if (target.hp <= 0) {
+          this.logCallback(`${target.name} is defeated by ${hero.name} and joins Team ${hero.team}. HP restored.`);
+          target.team = hero.team;
+          target.hp = target.maxHp;
+          target.defeatedBy = hero.name;
+        }
+      } else {
+        // Movement phase: move one step toward the target.
+        let dx = target.x - hero.x;
+        let dy = target.y - hero.y;
+        if (Math.abs(dx) > Math.abs(dy)) {
+          hero.x += dx > 0 ? 1 : -1;
+        } else if (dy !== 0) {
+          hero.y += dy > 0 ? 1 : -1;
+        } else if (dx !== 0) {
+          hero.x += dx > 0 ? 1 : -1;
+        }
+        this.logCallback(`${hero.name} moves to (${hero.x}, ${hero.y}).`);
+        anyAction = true;
+      }
     }
+    this.round++;
+    this.printStatus();
+    // If no action occurred, end simulation.
+    if (!anyAction) {
+      this.logCallback("No actions possible. Ending simulation.");
+      this.stopSimulation();
+      if (this.onGameOver) this.onGameOver();
+    }
+  }
+
+  /**
+   * Stop the simulation loop.
+   */
+  stopSimulation() {
+    if (this.interval) {
+      clearInterval(this.interval);
+      this.interval = null;
+    }
+  }
+
+  /**
+   * Print current status of all heroes to the log.
+   */
+  printStatus() {
+    this.allHeroes.forEach(hero => {
+      this.logCallback(`${hero.name} (Team ${hero.team}) at (${hero.x}, ${hero.y}) with HP: ${hero.hp}/${hero.maxHp}`);
+    });
   }
 }
