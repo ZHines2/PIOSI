@@ -1,15 +1,18 @@
 /**
  * summitMode.js
  *
- * Revised as a turn-by-turn simulation where each hero’s turn is processed in order based on highest agility.
+ * Revised simulation with improved on-screen displays.
+ * 
+ * This simulation runs turn-by-turn with heroes sorted by highest agility.
  * During a hero's turn, the hero can move up to a number of spaces equal to its agility.
- * At any step, if an enemy is within attack range (hero.range), the hero attacks for its attack stat value.
+ * At each step, if an enemy is within attack range (hero.range), the hero attacks for its attack stat value.
  * When a hero defeats an enemy (reducing its HP to 0 or below), the defeated hero’s HP is restored to its original value
- * and immediately joins the attacker's team.
- * Victory is declared when one team controls all heroes.
- *
- * After each hero’s move, the 800×600 canvas is redrawn showing the isometric grid (now outlined with a border)
- * and the updated positions of the heroes.
+ * and the enemy immediately joins the attacker's team.
+ * 
+ * On-screen, the simulation now displays:
+ * - A canvas (800×600) with an outlined isometric grid where heroes are drawn.
+ * - A "hero info" display showing each hero's name, coordinates, and their team color.
+ * - A log that shows only moves and attacks per turn.
  */
 
 import { heroes as allHeroes } from "./heroes.js";
@@ -19,15 +22,16 @@ export class SummitMode {
     this.mapSize = 50;
     this.onGameOver = onGameOver;
     this.onVictory = onVictory;
-    // Keep only the last 20 log lines to avoid messy output.
+    
+    // A streamlined log that shows only per-turn events.
     this.logLines = [];
     this.logCallback = (message) => {
-      // Wrap each message in a paragraph tag.
+      // Wrap message in a paragraph for easier styling.
       this.logLines.push(`<p>${message}</p>`);
+      // Limit log lines to the last 20 events.
       if (this.logLines.length > 20) this.logLines.shift();
       const logBox = document.getElementById("summit-log");
       if (logBox) {
-        // Join the log lines with a line break.
         logBox.innerHTML = this.logLines.join("");
       }
     };
@@ -61,12 +65,16 @@ export class SummitMode {
   }
 
   /**
-   * Start the simulation by computing the initial turn order and processing the first turn.
+   * Start the simulation:
+   * - Update the turn order.
+   * - Draw the initial canvas and hero info.
+   * - Begin processing turns.
    */
   start() {
     this.logCallback("Starting Summit Mode battle royale simulation...");
     this.updateTurnOrder();
     this.drawCanvas();
+    this.updateHeroInfo();
     this.processTurn();
   }
 
@@ -81,8 +89,8 @@ export class SummitMode {
 
   /**
    * Process a single hero's turn.
-   * The current hero can move up to hero.agility spaces. At each step, if an enemy is in range,
-   * the hero attacks and ends its turn.
+   * The current hero can move up to hero.agility spaces.
+   * At each move, if an enemy is in range, the hero attacks and ends its turn.
    */
   processTurn() {
     // Refresh turn order when a round is complete.
@@ -102,7 +110,7 @@ export class SummitMode {
       return;
     }
     
-    // Determine enemies: heroes on a different team who are alive.
+    // Determine enemies: heroes on a different team that are alive.
     const enemies = this.allHeroes.filter(h => h.team !== hero.team && h.hp > 0);
     if (enemies.length === 0) {
       this.logCallback(`Victory: Team ${hero.team} now controls all heroes!`);
@@ -110,13 +118,12 @@ export class SummitMode {
       return;
     }
     
-    // Number of moves available equals hero's agility.
+    // Allow hero to move as many spaces as its agility permits.
     let movesLeft = hero.agility;
-    let acted = false;
+    let acted = false; // Set to true when hero attacks.
 
-    // Process moves one step at a time.
     while (movesLeft > 0 && !acted) {
-      // Recompute target each step.
+      // Recompute target each time.
       let target = null;
       let minDist = Infinity;
       for (let enemy of enemies) {
@@ -139,7 +146,7 @@ export class SummitMode {
           target.defeatedBy = hero.name;
         }
       } else {
-        // Move one step toward the target.
+        // Move one step toward target.
         let dx = target.x - hero.x;
         let dy = target.y - hero.y;
         if (Math.abs(dx) >= Math.abs(dy)) {
@@ -152,25 +159,44 @@ export class SummitMode {
       }
     }
 
+    // Update hero info display after the turn.
     this.turnIndex++;
     this.drawCanvas();
+    this.updateHeroInfo();
     this.scheduleNextTurn();
   }
   
   /**
-   * Schedule processing of the next turn after a delay.
+   * Schedule the next turn after the specified delay.
    */
   scheduleNextTurn() {
     setTimeout(() => this.processTurn(), this.delay);
   }
 
   /**
-   * Log the current status of all heroes.
+   * Update the on-screen hero information.
+   * Displays each hero's name, coordinates, and shows a color block representing their team.
+   * Assumes an HTML container with id "hero-info".
    */
-  printStatus() {
-    // (Optional) Could be removed or replaced with a summary.
+  updateHeroInfo() {
+    const infoContainer = document.getElementById("hero-info");
+    if (!infoContainer) return;
+    
+    // Clear previous info.
+    infoContainer.innerHTML = "";
+    
+    // Create a styled div for each hero.
     this.allHeroes.forEach(hero => {
-      this.logCallback(`${hero.name} (Team ${hero.team}) at (${hero.x}, ${hero.y}) with HP: ${hero.hp}/${hero.originalHp}`);
+      const heroDiv = document.createElement("div");
+      heroDiv.style.padding = "2px 4px";
+      heroDiv.style.margin = "2px 0";
+      heroDiv.style.border = "1px solid #ccc";
+      heroDiv.style.borderRadius = "3px";
+      heroDiv.style.backgroundColor = this.getTeamColor(hero.team);
+      heroDiv.style.color = "#000";
+      heroDiv.style.fontSize = "12px";
+      heroDiv.innerText = `${hero.name} (Team ${hero.team}) at (${hero.x}, ${hero.y}) HP: ${hero.hp}/${hero.originalHp}`;
+      infoContainer.appendChild(heroDiv);
     });
   }
   
@@ -194,10 +220,10 @@ export class SummitMode {
     // Define tile dimensions.
     const tileWidth = 32;
     const tileHeight = 16;
-    // Compute overall grid size in isometric projection.
+    // Compute overall isometric grid size.
     const isoGridWidth = (this.mapSize + this.mapSize) * tileWidth / 2;
     const isoGridHeight = this.mapSize * tileHeight;
-    // Center the grid on the canvas.
+    // Center the grid.
     const offsetX = (canvas.width - isoGridWidth) / 2;
     const offsetY = (canvas.height - isoGridHeight) / 2;
   
@@ -219,7 +245,7 @@ export class SummitMode {
         ctx.closePath();
         ctx.fillStyle = this.getTeamColor(hero.team);
         ctx.fill();
-        // Draw the hero's symbol in the center.
+        // Draw the hero's symbol.
         ctx.fillStyle = "black";
         ctx.font = "10px sans-serif";
         ctx.textAlign = "center";
