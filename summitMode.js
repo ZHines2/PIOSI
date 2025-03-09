@@ -172,26 +172,33 @@ export class SummitMode {
 
   /**
    * Update the on-screen hero information for Summit Mode.
-   * This function populates the container with id "summit-hero-info"
-   * to show each hero's name, coordinates, and team color.
+   * Populates the container with id "summit-hero-info" to show each hero's name,
+   * coordinates, and team color. This updated version ensures text is properly inserted.
    */
   updateSummitHeroInfo() {
     const infoContainer = document.getElementById("summit-hero-info");
     if (!infoContainer) return;
     
-    // Clear previous info.
+    // Clear previous content.
     infoContainer.innerHTML = "";
+    
+    // If no heroes exist, display a default message.
+    if (this.allHeroes.length === 0) {
+      infoContainer.innerText = "No hero information available.";
+      return;
+    }
     
     // Create display elements for each hero.
     this.allHeroes.forEach(hero => {
       const heroDiv = document.createElement("div");
-      heroDiv.style.padding = "2px 4px";
-      heroDiv.style.margin = "2px 0";
+      heroDiv.style.padding = "4px";
+      heroDiv.style.margin = "4px 0";
       heroDiv.style.border = "1px solid #ccc";
       heroDiv.style.borderRadius = "3px";
       heroDiv.style.backgroundColor = this.getTeamColor(hero.team);
       heroDiv.style.color = "#000";
-      heroDiv.style.fontSize = "12px";
+      heroDiv.style.fontSize = "14px";
+      // Insert hero text information.
       heroDiv.innerText = `${hero.name} (Team ${hero.team}) at (${hero.x}, ${hero.y}) HP: ${hero.hp}/${hero.originalHp}`;
       infoContainer.appendChild(heroDiv);
     });
