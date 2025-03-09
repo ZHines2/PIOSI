@@ -3,12 +3,13 @@
  *
  * Revised as a turn-by-turn simulation where each hero’s turn is processed in order based on highest agility.
  * During a hero's turn, the hero can move up to a number of spaces equal to its agility.
- * At any step, if an enemy is within attack range (default attack range; hero.range), the hero attacks for its attack stat value.
+ * At any step, if an enemy is within attack range (hero.range), the hero attacks for its attack stat value.
  * When a hero defeats an enemy (reducing its HP to 0 or below), the defeated hero’s HP is restored to its original value
  * and immediately joins the attacker's team.
  * Victory is declared when one team controls all heroes.
  *
- * The simulation renders the grid on an 800×600 canvas so you can see each individual move before processing the next turn.
+ * After each hero’s move, the 800×600 canvas is redrawn showing the isometric grid (now outlined with a border)
+ * and the updated positions of the heroes.
  */
 
 import { heroes as allHeroes } from "./heroes.js";
@@ -18,14 +19,16 @@ export class SummitMode {
     this.mapSize = 50;
     this.onGameOver = onGameOver;
     this.onVictory = onVictory;
+    // Keep only the last 20 log lines to avoid messy output.
     this.logLines = [];
-    // Log callback that also updates the UI.
     this.logCallback = (message) => {
-      this.logLines.push(message);
-      if (this.logLines.length > 50) this.logLines.shift();
+      // Wrap each message in a paragraph tag.
+      this.logLines.push(`<p>${message}</p>`);
+      if (this.logLines.length > 20) this.logLines.shift();
       const logBox = document.getElementById("summit-log");
       if (logBox) {
-        logBox.innerHTML = this.logLines.join("<br>");
+        // Join the log lines with a line break.
+        logBox.innerHTML = this.logLines.join("");
       }
     };
 
@@ -64,7 +67,6 @@ export class SummitMode {
     this.logCallback("Starting Summit Mode battle royale simulation...");
     this.updateTurnOrder();
     this.drawCanvas();
-    this.printStatus();
     this.processTurn();
   }
 
@@ -79,8 +81,8 @@ export class SummitMode {
 
   /**
    * Process a single hero's turn.
-   * The current hero can move up to hero.agility spaces. At each step, if an enemy is in range, the hero attacks.
-   * After processing the turn, update the grid and schedule the next turn.
+   * The current hero can move up to hero.agility spaces. At each step, if an enemy is in range,
+   * the hero attacks and ends its turn.
    */
   processTurn() {
     // Refresh turn order when a round is complete.
@@ -108,9 +110,9 @@ export class SummitMode {
       return;
     }
     
-    // Determine number of moves available this turn based on agility.
+    // Number of moves available equals hero's agility.
     let movesLeft = hero.agility;
-    let acted = false; // Whether the hero has attacked.
+    let acted = false;
 
     // Process moves one step at a time.
     while (movesLeft > 0 && !acted) {
@@ -137,7 +139,7 @@ export class SummitMode {
           target.defeatedBy = hero.name;
         }
       } else {
-        // Move one step toward target.
+        // Move one step toward the target.
         let dx = target.x - hero.x;
         let dy = target.y - hero.y;
         if (Math.abs(dx) >= Math.abs(dy)) {
@@ -150,9 +152,8 @@ export class SummitMode {
       }
     }
 
-    this.printStatus();
-    this.drawCanvas();
     this.turnIndex++;
+    this.drawCanvas();
     this.scheduleNextTurn();
   }
   
@@ -167,6 +168,7 @@ export class SummitMode {
    * Log the current status of all heroes.
    */
   printStatus() {
+    // (Optional) Could be removed or replaced with a summary.
     this.allHeroes.forEach(hero => {
       this.logCallback(`${hero.name} (Team ${hero.team}) at (${hero.x}, ${hero.y}) with HP: ${hero.hp}/${hero.originalHp}`);
     });
@@ -174,6 +176,7 @@ export class SummitMode {
   
   /**
    * Draw the battlefield on an 800×600 canvas using isometric projection.
+   * A border is drawn around the grid.
    */
   drawCanvas() {
     const container = document.getElementById("summit-battlefield");
@@ -194,9 +197,14 @@ export class SummitMode {
     // Compute overall grid size in isometric projection.
     const isoGridWidth = (this.mapSize + this.mapSize) * tileWidth / 2;
     const isoGridHeight = this.mapSize * tileHeight;
-    // Center the grid.
+    // Center the grid on the canvas.
     const offsetX = (canvas.width - isoGridWidth) / 2;
     const offsetY = (canvas.height - isoGridHeight) / 2;
+  
+    // Draw a border around the isometric grid.
+    ctx.strokeStyle = "#000";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(offsetX, offsetY, isoGridWidth, isoGridHeight);
   
     // Draw each hero as a diamond.
     this.allHeroes.forEach(hero => {
@@ -211,7 +219,7 @@ export class SummitMode {
         ctx.closePath();
         ctx.fillStyle = this.getTeamColor(hero.team);
         ctx.fill();
-        // Draw hero's symbol in the center.
+        // Draw the hero's symbol in the center.
         ctx.fillStyle = "black";
         ctx.font = "10px sans-serif";
         ctx.textAlign = "center";
@@ -221,7 +229,7 @@ export class SummitMode {
   }
   
   /**
-   * Generate a color based on team number, cycling through 50 hues.
+   * Generate a team color based on team number, cycling through 50 hues.
    */
   getTeamColor(team) {
     const hue = (team * 360 / 50) % 360;
