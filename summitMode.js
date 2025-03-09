@@ -1,15 +1,16 @@
 /**
  * summitMode.js
  *
- * Revised to add a canvas-based battle rendering that uses the "Sono" font
- * (loaded in CSS) so that Unicode characters render properly.
+ * Revised to prevent hero overlapping during combat by checking for collisions
+ * when moving heroes. Collision detection will ensure each hero occupies its own cell.
+ * This file uses an HTML canvas for isometric visualization and confines log output.
  *
  * In Summit Mode, a special hero selection screen is shown where the player chooses one hero.
  * The selected hero is placed on a 50×50 grid along with all heroes (at random positions),
  * and battle begins using grid-based BattleEngine mechanics.
  *
- * When a hero (enemy) is defeated, if it is not already in the playable squad, it is added.
- * Additionally, when an enemy hero becomes controllable, its HP is restored to its original spawn value.
+ * When a hero (enemy) is defeated, its HP is restored to its original spawn value,
+ * and it immediately joins the attacker's team.
  * The game is over when all playable heroes are defeated.
  */
 
@@ -17,207 +18,194 @@ import { heroes as allHeroes } from "./heroes.js";
 import { BattleEngine } from "./battleEngine.js";
 
 export class SummitMode {
-  constructor(logCallback, onGameOver) {
+  constructor(logCallback, onGameOver, onVictory) {
     this.mapSize = 50;
-    this.logCallback = logCallback;
     this.onGameOver = onGameOver;
-    // Work on a copy of all heroes so that modifications here do not affect the base definitions.
-    this.allHeroes = allHeroes.map(hero => ({ ...hero }));
-    // Save each hero's original HP value.
-    this.allHeroes.forEach(hero => {
-      hero.originalHp = hero.hp || 100;
+    this.onVictory = onVictory;
+    // Internal log storage: keep only the last 50 log entries.
+    this.logLines = [];
+    this.logCallback = (message) => {
+      this.logLines.push(message);
+      if (this.logLines.length > 50) {
+        this.logLines.shift();
+      }
+      // Update the log container (assumes an element with id "summit-log")
+      const logBox = document.getElementById("summit-log");
+      if (logBox) {
+        logBox.innerHTML = this.logLines.join("<br>");
+      }
+    };
+    // Copy heroes and store their original HP (spawn HP).
+    this.allHeroes = allHeroes.map((hero, index) => {
+      const spawnHp = hero.hp || 100;
+      return {
+        ...hero,
+        originalHp: spawnHp,
+        hp: spawnHp,
+        maxHp: hero.maxHp || spawnHp,
+        team: index,  // each hero starts on its own team
+        defeatedBy: null
+      };
     });
-    // Index of hero chosen by the player, default is 0.
-    this.selectedHeroIndex = 0;
-    // The battle engine instance (uses base BattleEngine mechanics).
-    this.battleEngine = null;
-    // Bind selection key handling method.
-    this.handleSelectionKeyDown = this.handleSelectionKeyDown.bind(this);
+    this.round = 1;
+    this.interval = null;
   }
 
   /**
-   * Begins Summit Mode by displaying the hero selection screen.
+   * Start the simulation.
    */
   start() {
-    this.logCallback("Entering Summit Mode selection screen...");
-    this.showHeroSelectionScreen();
-    document.addEventListener("keydown", this.handleSelectionKeyDown);
-  }
-
-  /**
-   * Render the hero selection screen in the summit-mode container.
-   */
-  showHeroSelectionScreen() {
-    const container = document.getElementById("summit-mode");
-    container.innerHTML = `
-      <h1>Summit Mode - Select Your Hero</h1>
-      <div id="summit-selection" style="display:flex; justify-content:center; align-items:center;"></div>
-      <div id="summit-stats" style="margin-top:10px; text-align:center;"></div>
-      <p style="text-align:center;">Use Left/Right arrows to select a hero. Press Space to confirm.</p>
-    `;
-    this.renderSelection();
-  }
-
-  /**
-   * Display hero icons in the selection area, highlighting the selected hero.
-   */
-  renderSelection() {
-    const selectionDiv = document.getElementById("summit-selection");
-    selectionDiv.innerHTML = "";
-    this.allHeroes.forEach((hero, idx) => {
-      const heroDiv = document.createElement("div");
-      heroDiv.style.margin = "5px";
-      heroDiv.style.padding = "10px";
-      heroDiv.style.border = idx === this.selectedHeroIndex ? "2px solid yellow" : "2px solid gray";
-      heroDiv.style.backgroundColor = "#222";
-      heroDiv.style.color = "#fff";
-      heroDiv.style.fontSize = "1.5em";
-      // Display hero symbol if provided; otherwise, first letter of the hero's name.
-      heroDiv.textContent = hero.symbol || hero.name.charAt(0);
-      selectionDiv.appendChild(heroDiv);
-    });
-    this.renderHeroStats();
-  }
-
-  /**
-   * Display detailed stats for the currently highlighted hero.
-   */
-  renderHeroStats() {
-    const statsDiv = document.getElementById("summit-stats");
-    const hero = this.allHeroes[this.selectedHeroIndex];
-    let statsHtml = `<strong>${hero.name}</strong><br>`;
-    statsHtml += `Attack: ${hero.attack || 0} | HP: ${hero.hp || 0} | Agility: ${hero.agility || 0} | Range: ${hero.range || 0}`;
-    statsDiv.innerHTML = statsHtml;
-  }
-
-  /**
-   * Handle keydown events on the hero selection screen.
-   * Left/Right arrows cycle through heroes; Space confirms selection.
-   */
-  handleSelectionKeyDown(e) {
-    if (!this.isSummitModeActive()) return; // Process keys only if summit-mode is visible
-    if (e.code === "ArrowLeft") {
-      this.selectedHeroIndex = (this.selectedHeroIndex - 1 + this.allHeroes.length) % this.allHeroes.length;
-      this.renderSelection();
-      e.preventDefault();
-    } else if (e.code === "ArrowRight") {
-      this.selectedHeroIndex = (this.selectedHeroIndex + 1) % this.allHeroes.length;
-      this.renderSelection();
-      e.preventDefault();
-    } else if (e.code === "Space") {
-      document.removeEventListener("keydown", this.handleSelectionKeyDown);
-      this.logCallback(`Selected hero: ${this.allHeroes[this.selectedHeroIndex].name}`);
-      this.initializeBattle();
-      e.preventDefault();
-    }
-  }
-
-  /**
-   * Determines if the summit-mode container is currently active.
-   */
-  isSummitModeActive() {
-    const container = document.getElementById("summit-mode");
-    return container && container.style.display !== "none";
-  }
-
-  /**
-   * Initialize the battle phase.
-   * The selected hero is marked as controlled and placed on a random grid position.
-   * All heroes are randomly positioned and sorted by agility for turn order.
-   * The BattleEngine is instantiated with additional defeat handling for summing heroes.
-   */
-  initializeBattle() {
-    // Position heroes randomly and mark playable vs. non-playable.
-    this.allHeroes.forEach((hero, idx) => {
-      hero.x = Math.floor(Math.random() * this.mapSize);
-      hero.y = Math.floor(Math.random() * this.mapSize);
-      // Initially, only the selected hero is controlled by the player.
-      hero.controlledByPlayer = (idx === this.selectedHeroIndex);
-    });
-    // Sort heroes by agility descending.
-    this.allHeroes.sort((a, b) => (b.agility || 0) - (a.agility || 0));
-
-    // Clear the UI and render the battle layout.
-    const container = document.getElementById("summit-mode");
-    container.innerHTML = `
-      <h1>Summit Mode - Battle</h1>
-      <div id="summit-battlefield" style="margin:10px auto; width:800px; height:600px; border:1px solid #fff; position:relative;"></div>
-      <div id="summit-status" style="text-align:center; margin-top:10px;"></div>
-      <p style="text-align:center;">Use arrow keys to move, Space to attack.</p>
-    `;
-
-    // Instantiate the BattleEngine, providing callbacks for turn completion and defeat handling.
-    this.battleEngine = new BattleEngine(
-      this.allHeroes,
-      [], // In Summit Mode, all heroes (playable and enemy) are in one array.
-      this.mapSize,
-      this.mapSize,
-      0, // wallHP is set to 0 or can be customized.
-      this.logCallback,
-      this.onTurnComplete.bind(this),
-      this.onHeroDefeated.bind(this)
-    );
-
-    // Replace the textual grid display with a canvas rendering.
+    this.logCallback("Starting Summit Mode battle royale simulation...");
     this.drawCanvas();
-    // Start the battle loop.
-    this.battleEngine.nextTurn();
+    this.printStatus();
+    // Run a simulation round every 500ms.
+    this.interval = setInterval(() => this.simulationRound(), 500);
   }
 
   /**
-   * Callback triggered after each turn.
-   * Updates the battlefield view and status using the BattleEngine's functions.
+   * Simulate one round where each alive hero takes a turn.
+   * Collision detection is applied during movement.
    */
-  onTurnComplete() {
-    if (this.battleEngine) {
-      const statusDiv = document.getElementById("summit-status");
-      const currentHero = this.battleEngine.getCurrentHero();
-      statusDiv.textContent = `Turn: ${currentHero.name} at (${currentHero.x}, ${currentHero.y}) ${currentHero.controlledByPlayer ? "[Player]" : "[Enemy]"}`;
-      // Instead of using a text-based grid, update the canvas visualization.
-      this.drawCanvas();
-    }
-  }
-
-  /**
-   * Called when a hero is defeated.
-   *
-   * If the defeated hero is controlled by the player and it is the last playable hero, then game over.
-   * If an enemy hero is defeated, it is added to the playable squad (controlledByPlayer=true)
-   * and its HP is restored to its original spawn value.
-   */
-  onHeroDefeated(defeatedHero) {
-    if (defeatedHero.controlledByPlayer) {
-      // Check if any playable hero remains.
-      const playableHeroes = this.allHeroes.filter(hero => hero.controlledByPlayer && (hero.hp || 0) > 0);
-      if (playableHeroes.length === 0) {
-        this.logCallback("Game Over! All playable heroes have been defeated.");
-        this.onGameOver();
-      } else {
-        this.logCallback(`${defeatedHero.name} has fallen, but playable heroes remain.`);
-        // Remove the defeated hero from further turns.
-        this.battleEngine.removeHero(defeatedHero);
+  simulationRound() {
+    this.logCallback(`--- Round ${this.round} ---`);
+    let anyAction = false;
+    const turnOrder = this.allHeroes.filter(hero => hero.hp > 0);
+    
+    for (let hero of turnOrder) {
+      if (hero.hp <= 0) continue; // skip dead heroes
+      
+      // Define enemies as heroes on a different team that are alive.
+      const enemies = this.allHeroes.filter(h => h.team !== hero.team && h.hp > 0);
+      
+      // If no enemy remains, victory is achieved.
+      if (enemies.length === 0) {
+        this.logCallback(`Victory: Team ${hero.team} now controls all heroes!`);
+        this.stopSimulation();
+        if (this.onVictory) this.onVictory();
+        return;
       }
-    } else {
-      // An enemy hero was defeated:
-      this.logCallback(`${defeatedHero.name} has been defeated and joins your team! Restoring HP to original value (${defeatedHero.originalHp}).`);
-      defeatedHero.controlledByPlayer = true;
-      defeatedHero.hp = defeatedHero.originalHp;
-      // Optionally, you might flag who defeated them.
-      defeatedHero.defeatedBy = null;
+      
+      // Find the closest enemy using Manhattan distance.
+      let target = null;
+      let minDist = Infinity;
+      for (let enemy of enemies) {
+        let dist = Math.abs(hero.x - enemy.x) + Math.abs(hero.y - enemy.y);
+        if (dist < minDist) {
+          minDist = dist;
+          target = enemy;
+        }
+      }
+      
+      // Use hero.range as attack range; if not defined, default to 1.
+      const attackRange = hero.range || 1;
+      if (minDist <= attackRange) {
+        // Attack phase.
+        this.logCallback(`${hero.name} (Team ${hero.team}) attacks ${target.name} (Team ${target.team}) for ${hero.attack} damage.`);
+        target.hp -= hero.attack;
+        anyAction = true;
+        if (target.hp <= 0) {
+          this.logCallback(`${target.name} is defeated by ${hero.name} and joins Team ${hero.team}. HP restored to original value (${target.originalHp}).`);
+          target.team = hero.team;
+          target.hp = target.originalHp;
+          target.defeatedBy = hero.name;
+        }
+      } else {
+        // Movement phase: calculate intended new position towards the target.
+        let dx = target.x - hero.x;
+        let dy = target.y - hero.y;
+        let newX = hero.x;
+        let newY = hero.y;
+        
+        if (Math.abs(dx) > Math.abs(dy)) {
+          newX = hero.x + (dx > 0 ? 1 : -1);
+          newY = hero.y;
+          // If the intended cell is occupied, try moving vertically.
+          if (this.isOccupied(newX, newY, hero)) {
+            newX = hero.x;
+            newY = hero.y + (dy > 0 ? 1 : -1);
+            if (this.isOccupied(newX, newY, hero)) {
+              // No movement possible if alternative is also occupied.
+              newX = hero.x;
+              newY = hero.y;
+            }
+          }
+        } else if (dy !== 0) {
+          newY = hero.y + (dy > 0 ? 1 : -1);
+          newX = hero.x;
+          // If the intended cell is occupied, try horizontal movement.
+          if (this.isOccupied(newX, newY, hero)) {
+            newY = hero.y;
+            newX = hero.x + (dx > 0 ? 1 : -1);
+            if (this.isOccupied(newX, newY, hero)) {
+              newX = hero.x;
+              newY = hero.y;
+            }
+          }
+        } else if (dx !== 0) {
+          newX = hero.x + (dx > 0 ? 1 : -1);
+          newY = hero.y;
+          if (this.isOccupied(newX, newY, hero)) {
+            newX = hero.x;
+            newY = hero.y;
+          }
+        }
+        
+        // Apply movement if new position is different.
+        if (newX !== hero.x || newY !== hero.y) {
+          hero.x = newX;
+          hero.y = newY;
+          this.logCallback(`${hero.name} moves to (${hero.x}, ${hero.y}).`);
+          anyAction = true;
+        } else {
+          this.logCallback(`${hero.name} stays at (${hero.x}, ${hero.y}) due to collisions.`);
+        }
+      }
     }
-    // Update the canvas after a defeat.
-    this.drawCanvas();
+    this.round++;
+    this.printStatus();
+    this.drawCanvas(); // update visual canvas each round
+    if (!anyAction) {
+      this.logCallback("No actions possible. Ending simulation.");
+      this.stopSimulation();
+      if (this.onGameOver) this.onGameOver();
+    }
+  }
+  
+  /**
+   * Helper method to check if a cell at (x, y) is occupied by any other alive hero.
+   */
+  isOccupied(x, y, movingHero) {
+    return this.allHeroes.some(hero => hero.hp > 0 && hero !== movingHero && hero.x === x && hero.y === y);
+  }
+
+  /**
+   * Stop the simulation loop.
+   */
+  stopSimulation() {
+    if (this.interval) {
+      clearInterval(this.interval);
+      this.interval = null;
+    }
+  }
+
+  /**
+   * Print the current status of all heroes to the log.
+   */
+  printStatus() {
+    this.allHeroes.forEach(hero => {
+      this.logCallback(`${hero.name} (Team ${hero.team}) at (${hero.x}, ${hero.y}) with HP: ${hero.hp}/${hero.originalHp}`);
+    });
   }
 
   /**
    * Draw the battlefield on a canvas element using isometric projection.
-   * The canvas uses the "Sono" font (set in CSS) by explicitly setting the context's font.
+   * The canvas uses the "Sono" font (set in CSS) by explicitly setting the drawing context.
    */
   drawCanvas() {
     const container = document.getElementById("summit-battlefield");
     let canvas = container.querySelector("canvas");
     if (!canvas) {
-      // Create a new canvas element if one doesn't exist.
+      // Create the canvas element if it doesn't exist.
       canvas = document.createElement("canvas");
       canvas.width = container.clientWidth;
       canvas.height = container.clientHeight;
@@ -227,7 +215,7 @@ export class SummitMode {
     const ctx = canvas.getContext("2d");
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Set the font to use "Sono" as imported in the CSS.
+    // Set font to "Sono" imported via CSS.
     ctx.font = "10px 'Sono', sans-serif";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
@@ -243,7 +231,7 @@ export class SummitMode {
     const offsetY = (canvas.height - isoGridHeight) / 2;
 
     // Optionally, draw grid lines for reference.
-    // For each hero, compute its isometric coordinate and draw a diamond.
+    // Draw each hero on the isometric canvas.
     this.allHeroes.forEach(hero => {
       if (hero.hp > 0) {
         let isoX = (hero.x - hero.y) * tileWidth / 2 + offsetX + isoGridWidth / 2;
@@ -255,13 +243,22 @@ export class SummitMode {
         ctx.lineTo(isoX, isoY + tileHeight / 2);
         ctx.lineTo(isoX - tileWidth / 2, isoY);
         ctx.closePath();
-        // You could customize the fillStyle based on the hero's team.
-        ctx.fillStyle = "#88c"; 
+        // Using team color could be added here.
+        ctx.fillStyle = this.getTeamColor(hero.team);
         ctx.fill();
         // Draw the hero's symbol in the center.
         ctx.fillStyle = "black";
         ctx.fillText(hero.symbol ? hero.symbol[0] : hero.name[0], isoX, isoY);
       }
     });
+  }
+
+  /**
+   * Generate a color based on team number.
+   * Cycles through 50 hues.
+   */
+  getTeamColor(team) {
+    const hue = (team * 360 / 50) % 360;
+    return `hsl(${hue}, 70%, 70%)`;
   }
 }
