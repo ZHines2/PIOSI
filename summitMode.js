@@ -2,9 +2,8 @@
  * summitMode.js
  *
  * Revised to prevent hero overlapping during combat by:
- * • Using a function to assign each hero a unique random position on a 50×50 grid (2,500 slots)
- * • Checking collisions during movement and re-assigning positions if necessary
- * • If initial load fails to assign positions, a reattempt can be triggered.
+ * • Assigning each hero a unique random position on a 50×50 grid (2,500 slots)
+ * • Drawing an isometric grid for improved visualization
  *
  * When a hero is defeated, its HP is restored to its original spawn value,
  * and it immediately joins the attacker's team.
@@ -93,7 +92,7 @@ export class SummitMode {
       this.logCallback("Error: Not enough free positions available.");
       return false;
     }
-    // Assign the first n slots to heroes.
+    // Assign the first slots to heroes.
     this.allHeroes.forEach((hero, index) => {
       const slot = freeSlots[index];
       hero.x = slot.x;
@@ -238,7 +237,7 @@ export class SummitMode {
 
   /**
    * Draw the battlefield on a canvas element using isometric projection.
-   * The canvas uses the "Sono" font (set in CSS) by explicitly setting the drawing context.
+   * This updated method now draws grid lines before rendering each hero for clearer visualization.
    */
   drawCanvas() {
     const container = document.getElementById("summit-battlefield");
@@ -268,6 +267,32 @@ export class SummitMode {
     // Center the grid in the canvas.
     const offsetX = (canvas.width - isoGridWidth) / 2;
     const offsetY = (canvas.height - isoGridHeight) / 2;
+
+    // Draw grid lines for visualization.
+    ctx.strokeStyle = "#333";
+    ctx.lineWidth = 0.5;
+    for (let i = 0; i <= this.mapSize; i++) {
+      // vertical-ish grid line
+      let startX = (i - 0) * tileWidth / 2 + offsetX + isoGridWidth / 2;
+      let startY = (i + 0) * tileHeight / 2 + offsetY;
+      let endX = (i - this.mapSize) * tileWidth / 2 + offsetX + isoGridWidth / 2;
+      let endY = (i + this.mapSize) * tileHeight / 2 + offsetY;
+      ctx.beginPath();
+      ctx.moveTo(startX, startY);
+      ctx.lineTo(endX, endY);
+      ctx.stroke();
+    }
+    for (let i = 0; i <= this.mapSize; i++) {
+      // horizontal-ish grid line
+      let startX = (0 - i) * tileWidth / 2 + offsetX + isoGridWidth / 2;
+      let startY = (0 + i) * tileHeight / 2 + offsetY;
+      let endX = (this.mapSize - i) * tileWidth / 2 + offsetX + isoGridWidth / 2;
+      let endY = (this.mapSize + i) * tileHeight / 2 + offsetY;
+      ctx.beginPath();
+      ctx.moveTo(startX, startY);
+      ctx.lineTo(endX, endY);
+      ctx.stroke();
+    }
 
     // Draw each hero on the isometric canvas.
     this.allHeroes.forEach(hero => {
