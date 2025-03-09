@@ -43,6 +43,8 @@ export class SummitMode {
    */
   start() {
     this.logCallback("Starting Summit Mode battle royale simulation...");
+    // Initially, render the grid
+    this.drawGrid();
     this.printStatus();
     // Run a simulation round every 500ms
     this.interval = setInterval(() => this.simulationRound(), 500);
@@ -84,11 +86,15 @@ export class SummitMode {
       const attackRange = hero.range || 1;
       if (minDist <= attackRange) {
         // Attack phase.
-        this.logCallback(`${hero.name} (Team ${hero.team}) attacks ${target.name} (Team ${target.team}) for ${hero.attack} damage.`);
+        this.logCallback(
+          `${hero.name} (Team ${hero.team}) attacks ${target.name} (Team ${target.team}) for ${hero.attack} damage.`
+        );
         target.hp -= hero.attack;
         anyAction = true;
         if (target.hp <= 0) {
-          this.logCallback(`${target.name} is defeated by ${hero.name} and joins Team ${hero.team}. HP restored.`);
+          this.logCallback(
+            `${target.name} is defeated by ${hero.name} and joins Team ${hero.team}. HP restored.`
+          );
           target.team = hero.team;
           target.hp = target.maxHp;
           target.defeatedBy = hero.name;
@@ -110,12 +116,40 @@ export class SummitMode {
     }
     this.round++;
     this.printStatus();
+    // Re-render the visual grid each round
+    this.drawGrid();
     // If no action occurred, end simulation.
     if (!anyAction) {
       this.logCallback("No actions possible. Ending simulation.");
       this.stopSimulation();
       if (this.onGameOver) this.onGameOver();
     }
+  }
+
+  /**
+   * Builds a 2D grid representation and renders it to the DOM.
+   * The grid is a (mapSize x mapSize) matrix where empty cells are "." and hero cells display the hero's symbol.
+   */
+  drawGrid() {
+    // Create empty grid array
+    let grid = Array.from({ length: this.mapSize }, () =>
+      Array(this.mapSize).fill(".")
+    );
+    // Place each hero's symbol in the grid based on x,y coordinates.
+    for (const hero of this.allHeroes) {
+      // For simplicity, if multiple heroes share a cell, we'll show the one with highest HP.
+      if (hero.hp > 0) {
+        // Limit the symbol length to 1.
+        grid[hero.y][hero.x] = hero.symbol ? hero.symbol[0] : hero.name[0];
+      }
+    }
+    // Create HTML string for grid (each row in a div)
+    let gridHtml = "";
+    for (let row of grid) {
+      gridHtml += `<div>${row.join(" ")}</div>`;
+    }
+    const battlefieldDiv = document.getElementById("summit-battlefield");
+    if (battlefieldDiv) battlefieldDiv.innerHTML = gridHtml;
   }
 
   /**
@@ -133,7 +167,9 @@ export class SummitMode {
    */
   printStatus() {
     this.allHeroes.forEach(hero => {
-      this.logCallback(`${hero.name} (Team ${hero.team}) at (${hero.x}, ${hero.y}) with HP: ${hero.hp}/${hero.maxHp}`);
+      this.logCallback(
+        `${hero.name} (Team ${hero.team}) at (${hero.x}, ${hero.y}) with HP: ${hero.hp}/${hero.maxHp}`
+      );
     });
   }
 }
