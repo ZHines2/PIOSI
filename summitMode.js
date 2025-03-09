@@ -1,11 +1,11 @@
 /**
  * summitMode.js
  *
- * Revised to prevent hero overlapping during combat by checking for collisions
- * when moving heroes. Collision detection will ensure each hero occupies its own cell.
- * This file uses an HTML canvas for isometric visualization and confines log output.
+ * Revised to prevent hero overlapping during combat by:
+ * • Using a function to assign each hero a unique random position on a 50×50 grid (2,500 slots)
+ * • Checking collisions during movement and re-assigning positions if necessary
+ * • If initial load fails to assign positions, a reattempt can be triggered.
  *
- * In Summit Mode, the heroes are positioned on a 50×50 grid.
  * When a hero is defeated, its HP is restored to its original spawn value,
  * and it immediately joins the attacker's team.
  * Victory is declared when one team controls all heroes.
@@ -53,9 +53,19 @@ export class SummitMode {
 
   /**
    * Start the simulation.
+   * Assigns each hero a unique starting position without overlaps.
    */
   start() {
     this.logCallback("Starting Summit Mode battle royale simulation...");
+    // Attempt to assign unique initial positions.
+    if (!this.assignInitialPositions()) {
+      this.logCallback("Failed to assign initial positions uniquely. Retrying...");
+      // You could trigger a retry here if needed.
+      if (!this.assignInitialPositions()) {
+        this.logCallback("Unable to assign unique positions after retry. Aborting simulation.");
+        return;
+      }
+    }
     this.drawCanvas();
     this.printStatus();
     // Run a simulation round every 500ms.
@@ -63,7 +73,37 @@ export class SummitMode {
   }
 
   /**
-   * Simulate one round where each alive hero takes a turn.
+   * Assign unique starting positions to each hero.
+   * Returns true if successful, false otherwise.
+   */
+  assignInitialPositions() {
+    // Create an array of all possible grid slots (2,500 total on a 50x50 grid).
+    const freeSlots = [];
+    for (let x = 0; x < this.mapSize; x++) {
+      for (let y = 0; y < this.mapSize; y++) {
+        freeSlots.push({ x, y });
+      }
+    }
+    // Shuffle freeSlots using Fisher–Yates shuffle.
+    for (let i = freeSlots.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [freeSlots[i], freeSlots[j]] = [freeSlots[j], freeSlots[i]];
+    }
+    if (freeSlots.length < this.allHeroes.length) {
+      this.logCallback("Error: Not enough free positions available.");
+      return false;
+    }
+    // Assign the first n slots to heroes.
+    this.allHeroes.forEach((hero, index) => {
+      const slot = freeSlots[index];
+      hero.x = slot.x;
+      hero.y = slot.y;
+    });
+    return true;
+  }
+  
+  /**
+   * Simulate one simulation round where each alive hero takes a turn.
    * Collision detection is applied during movement.
    */
   simulationRound() {
