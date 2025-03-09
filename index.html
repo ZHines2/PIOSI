@@ -57,14 +57,22 @@
     </div>
 
     <!-- Summit Mode Screen -->
-    <div id="summit-mode" style="display:none; flex-direction: column; align-items: center;">
+    <div id="summit-mode" style="display:none; flex-direction: column; align-items: center; padding: 10px;">
       <h1>Summit Mode</h1>
-      <div id="summit-battlefield"></div>
+      <!-- Updated Summit Mode-specific sections -->
+      <div id="summit-battlefield" style="margin: 10px 0; border: 2px solid #333;">
+        <!-- Canvas will be inserted here by summitMode.js -->
+      </div>
+      <!-- NEW container for displaying hero info (name, coordinates, team color) -->
+      <div id="summit-hero-info" style="background-color: #fff; border: 1px solid #ccc; padding: 8px; margin: 10px 0; max-height: 150px; overflow-y: auto; width: 800px; font-size: 14px;">
+        <!-- Summit Mode hero info will be updated here -->
+      </div>
       <p id="summit-status"></p>
-      <div id="summit-log"></div>
+      <div id="summit-log" style="background-color: #fff; border: 1px solid #ccc; padding: 8px; margin: 10px 0; max-height: 120px; overflow-y: auto; width: 800px; font-size: 13px;">
+        <!-- Simulation log messages will appear here -->
+      </div>
       <p>
-        Use Arrow Keys to Move | Press Spacebar to Attack, then choose attack
-        direction.
+        Use Arrow Keys to Move | Press Spacebar to Attack, then choose attack direction.
       </p>
     </div>
 
@@ -722,7 +730,6 @@
         const onVictory = () => {
           showScreen("victory");
         };
-        // Passing onVictory along with the other callbacks:
         const summitMode = new SummitMode(logCallback, onGameOver, onVictory);
         summitMode.start();
         showScreen("summitMode");
