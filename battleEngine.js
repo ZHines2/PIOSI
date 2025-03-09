@@ -347,9 +347,9 @@ export class BattleEngine {
             this.logCallback(`${adjacentHero.name}'s bomba deals ${adjacentHero.bomba} additional damage to ${enemy.name}! (HP left: ${enemy.hp})`);
           }
         });
-        // Check for enemy defeat (including from slüj damage applied earlier)
+        // Check for enemy defeat
         if (enemy.hp <= 0) {
-          this.logCallback(`${enemy.name} is defeated by its slüj effect!`);
+          this.logCallback(`${enemy.name} is defeated!`);
           this.battlefield[enemy.y][enemy.x] = '.';
           this.enemies = this.enemies.filter(e => e !== enemy);
         }
