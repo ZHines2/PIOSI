@@ -5,13 +5,10 @@
  * when moving heroes. Collision detection will ensure each hero occupies its own cell.
  * This file uses an HTML canvas for isometric visualization and confines log output.
  *
- * In Summit Mode, a special hero selection screen is shown where the player chooses one hero.
- * The selected hero is placed on a 50×50 grid along with all heroes (at random positions),
- * and battle begins using grid-based BattleEngine mechanics.
- *
- * When a hero (enemy) is defeated, its HP is restored to its original spawn value,
+ * In Summit Mode, the heroes are positioned on a 50×50 grid.
+ * When a hero is defeated, its HP is restored to its original spawn value,
  * and it immediately joins the attacker's team.
- * The game is over when all playable heroes are defeated.
+ * Victory is declared when one team controls all heroes.
  */
 
 import { heroes as allHeroes } from "./heroes.js";
@@ -35,7 +32,7 @@ export class SummitMode {
         logBox.innerHTML = this.logLines.join("<br>");
       }
     };
-    // Copy heroes and store their original HP (spawn HP).
+    // Copy heroes and store their original HP (spawn HP) along with their properties.
     this.allHeroes = allHeroes.map((hero, index) => {
       const spawnHp = hero.hp || 100;
       return {
@@ -44,7 +41,10 @@ export class SummitMode {
         hp: spawnHp,
         maxHp: hero.maxHp || spawnHp,
         team: index,  // each hero starts on its own team
-        defeatedBy: null
+        defeatedBy: null,
+        // Ensure that name and symbol properties are preserved.
+        name: hero.name,
+        symbol: hero.symbol
       };
     });
     this.round = 1;
@@ -110,7 +110,7 @@ export class SummitMode {
           target.defeatedBy = hero.name;
         }
       } else {
-        // Movement phase: calculate intended new position towards the target.
+        // Movement phase: calculate intended new position toward the target.
         let dx = target.x - hero.x;
         let dy = target.y - hero.y;
         let newX = hero.x;
@@ -124,7 +124,6 @@ export class SummitMode {
             newX = hero.x;
             newY = hero.y + (dy > 0 ? 1 : -1);
             if (this.isOccupied(newX, newY, hero)) {
-              // No movement possible if alternative is also occupied.
               newX = hero.x;
               newY = hero.y;
             }
@@ -150,7 +149,7 @@ export class SummitMode {
           }
         }
         
-        // Apply movement if new position is different.
+        // Apply movement if new position is available.
         if (newX !== hero.x || newY !== hero.y) {
           hero.x = newX;
           hero.y = newY;
@@ -230,7 +229,6 @@ export class SummitMode {
     const offsetX = (canvas.width - isoGridWidth) / 2;
     const offsetY = (canvas.height - isoGridHeight) / 2;
 
-    // Optionally, draw grid lines for reference.
     // Draw each hero on the isometric canvas.
     this.allHeroes.forEach(hero => {
       if (hero.hp > 0) {
@@ -243,10 +241,10 @@ export class SummitMode {
         ctx.lineTo(isoX, isoY + tileHeight / 2);
         ctx.lineTo(isoX - tileWidth / 2, isoY);
         ctx.closePath();
-        // Using team color could be added here.
+        // Use team color to differentiate heroes.
         ctx.fillStyle = this.getTeamColor(hero.team);
         ctx.fill();
-        // Draw the hero's symbol in the center.
+        // Draw the hero's symbol (or first letter of the name) in the center.
         ctx.fillStyle = "black";
         ctx.fillText(hero.symbol ? hero.symbol[0] : hero.name[0], isoX, isoY);
       }
