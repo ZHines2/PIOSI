@@ -33,6 +33,9 @@ export class SummitMode {
       const logBox = document.getElementById("summit-log");
       if (logBox) {
         logBox.innerHTML = this.logLines.join("");
+        // Set the background to black and text color to white.
+        logBox.style.backgroundColor = "black";
+        logBox.style.color = "white";
       }
     };
 
@@ -51,7 +54,7 @@ export class SummitMode {
         attack: hero.attack || 10,
         // 'range' represents the attack range; default to 1.
         range: hero.range || 1,
-        // 'agility' determines both the turn order and how many spaces the hero can move in one turn.
+        // 'agility' determines both the turn order and how many spaces the hero can move.
         agility: hero.agility || 1,
         name: hero.name,
         symbol: hero.symbol
@@ -59,9 +62,9 @@ export class SummitMode {
     });
 
     // Prepare turn tracking.
-    this.turnOrder = []; // Computed at the beginning of each full round.
+    this.turnOrder = []; // Computed at the beginning of each round.
     this.turnIndex = 0;  // Index in the turn order.
-    this.delay = 500;    // Delay in milliseconds between turns.
+    this.delay = 500;    // Delay (ms) between turns.
   }
 
   /**
@@ -117,7 +120,7 @@ export class SummitMode {
 
     // Set number of moves available based on hero's agility.
     let movesLeft = hero.agility;
-    let acted = false; // Indicates if the hero has executed an attack.
+    let acted = false;
 
     while (movesLeft > 0 && !acted) {
       // Pick the closest enemy as target.
@@ -143,7 +146,7 @@ export class SummitMode {
           target.defeatedBy = hero.name;
         }
       } else {
-        // Move one step closer to the enemy target.
+        // Move one step closer to the target.
         let dx = target.x - hero.x;
         let dy = target.y - hero.y;
         if (Math.abs(dx) >= Math.abs(dy)) {
@@ -156,7 +159,7 @@ export class SummitMode {
       }
     }
 
-    // Update canvas and hero info display for Summit Mode.
+    // Update canvas and hero info.
     this.turnIndex++;
     this.drawCanvas();
     this.updateSummitHeroInfo();
@@ -172,17 +175,15 @@ export class SummitMode {
 
   /**
    * Update the on-screen hero information for Summit Mode.
-   * This populates the "summit-hero-info" container with each hero's details.
-   * The background of the boxes will be black and the text will be white.
+   * Populates the "summit-hero-info" container with each hero's details.
    */
   updateSummitHeroInfo() {
     const infoContainer = document.getElementById("summit-hero-info");
     if (!infoContainer) return;
     
-    // Clear the previous content.
+    // Clear previous content.
     infoContainer.innerHTML = "";
     
-    // If there are no heroes, display a default message.
     if (this.allHeroes.length === 0) {
       infoContainer.innerText = "No hero information available.";
       return;
@@ -199,7 +200,6 @@ export class SummitMode {
       heroDiv.style.backgroundColor = "black";
       heroDiv.style.color = "white";
       heroDiv.style.fontSize = "14px";
-      // Insert hero details.
       heroDiv.innerText = `${hero.name} (Team ${hero.team}) at (${hero.x}, ${hero.y}) HP: ${hero.hp}/${hero.originalHp}`;
       infoContainer.appendChild(heroDiv);
     });
@@ -207,7 +207,7 @@ export class SummitMode {
   
   /**
    * Draw the battlefield on an 800×600 canvas using isometric projection.
-   * The canvas is drawn in the "summit-battlefield" container.
+   * The canvas is drawn inside the "summit-battlefield" container.
    */
   drawCanvas() {
     const container = document.getElementById("summit-battlefield");
@@ -227,7 +227,6 @@ export class SummitMode {
     const tileHeight = 16;
     const isoGridWidth = (this.mapSize + this.mapSize) * tileWidth / 2;
     const isoGridHeight = this.mapSize * tileHeight;
-    // Center the grid on the canvas.
     const offsetX = (canvas.width - isoGridWidth) / 2;
     const offsetY = (canvas.height - isoGridHeight) / 2;
   
@@ -258,7 +257,7 @@ export class SummitMode {
   }
   
   /**
-   * Generate a team color based on the team number, cycling through 50 hues.
+   * Generate a team color based on team number, cycling through 50 hues.
    */
   getTeamColor(team) {
     const hue = (team * 360 / 50) % 360;
