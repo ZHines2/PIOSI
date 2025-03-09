@@ -56,6 +56,18 @@
       <!-- WorldMap.js module will populate this screen -->
     </div>
 
+    <!-- Summit Mode Screen -->
+    <div id="summit-mode" style="display:none; flex-direction: column; align-items: center;">
+      <h1>Summit Mode</h1>
+      <div id="summit-battlefield"></div>
+      <p id="summit-status"></p>
+      <div id="summit-log"></div>
+      <p>
+        Use Arrow Keys to Move | Press Spacebar to Attack, then choose attack
+        direction.
+      </p>
+    </div>
+
     <!-- Game Over Screen -->
     <div id="game-over">
       <h1>Game Over</h1>
@@ -100,6 +112,7 @@
         moveSelectionRight,
         selectCurrentNode,
       } from "./worldMap.js";
+      import { SummitMode } from "./summitMode.js";
 
       // Global variables to manage game state
       let currentScreen = "title";
@@ -141,6 +154,7 @@
         document.getElementById("world-map").style.display = "none";
         document.getElementById("mode-up-window").style.display = "none";
         document.getElementById("game-over").style.display = "none";
+        document.getElementById("summit-mode").style.display = "none";
 
         if (screen === "title") {
           document.getElementById("title-screen").style.display = "flex";
@@ -156,6 +170,8 @@
           initWorldMap();
         } else if (screen === "modeUp") {
           document.getElementById("mode-up-window").style.display = "flex";
+        } else if (screen === "summitMode") {
+          document.getElementById("summit-mode").style.display = "flex";
         }
         currentScreen = screen;
       }
@@ -691,6 +707,25 @@
           showScreen("worldMap");
       }
 
+      /**
+       * Start Summit Mode
+       */
+      function startSummitMode() {
+        const logCallback = (message) => {
+          const logDiv = document.getElementById("summit-log");
+          logDiv.innerHTML += `<p>${message}</p>`;
+          logDiv.scrollTop = logDiv.scrollHeight;
+        };
+
+        const onGameOver = () => {
+          document.getElementById("game-over").style.display = "flex";
+        };
+
+        const summitMode = new SummitMode(0, logCallback, onGameOver);
+        summitMode.start();
+        showScreen("summitMode");
+      }
+
       // Global keydown listener handling various game screens and actions.
       document.addEventListener("keydown", async (event) => {
         cheatBuffer.push(event.code);
@@ -853,7 +888,24 @@
             moveSelectionRight();
           },
           Space: () => {
-            selectCurrentNode(activateCheat);
+            selectCurrentNode(activateCheat, startSummitMode);
+          }
+        },
+        summitMode: {
+          ArrowLeft: () => {
+            // Handle left arrow key in summit mode
+          },
+          ArrowRight: () => {
+            // Handle right arrow key in summit mode
+          },
+          ArrowUp: () => {
+            // Handle up arrow key in summit mode
+          },
+          ArrowDown: () => {
+            // Handle down arrow key in summit mode
+          },
+          Space: () => {
+            // Handle spacebar in summit mode
           }
         }
 
