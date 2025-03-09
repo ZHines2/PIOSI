@@ -1,19 +1,18 @@
 /**
  * summitMode.js
  *
- * This file handles Summit Mode in PIOSI – reimagined as a battle royale simulation.
+ * Revised as a turn-by-turn simulation.
  * In this simulation:
  * - All heroes are randomly placed on a 50×50 grid.
  * - Each hero starts on its own team.
- * - During each round, every alive hero takes a turn:
- *    • If an enemy (a hero on a different team) is within attack range (default 1), they attack.
- *    • Otherwise, they move one step toward the closest enemy.
- * - When a hero defeats another (reducing its HP to 0 or below), the defeated hero's HP is restored
- *   to its original value and immediately joins the attacker's team.
+ * - The simulation processes one hero turn at a time.
+ *   • For each hero (if alive), if an enemy (hero on a different team) is within attack range (default 1), they attack.
+ *   • Otherwise, the hero moves one step toward the closest enemy.
+ * - When a hero defeats another (reducing its HP to 0 or below), the defeated hero is restored
+ *   to its original spawn HP and immediately joins the attacker's team.
  * - Victory is declared when one team controls all heroes.
  *
- * The simulation uses an 800×600 canvas element to render an isometric view of the battlefield.
- * Log entries are maintained (limited to the last 50 entries) in the element with id "summit-log".
+ * After each hero turn, the grid is rendered on a fixed 800×600 canvas so you see the change before the next turn.
  */
 
 import { heroes as allHeroes } from "./heroes.js";
@@ -23,20 +22,17 @@ export class SummitMode {
     this.mapSize = 50;
     this.onGameOver = onGameOver;
     this.onVictory = onVictory;
-    // Keep only the last 50 log lines.
     this.logLines = [];
     this.logCallback = (message) => {
       this.logLines.push(message);
-      if (this.logLines.length > 50) {
-        this.logLines.shift();
-      }
+      if (this.logLines.length > 50) this.logLines.shift();
       const logBox = document.getElementById("summit-log");
       if (logBox) {
         logBox.innerHTML = this.logLines.join("<br>");
       }
     };
-  
-    // Copy heroes and set a random position immediately in the map copy.
+
+    // Create a copy of heroes with random initial positions.
     this.allHeroes = allHeroes.map((hero, index) => {
       const spawnHp = hero.hp || 100;
       return {
@@ -46,120 +42,132 @@ export class SummitMode {
         hp: spawnHp,
         originalHp: spawnHp,
         maxHp: hero.maxHp || spawnHp,
-        team: index, // Each hero starts on its own team.
+        team: index, // each hero starts on its own team
         defeatedBy: null,
-        // Use defaults for attack and range.
         attack: hero.attack || 10,
         range: hero.range || 1,
         name: hero.name,
         symbol: hero.symbol
       };
     });
-    this.round = 1;
-    this.interval = null;
+
+    // Prepare turn tracking: we'll process one hero turn at a time.
+    this.turnIndex = 0;
+    this.turnOrder = []; // will be computed at each full round.
+    this.delay = 500; // delay (in ms) between turns
   }
 
   /**
-   * Start the simulation round loop.
+   * Start the simulation by computing the initial turn order and processing the first turn.
    */
   start() {
     this.logCallback("Starting Summit Mode battle royale simulation...");
+    this.updateTurnOrder();
     this.drawCanvas();
     this.printStatus();
-    // Run a simulation round every 500ms.
-    this.interval = setInterval(() => this.simulationRound(), 500);
+    this.processTurn(); 
   }
 
   /**
-   * Simulate one round where each alive hero takes a turn.
+   * Update the turn order (sorted by hero order in the array of alive heroes).
    */
-  simulationRound() {
-    this.logCallback(`--- Round ${this.round} ---`);
-    let anyAction = false;
-    const turnOrder = this.allHeroes.filter(hero => hero.hp > 0);
+  updateTurnOrder() {
+    this.turnOrder = this.allHeroes.filter(hero => hero.hp > 0);
+    // Optional sorting (e.g. by agility) could be added here.
+    this.turnIndex = 0;
+  }
 
-    for (let hero of turnOrder) {
-      if (hero.hp <= 0) continue; // Skip dead heroes.
-
-      // Define enemies as heroes on a different team that are alive.
-      const enemies = this.allHeroes.filter(h => h.team !== hero.team && h.hp > 0);
-
-      // If no enemy remains, victory is achieved.
-      if (enemies.length === 0) {
-        this.logCallback(`Victory: Team ${hero.team} now controls all heroes!`);
-        this.stopSimulation();
-        if (this.onVictory) this.onVictory();
+  /**
+   * Process a single hero turn and then update the grid.
+   * Uses a recursive setTimeout to schedule the next turn.
+   */
+  processTurn() {
+    // Refresh the turn order if we've processed all heroes in the round.
+    if (this.turnIndex >= this.turnOrder.length) {
+      this.updateTurnOrder();
+      // If no hero is alive, end simulation.
+      if (this.turnOrder.length === 0) {
+        this.logCallback("No alive heroes remain. Ending simulation.");
+        if (this.onGameOver) this.onGameOver();
         return;
       }
+    }
 
-      // Find the closest enemy using Manhattan distance.
-      let target = null;
-      let minDist = Infinity;
-      for (let enemy of enemies) {
-        const dist = Math.abs(hero.x - enemy.x) + Math.abs(hero.y - enemy.y);
-        if (dist < minDist) {
-          minDist = dist;
-          target = enemy;
-        }
-      }
+    let hero = this.turnOrder[this.turnIndex];
 
-      // If within attack range, attack. Otherwise, move one step towards the target.
-      const attackRange = hero.range;
-      if (minDist <= attackRange) {
-        this.logCallback(`${hero.name} (Team ${hero.team}) attacks ${target.name} (Team ${target.team}) for ${hero.attack} damage.`);
-        target.hp -= hero.attack;
-        anyAction = true;
-        if (target.hp <= 0) {
-          this.logCallback(`${target.name} is defeated by ${hero.name} and joins Team ${hero.team}. HP restored to ${target.originalHp}.`);
-          target.team = hero.team;
-          target.hp = target.originalHp;
-          target.defeatedBy = hero.name;
-        }
-      } else {
-        // Move one step towards target without extra collision checks.
-        let dx = target.x - hero.x;
-        let dy = target.y - hero.y;
-        if (Math.abs(dx) >= Math.abs(dy)) {
-          hero.x += dx > 0 ? 1 : -1;
-        } else {
-          hero.y += dy > 0 ? 1 : -1;
-        }
-        this.logCallback(`${hero.name} moves to (${hero.x}, ${hero.y}).`);
-        anyAction = true;
+    // If hero is dead (could happen mid-round), skip.
+    if (hero.hp <= 0) {
+      this.turnIndex++;
+      this.scheduleNextTurn();
+      return;
+    }
+    
+    // Determine enemies: heroes on a different team that are alive.
+    const enemies = this.allHeroes.filter(h => h.team !== hero.team && h.hp > 0);
+    if (enemies.length === 0) {
+      this.logCallback(`Victory: Team ${hero.team} now controls all heroes!`);
+      if (this.onVictory) this.onVictory();
+      return;
+    }
+    
+    // Find the closest enemy using Manhattan distance.
+    let target = null;
+    let minDist = Infinity;
+    for (let enemy of enemies) {
+      const dist = Math.abs(hero.x - enemy.x) + Math.abs(hero.y - enemy.y);
+      if (dist < minDist) {
+        minDist = dist;
+        target = enemy;
       }
     }
-    this.round++;
+    
+    // Process attack or move.
+    const attackRange = hero.range;
+    if (minDist <= attackRange) {
+      this.logCallback(`${hero.name} (Team ${hero.team}) attacks ${target.name} (Team ${target.team}) for ${hero.attack} damage.`);
+      target.hp -= hero.attack;
+      if (target.hp <= 0) {
+        this.logCallback(`${target.name} is defeated by ${hero.name} and joins Team ${hero.team}. HP restored to ${target.originalHp}.`);
+        target.team = hero.team;
+        target.hp = target.originalHp;
+        target.defeatedBy = hero.name;
+      }
+    } else {
+      // Move one step toward the target without collision checking.
+      let dx = target.x - hero.x;
+      let dy = target.y - hero.y;
+      if (Math.abs(dx) >= Math.abs(dy)) {
+        hero.x += dx > 0 ? 1 : -1;
+      } else {
+        hero.y += dy > 0 ? 1 : -1;
+      }
+      this.logCallback(`${hero.name} moves to (${hero.x}, ${hero.y}).`);
+    }
+    
     this.printStatus();
     this.drawCanvas();
-    if (!anyAction) {
-      this.logCallback("No actions possible. Ending simulation.");
-      this.stopSimulation();
-      if (this.onGameOver) this.onGameOver();
-    }
+    this.turnIndex++;
+    this.scheduleNextTurn();
   }
-
+  
   /**
-   * Stop the simulation loop.
+   * Schedule processing of the next turn after a delay.
    */
-  stopSimulation() {
-    if (this.interval) {
-      clearInterval(this.interval);
-      this.interval = null;
-    }
+  scheduleNextTurn() {
+    setTimeout(() => this.processTurn(), this.delay);
   }
 
   /**
-   * Log current status of all heroes.
+   * Log the current status of all heroes.
    */
   printStatus() {
     this.allHeroes.forEach(hero => {
       this.logCallback(`${hero.name} (Team ${hero.team}) at (${hero.x}, ${hero.y}) with HP: ${hero.hp}/${hero.originalHp}`);
     });
   }
-
+  
   /**
-   * Draw the battlefield on a canvas using isometric projection.
-   * A fixed 800×600 canvas is used.
+   * Draw the battlefield on an 800×600 canvas using isometric projection.
    */
   drawCanvas() {
     const container = document.getElementById("summit-battlefield");
@@ -173,17 +181,17 @@ export class SummitMode {
     }
     const ctx = canvas.getContext("2d");
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Define tile dimensions.
+  
+    // Define tile dimensions for isometric view.
     const tileWidth = 32;
     const tileHeight = 16;
-    // Overall isometric grid size.
+    // Overall grid dimensions in isometric projection.
     const isoGridWidth = (this.mapSize + this.mapSize) * tileWidth / 2;
     const isoGridHeight = this.mapSize * tileHeight;
-    // Center the grid.
+    // Center the grid on the canvas.
     const offsetX = (canvas.width - isoGridWidth) / 2;
     const offsetY = (canvas.height - isoGridHeight) / 2;
-
+  
     // Draw each hero as a diamond.
     this.allHeroes.forEach(hero => {
       if (hero.hp > 0) {
@@ -197,7 +205,6 @@ export class SummitMode {
         ctx.closePath();
         ctx.fillStyle = this.getTeamColor(hero.team);
         ctx.fill();
-        // Draw hero's symbol in the center.
         ctx.fillStyle = "black";
         ctx.font = "10px sans-serif";
         ctx.textAlign = "center";
@@ -205,9 +212,9 @@ export class SummitMode {
       }
     });
   }
-
+  
   /**
-   * Generate a color based on team number by cycling through hues.
+   * Generate a team color based on team number (cycles through 50 hues).
    */
   getTeamColor(team) {
     const hue = (team * 360 / 50) % 360;
