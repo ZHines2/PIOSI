@@ -12,7 +12,7 @@
  * This version has been updated to accommodate recent changes in index.html:
  * - The Summit Mode screen now includes a new container with id "summit-hero-info" for displaying
  *   each hero's name, coordinates, and team color.
- * - The log messages continue to be displayed in "summit-log".
+ * - The log messages are displayed in "summit-log".
  * - The canvas is drawn in the "summit-battlefield" container.
  */
 
@@ -26,7 +26,7 @@ export class SummitMode {
     // Streamlined log that shows only per-turn events.
     this.logLines = [];
     this.logCallback = (message) => {
-      // Wrap message in a paragraph for easier styling.
+      // Wrap the message in a paragraph for easier styling.
       this.logLines.push(`<p>${message}</p>`);
       // Keep only the latest 20 messages.
       if (this.logLines.length > 20) this.logLines.shift();
@@ -51,7 +51,7 @@ export class SummitMode {
         attack: hero.attack || 10,
         // 'range' represents the attack range; default to 1.
         range: hero.range || 1,
-        // 'agility' determines both turn order and how many spaces the hero can move in one turn.
+        // 'agility' determines both the turn order and how many spaces the hero can move in one turn.
         agility: hero.agility || 1,
         name: hero.name,
         symbol: hero.symbol
@@ -59,9 +59,9 @@ export class SummitMode {
     });
 
     // Prepare turn tracking.
-    this.turnOrder = []; // Computed at each full round.
+    this.turnOrder = []; // Computed at the beginning of each full round.
     this.turnIndex = 0;  // Index in the turn order.
-    this.delay = 500;    // Delay in ms between turns.
+    this.delay = 500;    // Delay in milliseconds between turns.
   }
 
   /**
@@ -117,7 +117,7 @@ export class SummitMode {
 
     // Set number of moves available based on hero's agility.
     let movesLeft = hero.agility;
-    let acted = false; // Indicates if hero has executed an attack.
+    let acted = false; // Indicates if the hero has executed an attack.
 
     while (movesLeft > 0 && !acted) {
       // Pick the closest enemy as target.
@@ -131,7 +131,7 @@ export class SummitMode {
         }
       }
 
-      // If target is within attack range, attack and end turn.
+      // If the target is within attack range, attack and end turn.
       if (minDist <= hero.range) {
         this.logCallback(`${hero.name} (Team ${hero.team}) attacks ${target.name} (Team ${target.team}) for ${hero.attack} damage.`);
         target.hp -= hero.attack;
@@ -143,7 +143,7 @@ export class SummitMode {
           target.defeatedBy = hero.name;
         }
       } else {
-        // Move one step closer to enemy target.
+        // Move one step closer to the enemy target.
         let dx = target.x - hero.x;
         let dy = target.y - hero.y;
         if (Math.abs(dx) >= Math.abs(dy)) {
@@ -172,33 +172,34 @@ export class SummitMode {
 
   /**
    * Update the on-screen hero information for Summit Mode.
-   * Populates the container with id "summit-hero-info" to show each hero's name,
-   * coordinates, and team color. This updated version ensures text is properly inserted.
+   * This populates the "summit-hero-info" container with each hero's details.
+   * The background of the boxes will be black and the text will be white.
    */
   updateSummitHeroInfo() {
     const infoContainer = document.getElementById("summit-hero-info");
     if (!infoContainer) return;
     
-    // Clear previous content.
+    // Clear the previous content.
     infoContainer.innerHTML = "";
     
-    // If no heroes exist, display a default message.
+    // If there are no heroes, display a default message.
     if (this.allHeroes.length === 0) {
       infoContainer.innerText = "No hero information available.";
       return;
     }
     
-    // Create display elements for each hero.
+    // Create a display element for each hero.
     this.allHeroes.forEach(hero => {
       const heroDiv = document.createElement("div");
       heroDiv.style.padding = "4px";
       heroDiv.style.margin = "4px 0";
       heroDiv.style.border = "1px solid #ccc";
       heroDiv.style.borderRadius = "3px";
-      heroDiv.style.backgroundColor = this.getTeamColor(hero.team);
-      heroDiv.style.color = "#000";
+      // Set the background to black and text to white.
+      heroDiv.style.backgroundColor = "black";
+      heroDiv.style.color = "white";
       heroDiv.style.fontSize = "14px";
-      // Insert hero text information.
+      // Insert hero details.
       heroDiv.innerText = `${hero.name} (Team ${hero.team}) at (${hero.x}, ${hero.y}) HP: ${hero.hp}/${hero.originalHp}`;
       infoContainer.appendChild(heroDiv);
     });
@@ -206,7 +207,7 @@ export class SummitMode {
   
   /**
    * Draw the battlefield on an 800×600 canvas using isometric projection.
-   * The canvas is drawn inside the "summit-battlefield" container.
+   * The canvas is drawn in the "summit-battlefield" container.
    */
   drawCanvas() {
     const container = document.getElementById("summit-battlefield");
@@ -226,11 +227,11 @@ export class SummitMode {
     const tileHeight = 16;
     const isoGridWidth = (this.mapSize + this.mapSize) * tileWidth / 2;
     const isoGridHeight = this.mapSize * tileHeight;
-    // Center the grid on canvas.
+    // Center the grid on the canvas.
     const offsetX = (canvas.width - isoGridWidth) / 2;
     const offsetY = (canvas.height - isoGridHeight) / 2;
   
-    // Draw border around grid.
+    // Draw the border around the grid.
     ctx.strokeStyle = "#000";
     ctx.lineWidth = 2;
     ctx.strokeRect(offsetX, offsetY, isoGridWidth, isoGridHeight);
@@ -257,7 +258,7 @@ export class SummitMode {
   }
   
   /**
-   * Generate a team color based on team number, cycling through 50 hues.
+   * Generate a team color based on the team number, cycling through 50 hues.
    */
   getTeamColor(team) {
     const hue = (team * 360 / 50) % 360;
