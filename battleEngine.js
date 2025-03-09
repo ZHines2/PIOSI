@@ -36,7 +36,8 @@ export class BattleEngine {
 
     this.currentUnit = 0;
     // Only live heroes get move points.
-    this.movePoints = this.getLiveHeroes().length ? this.getLiveHeroes()[0].agility : 0;
+    // Use party[this.currentUnit] instead of filtering in order to maintain the correct pointer.
+    this.movePoints = this.party.length > 0 && !this.party[0].persistentDeath ? this.party[0].agility : 0;
     this.awaitingAttackDirection = false;
     this.transitioningLevel = false;
 
@@ -108,7 +109,9 @@ export class BattleEngine {
 
   placeHeroes(field) {
     // Only place live heroes.
-    this.getLiveHeroes().forEach(hero => {
+    // Use the party order so that currentUnit pointer correctly corresponds to the hero's position on the field.
+    this.party.forEach(hero => {
+      if (hero.persistentDeath) return;
       let placed = false;
       for (let y = 0; y < this.rows && !placed; y++) {
         for (let x = 0; x < this.cols && !placed; x++) {
@@ -172,9 +175,9 @@ export class BattleEngine {
         let cellClass = '';
         if (cellContent === 'ౚ' || cellContent === 'ඉ') cellClass += ' healing-item';
         if (this.enemies.some(enemy => enemy.symbol === cellContent)) cellClass += ' enemy';
-        if (this.getLiveHeroes()[this.currentUnit] &&
-            this.getLiveHeroes()[this.currentUnit].x === x &&
-            this.getLiveHeroes()[this.currentUnit].y === y) {
+        // Use the active hero from the party (if not dead) for highlighting.
+        const activeHero = this.party[this.currentUnit] && !this.party[this.currentUnit].persistentDeath ? this.party[this.currentUnit] : null;
+        if (activeHero && activeHero.x === x && activeHero.y === y) {
           cellClass += this.awaitingAttackDirection ? ' attack-mode' : ' active';
         }
         html += `<div class="cell${cellClass}">${cellContent}</div>`;
@@ -198,7 +201,9 @@ export class BattleEngine {
 
   moveUnit(dx, dy) {
     if (this.awaitingAttackDirection || this.movePoints <= 0 || this.transitioningLevel) return;
-    const unit = this.getLiveHeroes()[this.currentUnit];
+    // Always refer to the active hero directly from party.
+    const unit = this.party[this.currentUnit];
+    if (!unit || unit.persistentDeath) return;
     if (unit.hp <= 0) {
       this.logCallback(`${unit.name} is dead and cannot move.`);
       return;
