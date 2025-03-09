@@ -418,7 +418,7 @@ export class BattleEngine {
       }
       
       // Kill logic for enemies affected by slüj damage.
-      if (enemy.hp <= 0) {
+      if (enemy.hp <= 0 && enemy.statusEffects.sluj && enemy.statusEffects.sluj.level > 0) {
         this.logCallback(`${enemy.name} is defeated by its slüj effect!`);
         this.battlefield[enemy.y][enemy.x] = '.';
         this.enemies = this.enemies.filter(e => e !== enemy);
