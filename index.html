@@ -716,12 +716,14 @@
           logDiv.innerHTML += `<p>${message}</p>`;
           logDiv.scrollTop = logDiv.scrollHeight;
         };
-
         const onGameOver = () => {
           document.getElementById("game-over").style.display = "flex";
         };
-
-        const summitMode = new SummitMode(0, logCallback, onGameOver);
+        const onVictory = () => {
+          showScreen("victory");
+        };
+        // Passing onVictory along with the other callbacks:
+        const summitMode = new SummitMode(logCallback, onGameOver, onVictory);
         summitMode.start();
         showScreen("summitMode");
       }
