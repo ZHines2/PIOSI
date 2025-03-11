@@ -1,4 +1,4 @@
-let nodes = ["Gratt ߁", "Gratt ߂", "Gratt ߃", "Gratt ߷", "Summit Mode"];
+let nodes = ["Gratt ߁", "Gratt ߂", "Gratt ߃", "Gratt ߷", "Summit Mode", "Gratt ᪥"];
 let currentIndex = 0;
 const worldMapEl = document.getElementById("world-map");
 
@@ -61,6 +61,10 @@ export function selectCurrentNode(openLevel99, startSummitMode) {
     // Start summit mode.
     console.log("Starting Summit Mode via", selectedNode);
     startSummitMode(); // Call the function to start summit mode
+  } else if (selectedNode === "Gratt ᪥") {
+    // Open the new game screen for Gratt ᪥
+    console.log("Opening Gratt ᪥ via", selectedNode);
+    document.getElementById("visions-game").style.display = "block";
   } else {
     // For "Gratt ߁", the current location.
     alert(`${selectedNode} is your current location. Use arrow keys to navigate to a new destination.`);
