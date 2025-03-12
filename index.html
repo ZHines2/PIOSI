@@ -91,6 +91,14 @@
       </p>
     </div>
 
+    <!-- Visions Game Screen -->
+    <div id="visions-game" style="display:none;">
+      <h1>Gratt ᪥</h1>
+      <div id="visions-container">
+        <!-- visions.js will populate this screen -->
+      </div>
+    </div>
+
     <!-- Audio elements -->
     <audio id="background-music" src="DarkAnoid.mp3" loop></audio>
     <audio id="hero-select-music" src="WoodenPath.mp3" loop></audio>
@@ -163,6 +171,7 @@
         document.getElementById("mode-up-window").style.display = "none";
         document.getElementById("game-over").style.display = "none";
         document.getElementById("summit-mode").style.display = "none";
+        document.getElementById("visions-game").style.display = "none";
 
         if (screen === "title") {
           document.getElementById("title-screen").style.display = "flex";
@@ -180,6 +189,8 @@
           document.getElementById("mode-up-window").style.display = "flex";
         } else if (screen === "summitMode") {
           document.getElementById("summit-mode").style.display = "flex";
+        } else if (screen === "visionsGame") {
+          document.getElementById("visions-game").style.display = "block";
         }
         currentScreen = screen;
       }
