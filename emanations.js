@@ -126,55 +126,7 @@ export function togglePlayPause() {
     playSong(currentSongIndex);
   }
 }
-const canvas = document.getElementById('emanations-canvas');
-const ctx = canvas.getContext('2d');
-const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-const analyser = audioCtx.createAnalyser();
-const source = audioCtx.createMediaElementSource(audioElement);
-source.connect(analyser);
-analyser.connect(audioCtx.destination);
 
-analyser.fftSize = 256;
-const bufferLength = analyser.frequencyBinCount;
-const dataArray = new Uint8Array(bufferLength);
-
-// Call this to start the visualization loop
-function visualize() {
-  requestAnimationFrame(visualize);
-  analyser.getByteFrequencyData(dataArray);
-
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  const barWidth = (canvas.width / bufferLength) * 2.5;
-  let x = 0;
-
-  for (let i = 0; i < bufferLength; i++) {
-    const barHeight = dataArray[i];
-    const red = barHeight + 25 * (i/bufferLength);
-    const green = 250 * (i/bufferLength);
-    const blue = 200;
-
-    ctx.fillStyle = `rgb(${red},${green},${blue})`;
-    ctx.fillRect(x, canvas.height - barHeight / 2, barWidth, barHeight / 2);
-
-    x += barWidth + 1;
-  }
-}
-
-// Start visualization on song play
-export function playSong(index) {
-  if (audioElement) {
-    audioElement.src = songs[index];
-    audioElement.play();
-    isPlaying = true;
-    audioCtx.resume(); // Ensure audio context is resumed on user interaction
-    visualize();
-    updateSongInfo();
-  } else {
-    console.error('Audio element not found');
-  }
-}
 /**
  * Creates and initializes the UI for Emanations Mode.
  * This minimal UI displays instructions and the current song information.
