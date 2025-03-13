@@ -2,23 +2,40 @@
  * emanations.js
  *
  * This file contains the logic for the emanations functionality.
- * It includes functions to play songs from the repository.
+ * It now provides a minimal UI that shows instructions and the current song information.
  */
 
 let currentSongIndex = 0;
 let isPlaying = false;
 const songs = ['DarkAnoid.mp3', 'WoodenPath.mp3', '5GiMaxVision.mp3', 'ineedsome.mp3'];
 const audioElement = document.getElementById('emanations-audio');
+let uiElement = null;  // Container for instructions and song info
+
+/**
+ * Updates the emanations mode display with instructions and current song.
+ */
+function updateSongInfo() {
+  if (uiElement) {
+    uiElement.innerHTML = `
+      <h1>Emanations Mode</h1>
+      <p>Use Left/Right arrow keys to select a song.</p>
+      <p>Press Spacebar to play the selected song.</p>
+      <p><strong>Current Song:</strong> ${songs[currentSongIndex]}</p>
+      <p><strong>Status:</strong> ${isPlaying ? 'Playing' : 'Stopped'}</p>
+    `;
+  }
+}
 
 /**
  * Plays a song from the repository.
  * @param {number} index - The index of the song to play.
  */
-function playSong(index) {
+export function playSong(index) {
   if (audioElement) {
     audioElement.src = songs[index];
     audioElement.play();
     isPlaying = true;
+    updateSongInfo();
   } else {
     console.error('Audio element not found');
   }
@@ -27,11 +44,12 @@ function playSong(index) {
 /**
  * Stops the currently playing song.
  */
-function stopSong() {
+export function stopSong() {
   if (audioElement) {
     audioElement.pause();
     audioElement.currentTime = 0;
     isPlaying = false;
+    updateSongInfo();
   } else {
     console.error('Audio element not found');
   }
@@ -40,7 +58,7 @@ function stopSong() {
 /**
  * Plays the next song in the repository.
  */
-function playNextSong() {
+export function playNextSong() {
   if (isPlaying) {
     fadeOutCurrentSong(() => {
       currentSongIndex = (currentSongIndex + 1) % songs.length;
@@ -55,7 +73,7 @@ function playNextSong() {
 /**
  * Plays the previous song in the repository.
  */
-function playPreviousSong() {
+export function playPreviousSong() {
   if (isPlaying) {
     fadeOutCurrentSong(() => {
       currentSongIndex = (currentSongIndex - 1 + songs.length) % songs.length;
@@ -75,68 +93,45 @@ function fadeOutCurrentSong(callback) {
   let volume = audioElement.volume;
   const fadeInterval = setInterval(() => {
     if (volume > 0) {
-      volume -= 0.1;
+      volume = Math.max(0, volume - 0.1);
       audioElement.volume = volume;
     } else {
       clearInterval(fadeInterval);
       audioElement.pause();
       audioElement.currentTime = 0;
       audioElement.volume = 1; // Reset volume for future use
+      isPlaying = false;
+      updateSongInfo();
       callback();
     }
   }, 100); // Adjust timing as needed
 }
 
 /**
- * Exports the UI for the music player.
+ * Toggles between playing and pausing the current song.
  */
-export function createMusicPlayerUI() {
-  const container = document.createElement('div');
-  container.id = 'music-player';
-
-  const playButton = document.createElement('button');
-  playButton.textContent = 'Play';
-  playButton.addEventListener('click', () => playSong(currentSongIndex));
-
-  const stopButton = document.createElement('button');
-  stopButton.textContent = 'Stop';
-  stopButton.addEventListener('click', stopSong);
-
-  const nextButton = document.createElement('button');
-  nextButton.textContent = 'Next';
-  nextButton.addEventListener('click', playNextSong);
-
-  const prevButton = document.createElement('button');
-  prevButton.textContent = 'Previous';
-  prevButton.addEventListener('click', playPreviousSong);
-
-  container.appendChild(playButton);
-  container.appendChild(stopButton);
-  container.appendChild(nextButton);
-  container.appendChild(prevButton);
-
-  document.body.appendChild(container);
+export function togglePlayPause() {
+  if (isPlaying) {
+    stopSong();
+  } else {
+    playSong(currentSongIndex);
+  }
 }
 
 /**
- * Adds keyboard event listeners for play, stop, next, and previous actions.
+ * Creates and initializes the UI for Emanations Mode.
+ * This minimal UI displays instructions and the current song information.
  */
-function addKeyboardEventListeners() {
-  document.addEventListener('keydown', (event) => {
-    if (event.key === 'ArrowLeft') {
-      playPreviousSong();
-    } else if (event.key === 'ArrowRight') {
-      playNextSong();
-    } else if (event.key === 'Space') {
-      if (isPlaying) {
-        stopSong();
-      } else {
-        playSong(currentSongIndex);
-      }
-    }
-  });
+export function createEmanationsUI() {
+  // Assume there is a container in the HTML with id "emanations-mode"
+  uiElement = document.getElementById('emanations-mode');
+  if (uiElement) {
+    uiElement.style.display = "flex";
+    uiElement.style.flexDirection = "column";
+    uiElement.style.alignItems = "center";
+    uiElement.style.padding = "10px";
+    updateSongInfo();
+  } else {
+    console.error('Emanations mode container not found');
+  }
 }
-
-// Initialize the music player UI and add keyboard event listeners
-createMusicPlayerUI();
-addKeyboardEventListeners();
