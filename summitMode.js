@@ -1,19 +1,7 @@
+```javascript
 /**
  * summitMode.js
  *
- * Revised as a turn-by-turn simulation where each hero’s turn is processed in order based on highest agility.
- * During a hero's turn, the hero can move up to a number of spaces equal to its agility.
- * At each step, if an enemy is within attack range (hero.range), the hero attacks for its attack stat value.
- * When a hero defeats an enemy (reducing its HP to 0 or below), the defeated hero’s HP is restored to its original value
- * and immediately joins the attacker's team.
- *
- * Victory is declared when one team controls all heroes.
- *
- * This version has been updated to accommodate recent changes in index.html:
- * - The Summit Mode screen now includes a new container with id "summit-hero-info" for displaying
- *   each hero's name, coordinates, and team color.
- * - The log messages are displayed in "summit-log".
- * - The canvas is drawn in the "summit-battlefield" container.
  */
 
 import { heroes as allHeroes } from "./heroes.js";
@@ -65,6 +53,7 @@ export class SummitMode {
     this.turnOrder = []; // Computed at the beginning of each round.
     this.turnIndex = 0;  // Index in the turn order.
     this.delay = 500;    // Delay (ms) between turns.
+    this.speedFactor = 1; // Add speed factor, 1 is normal speed
   }
 
   /**
@@ -170,7 +159,23 @@ export class SummitMode {
    * Schedule processing the next turn after a delay.
    */
   scheduleNextTurn() {
-    setTimeout(() => this.processTurn(), this.delay);
+    setTimeout(() => this.processTurn(), this.delay / this.speedFactor);
+  }
+
+  /**
+   * Increase the simulation speed.
+   */
+  increaseSpeed() {
+    this.speedFactor = Math.min(2, this.speedFactor + 0.25); // Limit to 2x speed
+    this.logCallback(`Simulation speed increased to ${this.speedFactor.toFixed(2)}x`);
+  }
+
+  /**
+   * Decrease the simulation speed.
+   */
+  decreaseSpeed() {
+    this.speedFactor = Math.max(0.25, this.speedFactor - 0.25); // Limit to 0.25x speed
+    this.logCallback(`Simulation speed decreased to ${this.speedFactor.toFixed(2)}x`);
   }
 
   /**
@@ -264,3 +269,5 @@ export class SummitMode {
     return `hsl(${hue}, 70%, 70%)`;
   }
 }
+
+export { SummitMode, increaseSpeed, decreaseSpeed };
