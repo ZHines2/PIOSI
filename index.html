@@ -769,6 +769,9 @@
         summitMode.start();
         showScreen("summitMode");
       }
+      function startEmanationsMode() {
+        showScreen("emanationsMode");
+      }
 
       // Global keydown listener handling various game screens and actions.
       document.addEventListener("keydown", async (event) => {
@@ -932,7 +935,7 @@
             moveSelectionRight();
           },
           Space: () => {
-            selectCurrentNode(activateCheat, startSummitMode);
+            selectCurrentNode(activateCheat, startSummitMode, startEmanationsMode);
           }
         },
         summitMode: {
