@@ -128,7 +128,14 @@
         selectCurrentNode,
       } from "./worldMap.js";
       import { SummitMode } from "./summitMode.js";
-      import { createMusicPlayerUI } from "./emanations.js";
+      import {
+        createEmanationsUI,
+        playSong,
+        stopSong,
+        playNextSong,
+        playPreviousSong,
+        togglePlayPause
+      } from "./emanations.js";
 
       // Global variables to manage game state
       let currentScreen = "title";
@@ -172,7 +179,7 @@
         document.getElementById("game-over").style.display = "none";
         document.getElementById("summit-mode").style.display = "none";
         document.getElementById("emanations-mode").style.display = "none";
-
+    
         if (screen === "title") {
           document.getElementById("title-screen").style.display = "flex";
         } else if (screen === "party") {
@@ -183,15 +190,31 @@
           document.getElementById("victory").style.display = "block";
         } else if (screen === "worldMap") {
           document.getElementById("world-map").style.display = "flex";
-          // Initialize world map functionality when this screen is active
           initWorldMap();
         } else if (screen === "modeUp") {
           document.getElementById("mode-up-window").style.display = "flex";
         } else if (screen === "summitMode") {
           document.getElementById("summit-mode").style.display = "flex";
         } else if (screen === "emanationsMode") {
+          // Fade out all currently playing music outside of Emanations Mode
+          const audios = Array.from(document.getElementsByTagName("audio")).filter(a => a.id !== "emanations-audio");
+          audios.forEach(audio => {
+            let volume = audio.volume;
+            const fadeInterval = setInterval(() => {
+              if (volume > 0) {
+                volume = Math.max(0, volume - 0.1);
+                audio.volume = volume;
+              } else {
+                clearInterval(fadeInterval);
+                audio.pause();
+                audio.currentTime = 0;
+                audio.volume = 1; // Reset volume for future use
+              }
+            }, 100);
+          });
           document.getElementById("emanations-mode").style.display = "flex";
-          createMusicPlayerUI();
+          // Initialize the minimal Emanations UI (instructions + current song info)
+          createEmanationsUI();
         }
         currentScreen = screen;
       }
@@ -931,22 +954,16 @@
         },
         emanationsMode: {
           ArrowLeft: () => {
-            // Handle left arrow key in emanations mode
+            playPreviousSong();
           },
           ArrowRight: () => {
-            // Handle right arrow key in emanations mode
-          },
-          ArrowUp: () => {
-            // Handle up arrow key in emanations mode
-          },
-          ArrowDown: () => {
-            // Handle down arrow key in emanations mode
+            playNextSong();
           },
           Space: () => {
-            // Handle spacebar in emanations mode
+            // Toggle play/pause on space key press
+            togglePlayPause();
           }
         }
-
       };
 
       // Minimal mobile support: Map a simple touch tap to a key event based on touch location.
