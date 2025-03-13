@@ -91,6 +91,13 @@
       </p>
     </div>
 
+    <!-- Emanations Mode Screen -->
+    <div id="emanations-mode" style="display:none; flex-direction: column; align-items: center; padding: 10px;">
+      <h1>Emanations Mode</h1>
+      <div id="music-player"></div>
+      <audio id="emanations-audio"></audio>
+    </div>
+
     <!-- Audio elements -->
     <audio id="background-music" src="DarkAnoid.mp3" loop></audio>
     <audio id="hero-select-music" src="WoodenPath.mp3" loop></audio>
@@ -121,6 +128,7 @@
         selectCurrentNode,
       } from "./worldMap.js";
       import { SummitMode } from "./summitMode.js";
+      import { createMusicPlayerUI } from "./emanations.js";
 
       // Global variables to manage game state
       let currentScreen = "title";
@@ -163,6 +171,7 @@
         document.getElementById("mode-up-window").style.display = "none";
         document.getElementById("game-over").style.display = "none";
         document.getElementById("summit-mode").style.display = "none";
+        document.getElementById("emanations-mode").style.display = "none";
 
         if (screen === "title") {
           document.getElementById("title-screen").style.display = "flex";
@@ -180,6 +189,9 @@
           document.getElementById("mode-up-window").style.display = "flex";
         } else if (screen === "summitMode") {
           document.getElementById("summit-mode").style.display = "flex";
+        } else if (screen === "emanationsMode") {
+          document.getElementById("emanations-mode").style.display = "flex";
+          createMusicPlayerUI();
         }
         currentScreen = screen;
       }
@@ -915,6 +927,23 @@
           },
           Space: () => {
             // Handle spacebar in summit mode
+          }
+        },
+        emanationsMode: {
+          ArrowLeft: () => {
+            // Handle left arrow key in emanations mode
+          },
+          ArrowRight: () => {
+            // Handle right arrow key in emanations mode
+          },
+          ArrowUp: () => {
+            // Handle up arrow key in emanations mode
+          },
+          ArrowDown: () => {
+            // Handle down arrow key in emanations mode
+          },
+          Space: () => {
+            // Handle spacebar in emanations mode
           }
         }
 
