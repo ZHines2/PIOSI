@@ -26,9 +26,9 @@ let uiElement = null;  // Container for instructions and song info
 function updateSongInfo() {
   if (uiElement) {
     uiElement.innerHTML = `
-      <h1>Emanations Mode</h1>
+      <h1>EMANATIONS</h1>
       <p>Use Left/Right arrow keys to select a song.</p>
-      <p>Press Spacebar to play the selected song.</p>
+      <p>Press Space to play the selected song.</p>
       <p><strong>Current Song:</strong> ${songs[currentSongIndex]}</p>
       <p><strong>Status:</strong> ${isPlaying ? 'Playing' : 'Stopped'}</p>
     `;
