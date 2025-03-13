@@ -7,7 +7,16 @@
 
 let currentSongIndex = 0;
 let isPlaying = false;
-const songs = ['DarkAnoid.mp3', 'WoodenPath.mp3', '5GiMaxVision.mp3', 'ineedsome.mp3'];
+const songs = [
+  'DarkAnoid.mp3', 
+  'WoodenPath.mp3', 
+  '5GiMaxVision.mp3', 
+  'ineedsome.mp3', 
+  'SouthernBelle.mp3', 
+  'whaviors.mp3', 
+  'afrojapanesetwilight.mp3', 
+  'science.mp3'
+];
 const audioElement = document.getElementById('emanations-audio');
 let uiElement = null;  // Container for instructions and song info
 
