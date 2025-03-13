@@ -128,7 +128,7 @@
         moveSelectionRight,
         selectCurrentNode,
       } from "./worldMap.js";
-      import { SummitMode, increaseSpeed, decreaseSpeed } from "./summitMode.js";
+      import { SummitMode } from "./summitMode.js";
       import {
         createEmanationsUI,
         playSong,
@@ -768,10 +768,7 @@
         };
         const summitMode = new SummitMode(logCallback, onGameOver, onVictory);
         summitMode.start();
-        const summitModeDiv = document.querySelector("#summit-mode");
-        summitModeDiv.summitModeInstance = summitMode;
         showScreen("summitMode");
-      };
       }
       function startEmanationsMode() {
         showScreen("emanationsMode");
@@ -951,27 +948,9 @@
           },
           ArrowUp: () => {
             // Handle up arrow key in summit mode
-            if (currentScreen === "summitMode") {
-              const summitModeDiv = document.querySelector("#summit-mode");
-              if (summitModeDiv) {
-                const summitMode = summitModeDiv.summitModeInstance;
-                if (summitMode) {
-                  summitMode.increaseSpeed();
-                }
-              }
-            }
           },
           ArrowDown: () => {
             // Handle down arrow key in summit mode
-            if (currentScreen === "summitMode") {
-              const summitModeDiv = document.querySelector("#summit-mode");
-              if (summitModeDiv) {
-                const summitMode = summitModeDiv.summitModeInstance;
-                if (summitMode) {
-                  summitMode.decreaseSpeed();
-                }
-              }
-            }
           },
           Space: () => {
             // Handle spacebar in summit mode
