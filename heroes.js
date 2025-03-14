@@ -133,7 +133,7 @@ export const heroes = [
   {
     name: "Slüjier",
     symbol: "🜜",
-    sprite: "PIOSI Characters/Slüjier.png",
+    sprite: "PIOSI Characters/Slujier.png",
     attack: 5,
     range: 1,
     agility: 4,
