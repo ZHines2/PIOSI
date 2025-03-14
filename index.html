@@ -259,7 +259,15 @@
        */
       async function updateHeroDisplay() {
         const hero = allHeroes[heroIndex];
-        let display = `<p class="highlight">${hero.name} (${hero.symbol})</p>`;
+        let display = `<p class="highlight">${hero.name} `;
+    
+          // Use the sprite image if available; otherwise, display the ASCII symbol.
+          if (hero.sprite) {
+            display += `<img src="${hero.sprite}" alt="${hero.name}" style="height:50px; vertical-align:middle;">`;
+          } else {
+            display += `(${hero.symbol})`;
+          }
+          display += `</p>`;
         // Display special interactions for heroes that have extra properties
         if (hero.joke) {
           const joke = await fetchJoke();
