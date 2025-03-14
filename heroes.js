@@ -10,6 +10,8 @@ export const heroes = [
   {
     name: "Knight",
     symbol: "♞",
+    // Added sprite property pointing to the PNG file for the Knight sprite.
+    sprite: "PIOSI Characters/Knight.png",
     attack: 4,
     range: 1,
     agility: 4,
@@ -238,7 +240,7 @@ export const heroes = [
     hp: 30,
     rise: 5 // new rise stat
   },
-    // New hero "Sysiphuge"
+  // New hero "Sysiphuge"
   {
     name: "Sysiphuge",
     symbol: "₾",
@@ -248,7 +250,7 @@ export const heroes = [
     hp: 16,
     dodge: 4
   },
-   // New hero "Bombador"
+  // New hero "Bombador"
   {
     name: "Bombador",
     symbol: "❦",
@@ -256,7 +258,7 @@ export const heroes = [
     range: 1,
     agility: 6,
     hp: 20,
-    bomba: 5 // bomba stat, that does bonus damages to ajacent enemies that are attacked by another hero
+    bomba: 5 // bomba stat, that does bonus damages to adjacent enemies that are attacked by another hero
   }
 ];
 
