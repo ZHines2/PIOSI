@@ -15,6 +15,7 @@ export const heroes = [
     range: 1,
     agility: 4,
     hp: 18,
+    deactivated: false
   },
   {
     name: "Archer",
@@ -24,6 +25,7 @@ export const heroes = [
     range: 5,
     agility: 4,
     hp: 12,
+    deactivated: false
   },
   {
     name: "Wizard",
@@ -33,7 +35,8 @@ export const heroes = [
     range: 7,
     agility: 2,
     hp: 10,
-    chain: 5 // The chain stat gives bonus attack damage to any adjacent enemy.
+    chain: 5, // The chain stat gives bonus attack damage to any adjacent enemy.
+    deactivated: true
   },
   {
     name: "Berserker",
@@ -43,7 +46,8 @@ export const heroes = [
     range: 1,
     agility: 3,
     hp: 20,
-    rage: 1 // New rage stat: whenever attacked by an enemy, a random stat is increased by this value.
+    rage: 1, // New rage stat: whenever attacked by an enemy, a random stat is increased by this value.
+    deactivated: false
   },
   {
     name: "Rogue",
@@ -53,6 +57,7 @@ export const heroes = [
     range: 2,
     agility: 6,
     hp: 12,
+    deactivated: false
   },
   {
     name: "Cleric",
@@ -62,7 +67,8 @@ export const heroes = [
     range: 1,
     agility: 3,
     hp: 12,
-    heal: 4 // Healing power: used when interacting with a friendly hero.
+    heal: 4, // Healing power: used when interacting with a friendly hero.
+    deactivated: false
   },
   {
     name: "Jester",
@@ -73,7 +79,8 @@ export const heroes = [
     agility: 5,
     hp: 10,
     joke: true, // Provides humorous interactions.
-    trick: 1   // Placeholder "trick" stat for potential future behaviors.
+    trick: 1,   // Placeholder "trick" stat for potential future behaviors.
+    deactivated: false
   },
   {  
     name: "Meatwalker",
@@ -85,7 +92,8 @@ export const heroes = [
     hp: 22,
     heal: 1, // Slight healing property.
     meat: true, // Indicates meat-related interactions.
-    bulk: 1 // New bulk stat for Meatwalker.
+    bulk: 1, // New bulk stat for Meatwalker.
+    deactivated: false
   },
   {
     name: "Soothscribe",
@@ -96,7 +104,8 @@ export const heroes = [
     agility: 3,
     hp: 11,
     tarot: true, // Can fetch tarot cards for special actions.
-    fate: 1
+    fate: 1,
+    deactivated: false
   },
   {
     name: "Nonsequiteur",
@@ -107,7 +116,8 @@ export const heroes = [
     agility: 3,
     hp: 10,
     nonseq: true, // Delivers random, non-sequitur interactions.
-    caprice: 1 // New stat for random stat increment.
+    caprice: 1, // New stat for random stat increment.
+    deactivated: false
   },
   {
     name: "Griot",
@@ -117,7 +127,8 @@ export const heroes = [
     range: 1,
     agility: 1,
     hp: 10,
-    reactsToHistory: true // Reacts uniquely when encountering historical events.
+    reactsToHistory: true, // Reacts uniquely when encountering historical events.
+    deactivated: false
   },
   {
     name: "Torcher",
@@ -128,7 +139,8 @@ export const heroes = [
     agility: 3,
     hp: 14,
     torcher: true, // Has a burning property.
-    burn: 1      // Burn damage value.
+    burn: 1,      // Burn damage value.
+    deactivated: false
   },
   {
     name: "Slüjier",
@@ -138,7 +150,8 @@ export const heroes = [
     range: 1,
     agility: 4,
     hp: 16,
-    sluj: 1 // Special ability indicator for sluj actions.
+    sluj: 1, // Special ability indicator for sluj actions.
+    deactivated: false
   },
   // Updated Shrink hero configuration with symbol ☊
   {
@@ -150,7 +163,8 @@ export const heroes = [
     agility: 3,
     hp: 12,
     shrink: true, // Indicates shrink-related behavior.
-    psych: 1 // New psych stat for Shrink.
+    psych: 1, // New psych stat for Shrink.
+    deactivated: false
   },
   {
     name: "Sycophant",
@@ -159,7 +173,8 @@ export const heroes = [
     attack: 0,
     range: 0,
     agility: 2,
-    hp: 15
+    hp: 15,
+    deactivated: false
   },
   // New hero "Yeetrian" with knockback stat "yeet".
   {
@@ -170,7 +185,8 @@ export const heroes = [
     range: 2,
     agility: 4,
     hp: 14,
-    yeet: 1
+    yeet: 1,
+    deactivated: false
   },
   // New hero "Mellitron" with customized stats and a swarm ability.
   {
@@ -181,7 +197,8 @@ export const heroes = [
     range: 3,
     agility: 5,
     hp: 18,
-    swarm: 2 // Swarm stat: indicates additional abilities when swarming.
+    swarm: 2, // Swarm stat: indicates additional abilities when swarming.
+    deactivated: false
   },
   // New hero "Gastronomer" with a spicy stat.
   {
@@ -193,7 +210,8 @@ export const heroes = [
     agility: 3,
     hp: 15,
     spicy: 1, // Spicy stat: increases the amount the vittle heals for.
-    recipe: true // Indicates recipe-related interactions.
+    recipe: true, // Indicates recipe-related interactions.
+    deactivated: false
   },
   // New hero "Palisade" with armor stat.
   {
@@ -205,7 +223,8 @@ export const heroes = [
     agility: 2,
     hp: 20,
     armor: 5, // Armor stat: absorbs damage before HP is affected.
-    description: "Palisade stands as a bulwark against all attacks, his armor absorbing the brunt of enemy blows."
+    description: "Palisade stands as a bulwark against all attacks, his armor absorbing the brunt of enemy blows.",
+    deactivated: false
   },
   // New hero "Mycelian" with spore stat.
   {
@@ -216,7 +235,8 @@ export const heroes = [
     range: 1,
     agility: 3,
     hp: 15,
-    spore: 1 // Spore stat: indicates the ability to gain random stats from mushrooms.
+    spore: 1, // Spore stat: indicates the ability to gain random stats from mushrooms.
+    deactivated: false
   },
   // Updated hero "Pæg" with improved stats and added chain stat.
   {
@@ -236,7 +256,8 @@ export const heroes = [
     spicy: 1,
     armor: 1,
     spore: 1,
-    chain: 1    // Added chain stat to Pæg.
+    chain: 1,    // Added chain stat to Pæg.
+    deactivated: false
   },
   // New hero "Kemetic"
   {
@@ -248,7 +269,8 @@ export const heroes = [
     agility: 5,
     hp: 25,
     // The new ankh stat will cause boosts on hero deaths.
-    ankh: 5
+    ankh: 5,
+    deactivated: false
   },
   // New hero "Greenjay"
   {
@@ -259,7 +281,8 @@ export const heroes = [
     range: 2,
     agility: 4,
     hp: 30,
-    rise: 5 // new rise stat
+    rise: 5, // new rise stat
+    deactivated: false
   },
   // New hero "Sysiphuge"
   {
@@ -270,7 +293,8 @@ export const heroes = [
     range: 1,
     agility: 4,
     hp: 16,
-    dodge: 4
+    dodge: 4,
+    deactivated: false
   },
   // New hero "Bombador"
   {
@@ -281,7 +305,8 @@ export const heroes = [
     range: 1,
     agility: 6,
     hp: 20,
-    bomba: 5 // bomba stat, that does bonus damages to adjacent enemies that are attacked by another hero
+    bomba: 5, // bomba stat, that does bonus damages to adjacent enemies that are attacked by another hero
+    deactivated: false
   }
 ];
 /**

@@ -13,6 +13,16 @@ The Level Creation Rubric provides comprehensive guidelines for defining level p
 
 The Hero Manifestation Guide now includes new hero stats `yeet` and `swarm`, which are used by the new heroes "Yeetrian" and "Mellitron" respectively. These stats add new dimensions to hero abilities and strategies in the game.
 
+### Hero Selection and Deactivation
+
+The new `defenera.js` script introduces functionality for hero selection and deactivation. This script allows players to select playable heroes from a list and deactivate certain heroes. Deactivated heroes are displayed in grey and cannot be selected or navigated to.
+
+#### Key Functions
+
+- `displayHeroSymbols(heroList)`: Displays hero symbols with deactivation status.
+- `selectPlayableHeroes(heroList)`: Filters and displays active heroes.
+- `handleKeyboardEvents(event)`: Handles keyboard events for navigation and selection of active heroes.
+- `returnToHeroSelectionScreen()`: Returns to the hero selection screen.
 
 ### Background Music for Level 5
 
