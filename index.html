@@ -99,6 +99,39 @@
       <canvas id="emanations-canvas" width="600" height="200"></canvas>
     </div>
 
+    <!-- Defenera Mode Screen -->
+    <div id="defenera-mode" style="display:none; flex-direction: column; align-items: center; padding: 10px;">
+      <h1>DEFENERA</h1>
+      <div id="defenera-settings">
+        <label for="difficulty">Difficulty:</label>
+        <select id="difficulty">
+          <option value="easy">Easy</option>
+          <option value="medium">Medium</option>
+          <option value="hard">Hard</option>
+        </select>
+        <br />
+        <label for="sound">Sound:</label>
+        <select id="sound">
+          <option value="on">On</option>
+          <option value="off">Off</option>
+        </select>
+        <br />
+        <label for="graphics">Graphics:</label>
+        <select id="graphics">
+          <option value="low">Low</option>
+          <option value="medium">Medium</option>
+          <option value="high">High</option>
+        </select>
+        <br />
+        <button id="apply-settings">Apply Settings</button>
+      </div>
+      <div id="hero-selection">
+        <h2>Select Playable Heroes</h2>
+        <div id="hero-list"></div>
+        <button id="confirm-hero">Confirm Selection</button>
+      </div>
+    </div>
+
     <!-- Audio elements -->
     <audio id="background-music" src="DarkAnoid.mp3" loop></audio>
     <audio id="hero-select-music" src="WoodenPath.mp3" loop></audio>
@@ -137,6 +170,7 @@
         playPreviousSong,
         togglePlayPause
       } from "./emanations.js";
+      import { adjustGameFeatures, selectPlayableHeroes, applySelectedFeaturesAndHeroes } from "./defenera.js";
 
       // Global variables to manage game state
       let currentScreen = "title";
@@ -180,6 +214,7 @@
         document.getElementById("game-over").style.display = "none";
         document.getElementById("summit-mode").style.display = "none";
         document.getElementById("emanations-mode").style.display = "none";
+        document.getElementById("defenera-mode").style.display = "none";
     
         if (screen === "title") {
           document.getElementById("title-screen").style.display = "flex";
@@ -216,6 +251,8 @@
           document.getElementById("emanations-mode").style.display = "flex";
           // Initialize the minimal Emanations UI (instructions + current song info)
           createEmanationsUI();
+        } else if (screen === "defeneraMode") {
+          document.getElementById("defenera-mode").style.display = "flex";
         }
         currentScreen = screen;
       }
@@ -782,6 +819,9 @@
       function startEmanationsMode() {
         showScreen("emanationsMode");
       }
+      function startDefeneraMode() {
+        showScreen("defeneraMode");
+      }
 
       // Global keydown listener handling various game screens and actions.
       document.addEventListener("keydown", async (event) => {
@@ -945,7 +985,7 @@
             moveSelectionRight();
           },
           Space: () => {
-            selectCurrentNode(activateCheat, startSummitMode, startEmanationsMode);
+            selectCurrentNode(activateCheat, startSummitMode, startEmanationsMode, startDefeneraMode);
           }
         },
         summitMode: {
@@ -975,6 +1015,23 @@
           Space: () => {
             // Toggle play/pause on space key press
             togglePlayPause();
+          }
+        },
+        defeneraMode: {
+          ArrowLeft: () => {
+            // Handle left arrow key in defenera mode
+          },
+          ArrowRight: () => {
+            // Handle right arrow key in defenera mode
+          },
+          ArrowUp: () => {
+            // Handle up arrow key in defenera mode
+          },
+          ArrowDown: () => {
+            // Handle down arrow key in defenera mode
+          },
+          Space: () => {
+            // Handle spacebar in defenera mode
           }
         }
       };

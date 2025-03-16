@@ -1,4 +1,4 @@
-let nodes = ["Gratt ߁", "Gratt ߂", "Gratt ߃", "Gratt ߷", "Summit Mode", "Emanations Mode"];
+let nodes = ["Gratt ߁", "Gratt ߂", "Gratt ߃", "Gratt ߷", "Summit Mode", "Emanations Mode", "Defenera Mode"];
 let currentIndex = 0;
 const worldMapEl = document.getElementById("world-map");
 
@@ -43,7 +43,7 @@ export function moveSelectionRight() {
 }
 
 // Handle selection (pressing Space) based on current node.
-export function selectCurrentNode(openLevel99, startSummitMode, startEmanationsMode) {
+export function selectCurrentNode(openLevel99, startSummitMode, startEmanationsMode, startDefeneraMode) {
   const selectedNode = nodes[currentIndex];
   if (selectedNode === "Gratt ߂") {
     // Load new suite of levels.
@@ -65,6 +65,10 @@ export function selectCurrentNode(openLevel99, startSummitMode, startEmanationsM
     // Start emanations mode.
     console.log("Starting Emanations Mode via", selectedNode);
     startEmanationsMode(); // Call the function to start emanations mode
+  } else if (selectedNode === "Defenera Mode") {
+    // Start defenera mode.
+    console.log("Starting Defenera Mode via", selectedNode);
+    startDefeneraMode(); // Call the function to start defenera mode
   } else {
     // For "Gratt ߁", the current location.
     alert(`${selectedNode} is your current location. Use arrow keys to navigate to a new destination.`);
