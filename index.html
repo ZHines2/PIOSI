@@ -137,6 +137,9 @@
         playPreviousSong,
         togglePlayPause
       } from "./emanations.js";
+      import { handleKeyDown } from "./keyHandler.js";
+      import { renderBattlefield } from "./renderer.js";
+      import { logMessage } from "./logger.js";
 
       // Global variables to manage game state
       let currentScreen = "title";
@@ -784,43 +787,7 @@
       }
 
       // Global keydown listener handling various game screens and actions.
-      document.addEventListener("keydown", async (event) => {
-        cheatBuffer.push(event.code);
-        if (cheatBuffer.length > Math.max(cheatSequence.length, worldMapCheat.length)) {
-          cheatBuffer.shift();
-        }
-        if (cheatBuffer.join() === cheatSequence.join()) {
-          activateCheat();
-          cheatBuffer = [];
-          return;
-        }
-
-        // Check for the world map cheat code
-        if (cheatBuffer.slice(-worldMapCheat.length).join() === worldMapCheat.join()) {
-            worldMapCheatCode();
-            cheatBuffer = [];
-            return;
-        }
-
-
-        // Handle key actions for game-over
-        if (document.getElementById("game-over").style.display === "flex") {
-          const action =
-            keyActions["game-over"][event.code] ||
-            keyActions["game-over"][event.key];
-          if (action) {
-            event.preventDefault();
-            await action();
-          }
-          return;
-        }
-        const actions = keyActions[currentScreen];
-        const action = actions && (actions[event.code] || actions[event.key]);
-        if (action) {
-          event.preventDefault();
-          await action();
-        }
-      });
+      document.addEventListener("keydown", handleKeyDown);
 
       // Mapping key codes to actions based on current screen context.
       const keyActions = {
