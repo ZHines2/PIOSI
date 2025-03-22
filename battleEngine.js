@@ -13,6 +13,7 @@
 
 import { applyKnockback } from './applyKnockback.js';
 import { applySlujEffect } from './sluj.js';
+import { applyBurn } from './burn.js';
 
 // Class to represent a persistent death effect.
 export class PersistentDeath {
@@ -312,8 +313,7 @@ export class BattleEngine {
           }
         }
         if (unit.burn) {
-          enemy.statusEffects.burn = { damage: unit.burn, duration: 3 };
-          this.logCallback(`${enemy.name} is burning for ${unit.burn} damage for 3 turns!`);
+          applyBurn(enemy, this.logCallback);
         }
         if (unit.sluj) {
           if (!enemy.statusEffects.sluj) enemy.statusEffects.sluj = { level: unit.sluj, duration: 4, counter: 0 };
@@ -551,14 +551,7 @@ export class BattleEngine {
     });
     this.enemies.forEach(enemy => {
       if (enemy.statusEffects.burn && enemy.statusEffects.burn.duration > 0) {
-        this.logCallback(`${enemy.name} takes ${enemy.statusEffects.burn.damage} burn damage!`);
-        enemy.hp -= enemy.statusEffects.burn.damage;
-        enemy.statusEffects.burn.duration--;
-        if (enemy.hp <= 0) {
-          this.logCallback(`${enemy.name} died from burn damage!`);
-          this.battlefield[enemy.y][enemy.x] = '.';
-          this.enemies = this.enemies.filter(e => e !== enemy);
-        }
+        applyBurn(enemy, this.logCallback);
       }
       // The slüj effect is handled via the imported applySlujEffect() in enemyTurn().
     });

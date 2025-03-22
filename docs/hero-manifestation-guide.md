@@ -20,7 +20,7 @@ Each hero is defined by a set of properties. Here are the key properties you nee
 Some heroes have special properties that give them unique abilities. Here are some examples:
 
 - `heal`: The hero can heal other heroes.
-- `burn`: The hero can inflict burn damage on enemies.
+- `burn`: The hero can inflict burn damage on enemies. The burn effect is handled in the `burn.js` module.
 - `sluj`: The hero can inflict sluj damage on enemies.
 - `yeet`: The hero can knock back enemies.
 - `swarm`: The hero can deal turn-based damage to adjacent enemies.
