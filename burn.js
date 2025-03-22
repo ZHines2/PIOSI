@@ -24,6 +24,16 @@ function computeBurnDamage(level) {
 }
 
 /**
+ * Logs messages for burn damage application and expiration.
+ *
+ * @param {string} message - The message to log.
+ * @param {function} logCallback - Function to log messages.
+ */
+function logBurnMessage(message, logCallback) {
+  logCallback(message);
+}
+
+/**
  * Applies a tick of burn damage to an enemy based on its burn status effect.
  *
  * @param {object} enemy - The enemy object which has the burn status effect.
@@ -50,7 +60,7 @@ export function applyBurn(enemy, logCallback) {
   // If it's the correct tick, apply damage.
   if (burnData.counter % triggerInterval === 0) {
     const damage = computeBurnDamage(burnData.level);
-    logCallback(`${enemy.name} takes ${damage} burn damage due to its burn effect!`);
+    logBurnMessage(`${enemy.name} takes ${damage} burn damage due to its burn effect!`, logCallback);
     enemy.hp -= damage;
   }
 
@@ -59,7 +69,7 @@ export function applyBurn(enemy, logCallback) {
 
   // When the effect expires, remove it.
   if (burnData.duration <= 0) {
-    logCallback(`${enemy.name}'s burn effect wears off.`);
+    logBurnMessage(`${enemy.name}'s burn effect wears off.`, logCallback);
     delete enemy.statusEffects.burn;
   }
 }
