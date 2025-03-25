@@ -86,25 +86,26 @@
 
   <!-- Dungeon Screen -->
   <div id="dungeon-screen" class="screen">
-    <h2>Move One Hero at a Time</h2>
-    <p>Arrow Keys: Move the Current Hero | Space: Switch Hero</p>
+    <h2>Dungeon Exploration (Turn-Based)</h2>
+    <p>
+      Arrow Keys: Move the Active Hero<br />
+      Active Hero starts with move points equal to their Agility.<br />
+      When move points hit 0, the turn advances automatically.
+    </p>
     <canvas id="dungeonCanvas" width="800" height="600"></canvas>
+    <div id="turn-info"></div>
   </div>
 
   <script type="module">
-    /*********************************************************
-     * 1) Import Heroes from heroes.js
-     *********************************************************/
+    // 1) Import Heroes from heroes.js
     import { heroes } from "./heroes.js";
     
-    /*********************************************************
-     * 2) GLOBAL STATE & SCREEN MANAGEMENT
-     *********************************************************/
+    // 2) GLOBAL STATE & SCREEN MANAGEMENT
     let currentScreen = "title-screen";
     let heroIndex = 0;
     let selectedHeroes = [];
     let party = []; // Final party array
-    let currentHeroIndex = 0; // Which hero is active in the dungeon
+    let currentHeroIndex = 0; // Index of the currently active hero in the party
 
     function showScreen(screenId) {
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -112,6 +113,8 @@
       currentScreen = screenId;
       if (screenId === "party-select") {
         initPartySelection();
+      } else if (screenId === "dungeon-screen") {
+        updateTurnInfo();
       }
     }
 
@@ -122,9 +125,7 @@
       }
     });
 
-    /*********************************************************
-     * 3) PARTY SELECTION
-     *********************************************************/
+    // 3) PARTY SELECTION
     function updateHeroDisplay() {
       const hero = heroes[heroIndex];
       document.getElementById("hero-display").innerHTML = `
@@ -164,24 +165,13 @@
       document.addEventListener("keydown", handlePartySelectionKey);
     }
 
-    function startGame() {
-      party = selectedHeroes.map(i => ({ ...heroes[i], alive: true }));
-      console.log("Party Selected:", party);
-      document.removeEventListener("keydown", handlePartySelectionKey);
-      showScreen("dungeon-screen");
-      initDungeon();
-    }
-
-    /*********************************************************
-     * 4) DUNGEON GENERATION & TURN-BASED MOVEMENT
-     *********************************************************/
+    // 4) DUNGEON GENERATION & TURN-BASED MOVEMENT
     const GRID_SIZE = 25;
     const TILE_WIDTH = 32;
     const TILE_HEIGHT = 16;
     let dungeon = []; // 2D array of "floor" or "wall"
     let gameStarted = false;
 
-    // Each hero will be placed on a random floor tile.
     function generateDungeon() {
       for (let y = 0; y < GRID_SIZE; y++) {
         dungeon[y] = [];
@@ -200,7 +190,6 @@
       return { x, y };
     }
 
-    // Place each hero at a random floor tile.
     function placePartyInDungeon() {
       party.forEach(hero => {
         const { x, y } = findRandomFloor();
@@ -213,14 +202,13 @@
     const dungeonCanvas = document.getElementById("dungeonCanvas");
     const ctx = dungeonCanvas.getContext("2d");
 
-    // Convert grid coords to isometric canvas coords
+    // Convert grid coordinates to isometric canvas coordinates
     function toIsometric(gridX, gridY) {
       const isoX = (gridX - gridY) * (TILE_WIDTH / 2) + dungeonCanvas.width / 2;
       const isoY = (gridX + gridY) * (TILE_HEIGHT / 2) + 50;
       return { isoX, isoY };
     }
 
-    // Draw a tile
     function drawTile(x, y, color) {
       const { isoX, isoY } = toIsometric(x, y);
       ctx.beginPath();
@@ -235,7 +223,6 @@
       ctx.stroke();
     }
 
-    // Draw the dungeon and the heroes
     function drawDungeon() {
       ctx.clearRect(0, 0, dungeonCanvas.width, dungeonCanvas.height);
       // Center the camera on the active hero
@@ -246,7 +233,7 @@
       ctx.save();
       ctx.translate(-cameraOffsetX, -cameraOffsetY);
 
-      // Draw dungeon grid
+      // Draw the dungeon grid
       for (let y = 0; y < GRID_SIZE; y++) {
         for (let x = 0; x < GRID_SIZE; x++) {
           const cell = dungeon[y][x];
@@ -267,29 +254,60 @@
       ctx.restore();
     }
 
+    // Game Loop - now integrates turn-based movement with agility-driven moves.
     function gameLoop() {
       drawDungeon();
       requestAnimationFrame(gameLoop);
     }
 
+    // Advance to the next hero's turn and reset their move points based on agility.
+    function nextTurn() {
+      // Cycle to next hero (skip dead heroes)
+      let found = false;
+      for (let i = 0; i < party.length; i++) {
+        currentHeroIndex = (currentHeroIndex + 1) % party.length;
+        if (party[currentHeroIndex].alive) {
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        console.log("All heroes are defeated!");
+        return;
+      }
+      // Reset move points for the active hero based on agility.
+      party[currentHeroIndex].movePoints = party[currentHeroIndex].agility;
+      console.log(`It's now ${party[currentHeroIndex].name}'s turn with ${party[currentHeroIndex].movePoints} move points.`);
+      updateTurnInfo();
+    }
+
+    function updateTurnInfo() {
+      document.getElementById("turn-info").textContent = 
+        `Active Hero: ${party[currentHeroIndex].name} | Move Points: ${party[currentHeroIndex].movePoints}`;
+    }
+
+    // Initialize the Dungeon, place heroes, and start the game loop.
     function initDungeon() {
       gameStarted = true;
       generateDungeon();
       placePartyInDungeon();
+      // For the first turn, set move points based on agility for the current hero.
+      party[currentHeroIndex].movePoints = party[currentHeroIndex].agility;
       gameLoop();
     }
 
-    // Turn-based movement: control the current hero
-    // Arrow keys move the active hero; Space cycles to the next hero.
+    // Turn-based movement: control the current hero.
+    // Arrow keys move the active hero if they have move points.
     document.addEventListener("keydown", (e) => {
       if (!gameStarted || currentScreen !== "dungeon-screen") return;
-      if (e.code === "Space") {
-        currentHeroIndex = (currentHeroIndex + 1) % party.length;
-        return;
-      }
+      
       const hero = party[currentHeroIndex];
+      // Do nothing if the hero is not alive
+      if (!hero.alive) return;
+      
       let newX = hero.x;
       let newY = hero.y;
+      
       switch (e.key) {
         case "ArrowUp":    newY--; break;
         case "ArrowDown":  newY++; break;
@@ -297,6 +315,7 @@
         case "ArrowRight": newX++; break;
         default: return;
       }
+
       if (
         newX >= 0 && newX < GRID_SIZE &&
         newY >= 0 && newY < GRID_SIZE &&
@@ -304,8 +323,30 @@
       ) {
         hero.x = newX;
         hero.y = newY;
+        // Consume one move point per move.
+        hero.movePoints--;
+        console.log(`${hero.name} moved to (${newX}, ${newY}). Remaining move points: ${hero.movePoints}`);
+        updateTurnInfo();
+        // If no move points remain, advance the turn.
+        if (hero.movePoints <= 0) {
+          nextTurn();
+        }
       }
     });
+    
+    // 5) STARTING THE GAME
+    function startGame() {
+      // Map the selected heroes to party members; assign 100 HP and initialize movePoints later.
+      party = selectedHeroes.map(i => ({
+        ...heroes[i],
+        alive: true,
+        hp: 100
+      }));
+      console.log("Party Selected:", party);
+      document.removeEventListener("keydown", handlePartySelectionKey);
+      showScreen("dungeon-screen");
+      initDungeon();
+    }
   </script>
 </body>
 </html>
