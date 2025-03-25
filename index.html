@@ -30,13 +30,14 @@
     .active {
       display: flex;
     }
-    #hero-display img {
-      border: 2px solid #eee;
-      margin: 10px;
+    /* Ensure images are rendered in a pixelated style */
+    img {
+      image-rendering: pixelated;
     }
     canvas {
       border: 1px solid #333;
       background: #444;
+      image-rendering: pixelated; /* Also enforce pixelated rendering on canvas scaling */
     }
   </style>
 </head>
@@ -173,6 +174,9 @@
     function renderBattlefield() {
       const canvas = document.getElementById("battle-canvas");
       const ctx = canvas.getContext("2d");
+      // Disable smoothing for a pixelated effect
+      ctx.imageSmoothingEnabled = false;
+      
       canvas.width = gridSize * cellSize;
       canvas.height = gridSize * cellSize;
 
