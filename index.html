@@ -104,12 +104,7 @@
       <div id="game-log"></div>
     </div>
     <script type="module">
-      // Dummy heroes data.
-      const heroes = [
-        { name: "Alice", symbol: "A", agility: 10, attack: 5, range: 2, alive: true, hp: 100, sceneCoord: { row: 0, col: 0, z: 0 }, facing: "down" },
-        { name: "Bob", symbol: "B", agility: 10, attack: 5, range: 3, alive: true, hp: 100, sceneCoord: { row: 0, col: 0, z: 0 }, facing: "down" },
-        { name: "Charlie", symbol: "C", agility: 10, attack: 5, range: 1, alive: true, hp: 100, sceneCoord: { row: 0, col: 0, z: 0 }, facing: "down" }
-      ];
+      import { heroes } from "./heroes.js";
       
       // Global game state.
       let currentScreen = "title-screen";
