@@ -34,6 +34,30 @@
       #title-screen {
         font-size: 2em;
       }
+      /* Party Selection Screen */
+      #party-select {
+        background: rgba(0,0,0,0.75);
+        border: 2px solid #eee;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+      }
+      #hero-display {
+        margin: 20px 0;
+        padding: 10px;
+        border: 1px solid #eee;
+        border-radius: 5px;
+      }
+      .hero-info {
+        transition: transform 0.3s;
+      }
+      .hero-info:hover {
+        transform: scale(1.05);
+      }
+      .selected {
+        color: #0f0;
+        font-weight: bold;
+      }
       /* Game Screen (Overworld) */
       canvas {
         border: 1px solid #333;
@@ -62,6 +86,16 @@
       <h1>Welcome to Zone One!</h1>
       <p>Press Space to Start</p>
     </div>
+    <!-- Party Selection Screen -->
+    <div id="party-select" class="screen">
+      <h2>Select Your Party</h2>
+      <div id="hero-display"></div>
+      <p id="selection-info"></p>
+      <p>
+        Use Left/Right arrows to navigate and Spacebar to select/deselect heroes.<br />
+        Select exactly 3 heroes to proceed.
+      </p>
+    </div>
     <!-- Game Screen (Overworld) -->
     <div id="game-screen" class="screen">
       <h2>Zone One: Overworld</h2>
@@ -70,7 +104,7 @@
       <div id="game-log"></div>
     </div>
     <script type="module">
-      // Dummy heroes data. Each hero now has "attack", "range", and "facing" properties.
+      // Dummy heroes data.
       const heroes = [
         { name: "Alice", symbol: "A", agility: 10, attack: 5, range: 2, alive: true, hp: 100, sceneCoord: { row: 0, col: 0, z: 0 }, facing: "down" },
         { name: "Bob", symbol: "B", agility: 10, attack: 5, range: 3, alive: true, hp: 100, sceneCoord: { row: 0, col: 0, z: 0 }, facing: "down" },
@@ -79,36 +113,90 @@
       
       // Global game state.
       let currentScreen = "title-screen";
-      let party = [...heroes];
-      let currentHeroIndex = 0;
+      let heroIndex = 0;             // For party selection
+      let selectedHeroes = [];       // Indices of selected heroes
+      let party = [];                // Final party (from selected heroes)
+      let currentHeroIndex = 0;      // For game controls
       let gameStarted = false;
-      // Flag to control attack mode.
-      let attackMode = false;
+      let attackMode = false;        // Flag for attack mode
       
       // Grid and tile settings.
       const GRID_SIZE = 10;
       const TILE_WIDTH = 50;
       const TILE_HEIGHT = 24;
-      // Chance to generate a corridor scene.
       const CORRIDOR_PROBABILITY = 0.1;
-      // Disable tower scene.
       const TOWER_PROBABILITY = 0.0;
       
       const gameCanvas = document.getElementById("gameCanvas");
       const ctx = gameCanvas.getContext("2d");
       
-      // Scenes are stored by key "row,col,z".
       const zoneOne = {};
-      // Set of discovered zones (for the minimap).
       const discoveredZones = new Set();
       let enemies = [];
       
-      // Mark initial zone (0,0,0) as discovered.
+      // Mark initial zone.
       party.forEach(hero => {
         discoveredZones.add("0,0,0");
       });
       
-      // Generate the unique origin scene.
+      // -----------------------------------------------------
+      // 1) TITLE SCREEN: Press Space to transition to party select.
+      // -----------------------------------------------------
+      document.addEventListener("keydown", (e) => {
+        if (currentScreen === "title-screen" && e.code === "Space") {
+          currentScreen = "party-select";
+          document.getElementById("title-screen").classList.remove("active");
+          document.getElementById("party-select").classList.add("active");
+          initPartySelection();
+        }
+      });
+      
+      // -----------------------------------------------------
+      // 2) PARTY SELECTION: Display heroes and handle navigation.
+      // -----------------------------------------------------
+      function updateHeroDisplay() {
+        const hero = heroes[heroIndex];
+        document.getElementById("hero-display").innerHTML = `
+          <div class="hero-info ${selectedHeroes.includes(heroIndex) ? 'selected' : ''}">
+            <h3>${hero.name} (${hero.symbol})</h3>
+            <p>HP: ${hero.hp} | Attack: ${hero.attack} | Range: ${hero.range} | Agility: ${hero.agility}</p>
+            <p>${selectedHeroes.includes(heroIndex) ? "SELECTED" : "Press Space to Select"}</p>
+          </div>
+        `;
+        document.getElementById("selection-info").textContent =
+          `Selected Heroes: ${selectedHeroes.length}/3`;
+      }
+      
+      function handlePartySelectionKey(e) {
+        if (e.key === "ArrowLeft") {
+          heroIndex = (heroIndex - 1 + heroes.length) % heroes.length;
+          updateHeroDisplay();
+        } else if (e.key === "ArrowRight") {
+          heroIndex = (heroIndex + 1) % heroes.length;
+          updateHeroDisplay();
+        } else if (e.code === "Space") {
+          // Toggle hero selection.
+          if (selectedHeroes.includes(heroIndex)) {
+            selectedHeroes = selectedHeroes.filter(i => i !== heroIndex);
+          } else if (selectedHeroes.length < 3) {
+            selectedHeroes.push(heroIndex);
+          }
+          updateHeroDisplay();
+          if (selectedHeroes.length === 3) {
+            startGame();
+          }
+        }
+      }
+      
+      function initPartySelection() {
+        updateHeroDisplay();
+        document.addEventListener("keydown", handlePartySelectionKey);
+      }
+      
+      // -----------------------------------------------------
+      // 3) GAME (OVERWORLD) LOGIC & RENDERING
+      // (Unchanged functions: generateOriginScene, generateScene, etc.)
+      // -----------------------------------------------------
       function generateOriginScene() {
         const scene = [];
         const center = Math.floor(GRID_SIZE / 2);
@@ -116,7 +204,6 @@
           scene[y] = [];
           for (let x = 0; x < GRID_SIZE; x++) {
             if (y === 0 || y === GRID_SIZE - 1 || x === 0 || x === GRID_SIZE - 1) {
-              // Create wide doorways along the border.
               if (((y === 0 || y === GRID_SIZE - 1) && x >= center - 1 && x <= center + 1) ||
                   ((x === 0 || x === GRID_SIZE - 1) && y >= center - 1 && y <= center + 1)) {
                 scene[y][x] = "floor";
@@ -132,7 +219,6 @@
         return scene;
       }
       
-      // Generate a normal scene.
       function generateScene() {
         const scene = [];
         const floorProbability = 0.7;
@@ -145,33 +231,25 @@
         return scene;
       }
       
-      // Generate a corridor scene.
       function generateCorridorScene(orientation) {
         const scene = [];
         for (let y = 0; y < GRID_SIZE; y++) {
           scene[y] = [];
           for (let x = 0; x < GRID_SIZE; x++) {
             if (orientation === "vertical") {
-              scene[y][x] = (x >= Math.floor(GRID_SIZE / 2) - 1 && x <= Math.floor(GRID_SIZE / 2)) ? "floor" : "wall";
+              scene[y][x] = (x >= Math.floor(GRID_SIZE/2) - 1 && x <= Math.floor(GRID_SIZE/2)) ? "floor" : "wall";
             } else if (orientation === "horizontal") {
-              scene[y][x] = (y >= Math.floor(GRID_SIZE / 2) - 1 && y <= Math.floor(GRID_SIZE / 2)) ? "floor" : "wall";
+              scene[y][x] = (y >= Math.floor(GRID_SIZE/2) - 1 && y <= Math.floor(GRID_SIZE/2)) ? "floor" : "wall";
             }
           }
         }
         return scene;
       }
       
-      // Spawn enemies for a scene (except in the origin).
       function spawnEnemiesForScene(sceneCoord) {
         if (sceneCoord.row === 0 && sceneCoord.col === 0 && sceneCoord.z === 0) return;
         const key = `${sceneCoord.row},${sceneCoord.col},${sceneCoord.z || 0}`;
-        if (enemies.some(e =>
-            e.sceneCoord.row === sceneCoord.row &&
-            e.sceneCoord.col === sceneCoord.col &&
-            (e.sceneCoord.z || 0) === (sceneCoord.z || 0))) {
-          return;
-        }
-        // For testing, spawn between 0 and 2 enemies.
+        if (enemies.some(e => e.sceneCoord.row===sceneCoord.row && e.sceneCoord.col===sceneCoord.col && (e.sceneCoord.z||0)===(sceneCoord.z||0))) return;
         const numEnemies = Math.floor(Math.random() * 3);
         const scene = getScene(sceneCoord);
         let grid = scene;
@@ -188,7 +266,6 @@
         }
       }
       
-      // Retrieve (or generate) a scene based on the sceneCoord {row, col, z}.
       function getScene(sceneCoord) {
         const z = sceneCoord.z || 0;
         const key = `${sceneCoord.row},${sceneCoord.col},${z}`;
@@ -198,7 +275,7 @@
             zoneOne[key]._type = "origin";
             logMessage(`Generated origin scene at ${key}`);
           } else if (Math.random() < TOWER_PROBABILITY) {
-            // Tower scene disabled for now.
+            // Tower scene disabled.
           } else if (Math.random() < CORRIDOR_PROBABILITY) {
             const orientation = Math.random() < 0.5 ? "vertical" : "horizontal";
             zoneOne[key] = generateCorridorScene(orientation);
@@ -215,7 +292,6 @@
         return zoneOne[key];
       }
       
-      // Find a random floor tile in a grid (expects grid[y][x] === "floor")
       function findRandomFloor(grid) {
         let x, y;
         do {
@@ -225,7 +301,6 @@
         return { x, y };
       }
       
-      // Check if there is an enemy on the tile.
       function hasEnemyAt(sceneCoord, x, y) {
         return enemies.some(enemy => {
           return enemy.hp > 0 &&
@@ -237,7 +312,6 @@
         });
       }
       
-      // Check if any other hero occupies the given tile in the same scene.
       function hasHeroAt(sceneCoord, x, y, excludingIndex) {
         return party.some((hero, index) => {
           return index !== excludingIndex &&
@@ -250,8 +324,6 @@
         });
       }
       
-      // Place a hero on a random available floor tile in the scene.
-      // This runs only at game start; afterward, heroes keep their last position.
       function placeHeroInScene(hero) {
         const scene = getScene(hero.sceneCoord);
         let grid = scene;
@@ -266,14 +338,12 @@
         logMessage(`${hero.name} placed at (${hero.x},${hero.y}) in scene ${hero.sceneCoord.row},${hero.sceneCoord.col},${hero.sceneCoord.z}`);
       }
       
-      // Convert grid coordinates to isometric canvas coordinates.
       function toIsometric(gridX, gridY) {
         const isoX = (gridX - gridY) * (TILE_WIDTH / 2) + gameCanvas.width / 2;
         const isoY = (gridX + gridY) * (TILE_HEIGHT / 2) + 50;
         return { isoX, isoY };
       }
       
-      // Draw a single tile.
       function drawTile(x, y, color) {
         const { isoX, isoY } = toIsometric(x, y);
         ctx.beginPath();
@@ -288,7 +358,6 @@
         ctx.stroke();
       }
       
-      // Highlight a tile given its grid coordinates and an overlay color.
       function highlightTile(x, y, overlayColor) {
         const { isoX, isoY } = toIsometric(x, y);
         ctx.save();
@@ -304,18 +373,14 @@
         ctx.restore();
       }
       
-      // Attack logic: This function attempts to attack an enemy
-      // in the direction specified by dx, dy based on the hero's range.
       async function attackInDirection(hero, dx, dy) {
         const range = hero.range || 1;
         for (let i = 1; i <= range; i++) {
           const targetX = hero.x + dx * i;
           const targetY = hero.y + dy * i;
-          // Check if within bounds.
           if (targetX < 0 || targetX >= GRID_SIZE || targetY < 0 || targetY >= GRID_SIZE) {
             break;
           }
-          // Check for enemy in that cell.
           const enemy = enemies.find(e =>
             e.sceneCoord.row === hero.sceneCoord.row &&
             e.sceneCoord.col === hero.sceneCoord.col &&
@@ -341,12 +406,10 @@
         nextTurn();
       }
       
-      // Helper function to pause execution briefly.
       function shortPause() {
         return new Promise(resolve => setTimeout(resolve, 300));
       }
       
-      // Render the active scene.
       function drawScene() {
         const activeHero = party[currentHeroIndex];
         const scene = getScene(activeHero.sceneCoord);
@@ -357,35 +420,22 @@
         const cameraOffsetY = heroIso.isoY - gameCanvas.height / 2;
         ctx.save();
         ctx.translate(-cameraOffsetX, -cameraOffsetY);
-        // Draw the grid.
         for (let y = 0; y < GRID_SIZE; y++) {
           for (let x = 0; x < GRID_SIZE; x++) {
             const cell = grid[y][x];
-            let color;
-            if (cell === "floor") {
-              color = (scene._type === "origin") ? "#ddf" : "#bbb";
-            } else {
-              color = "#333";
-            }
+            let color = (cell === "floor") ? ((scene._type==="origin") ? "#ddf" : "#bbb") : "#333";
             drawTile(x, y, color);
           }
         }
-        // Highlight active hero's tile (yellow).
         highlightTile(activeHero.x, activeHero.y, "rgba(255,255,0,0.4)");
-        // If in attack mode, highlight only upward, downward, left, and right tiles.
         if (attackMode) {
           for (let i = 1; i <= activeHero.range; i++) {
-            // Up
             if (activeHero.y - i >= 0) highlightTile(activeHero.x, activeHero.y - i, "rgba(0,150,255,0.4)");
-            // Down
             if (activeHero.y + i < GRID_SIZE) highlightTile(activeHero.x, activeHero.y + i, "rgba(0,150,255,0.4)");
-            // Left
             if (activeHero.x - i >= 0) highlightTile(activeHero.x - i, activeHero.y, "rgba(0,150,255,0.4)");
-            // Right
             if (activeHero.x + i < GRID_SIZE) highlightTile(activeHero.x + i, activeHero.y, "rgba(0,150,255,0.4)");
           }
         } else {
-          // When not in attack mode, highlight only the tile in the hero's facing direction.
           let fdX = 0, fdY = 0;
           switch(activeHero.facing) {
             case "up": fdY = -1; break;
@@ -399,7 +449,6 @@
             highlightTile(targetX, targetY, "rgba(0,150,255,0.4)");
           }
         }
-        // Draw enemies.
         enemies.forEach(enemy => {
           if (enemy.sceneCoord.row === activeHero.sceneCoord.row &&
               enemy.sceneCoord.col === activeHero.sceneCoord.col &&
@@ -411,14 +460,11 @@
             ctx.fillText(enemy.symbol, pos.isoX - 6, pos.isoY + 6);
           }
         });
-        // Draw heroes – drawn last.
         party.forEach((hero, index) => {
-          if (
-            hero.sceneCoord.row === activeHero.sceneCoord.row &&
-            hero.sceneCoord.col === activeHero.sceneCoord.col &&
-            (hero.sceneCoord.z || 0) === (activeHero.sceneCoord.z || 0) &&
-            hero.alive
-          ) {
+          if (hero.sceneCoord.row === activeHero.sceneCoord.row &&
+              hero.sceneCoord.col === activeHero.sceneCoord.col &&
+              (hero.sceneCoord.z || 0) === (activeHero.sceneCoord.z || 0) &&
+              hero.alive) {
             const { isoX, isoY } = toIsometric(hero.x, hero.y);
             ctx.fillStyle = (index === currentHeroIndex) ? "#f00" : "#0cf";
             ctx.font = "16px Sono, sans-serif";
@@ -428,7 +474,6 @@
         ctx.restore();
       }
       
-      // Draw a simple minimap overlay.
       function drawMinimapOverlay() {
         const minimapSize = 100;
         const margin = 10;
@@ -444,9 +489,7 @@
           ];
           directions.forEach(d => {
             const adjKey = `${d.row},${d.col},${d.z}`;
-            if (!discoveredZones.has(adjKey)) {
-              adjacentZones.add(adjKey);
-            }
+            if (!discoveredZones.has(adjKey)) adjacentZones.add(adjKey);
           });
         });
         const occupiedZones = new Set();
@@ -475,31 +518,23 @@
         ctx.globalAlpha = 0.8;
         ctx.fillStyle = "#111";
         ctx.fillRect(gameCanvas.width - minimapSize - margin, margin, minimapSize, minimapSize);
-      
         for (let row = minRow; row <= maxRow; row++) {
           for (let col = minCol; col <= maxCol; col++) {
             const key = `${row},${col},0`;
             const x = gameCanvas.width - minimapSize - margin + (col - minCol) * cellWidth;
             const y = margin + (row - minRow) * cellHeight;
             let fillColor;
-            if (zoneOne[key] && zoneOne[key]._type === "origin") {
-              fillColor = "#00f";
-            } else if (occupiedZones.has(key)) {
-              fillColor = "#ff3333";
-            } else if (discoveredZones.has(key)) {
-              fillColor = "#66cc66";
-            } else if (adjacentZones.has(key)) {
-              fillColor = "#225522";
-            } else {
-              fillColor = "#000";
-            }
+            if (zoneOne[key] && zoneOne[key]._type === "origin") fillColor = "#00f";
+            else if (occupiedZones.has(key)) fillColor = "#ff3333";
+            else if (discoveredZones.has(key)) fillColor = "#66cc66";
+            else if (adjacentZones.has(key)) fillColor = "#225522";
+            else fillColor = "#000";
             ctx.fillStyle = fillColor;
             ctx.fillRect(x, y, cellWidth, cellHeight);
             ctx.strokeStyle = "#333";
             ctx.strokeRect(x, y, cellWidth, cellHeight);
           }
         }
-      
         const activeKey = `${party[currentHeroIndex].sceneCoord.row},${party[currentHeroIndex].sceneCoord.col},${party[currentHeroIndex].sceneCoord.z || 0}`;
         const parts = activeKey.split(",");
         const aRow = Number(parts[0]), aCol = Number(parts[1]);
@@ -513,7 +548,6 @@
         ctx.restore();
       }
       
-      // Update turn info.
       function updateTurnInfo() {
         const activeHero = party[currentHeroIndex];
         document.getElementById("turn-info").textContent =
@@ -522,7 +556,6 @@
           (attackMode ? " | ATTACK MODE" : "");
       }
       
-      // Log message to game log.
       function logMessage(message) {
         const logEl = document.getElementById("game-log");
         const timeStamp = new Date().toLocaleTimeString();
@@ -532,11 +565,9 @@
         logEl.scrollTop = logEl.scrollHeight;
       }
       
-      // Advance hero turn.
       function nextTurn() {
         const currentHero = party[currentHeroIndex];
         logMessage(`${currentHero.name} ends turn.`);
-        // Reset attack mode on turn end.
         attackMode = false;
         for (let i = 0; i < party.length; i++) {
           currentHeroIndex = (currentHeroIndex + 1) % party.length;
@@ -549,13 +580,11 @@
         updateTurnInfo();
       }
       
-      // Keydown for movement and combat interaction.
       document.addEventListener("keydown", async (e) => {
         if (!gameStarted || currentScreen !== "game-screen") return;
         console.log("Key pressed:", e.key);
         const hero = party[currentHeroIndex];
       
-        // If we are not in attack mode and space is pressed, enter attack mode.
         if (!attackMode && e.key === " ") {
           attackMode = true;
           logMessage(`${hero.name} has entered ATTACK MODE. Press an arrow key to attack.`);
@@ -563,7 +592,6 @@
           return;
         }
       
-        // If we are in attack mode and an arrow key is pressed, determine attack direction.
         if (attackMode && ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
           let dx = 0, dy = 0;
           let direction = "";
@@ -587,15 +615,12 @@
           }
           hero.facing = direction;
           logMessage(`${hero.name} is attacking in the ${direction} direction.`);
-          // Execute attack logic.
           await attackInDirection(hero, dx, dy);
-          // Exit attack mode.
           attackMode = false;
           updateTurnInfo();
           return;
         }
       
-        // If not in attack mode, process movement.
         let newX = hero.x, newY = hero.y;
         let moved = false;
         let direction = "";
@@ -620,13 +645,11 @@
             return;
         }
       
-        // Update hero facing.
         hero.facing = direction;
         const scene = getScene(hero.sceneCoord);
         let grid = scene;
         console.log("Current Position:", hero.x, hero.y, "Attempting to move to:", newX, newY);
       
-        // Collision check: allow move if cell is "floor" and no enemy/hero is there.
         if (newX >= 0 && newX < GRID_SIZE && newY >= 0 && newY < GRID_SIZE) {
           if (grid[newY][newX] === "floor" && !hasEnemyAt(hero.sceneCoord, newX, newY) &&
               !hasHeroAt(hero.sceneCoord, newX, newY, currentHeroIndex)) {
@@ -650,7 +673,6 @@
         }
       });
       
-      // Handle lateral scene transitions.
       function trySceneTransition(hero, direction) {
         let newSceneCoord = { ...hero.sceneCoord };
         let targetX = hero.x;
@@ -688,19 +710,33 @@
         requestAnimationFrame(gameLoop);
       }
       
-      // Start game on Space key from the title screen.
-      document.addEventListener("keydown", (e) => {
-        if (currentScreen === "title-screen" && e.code === "Space") {
-          currentScreen = "game-screen";
-          document.getElementById("title-screen").classList.remove("active");
-          document.getElementById("game-screen").classList.add("active");
-          party.forEach(hero => placeHeroInScene(hero));
-          updateTurnInfo();
-          logMessage("Game started.");
-          gameStarted = true;
-          gameLoop();
-        }
-      });
+      // When starting the game, remove the party selection listener.
+      function startGame() {
+        // Build the party using selected heroes.
+        party = selectedHeroes.map(i => ({
+          ...heroes[i],
+          alive: true,
+          hp: 100,
+          sceneCoord: { row: 0, col: 0, z: 0 }
+        }));
+        // Remove party selection event listener so it doesn't interfere.
+        document.removeEventListener("keydown", handlePartySelectionKey);
+        // Transition to game-screen.
+        currentScreen = "game-screen";
+        document.getElementById("party-select").classList.remove("active");
+        document.getElementById("game-screen").classList.add("active");
+        party.forEach(hero => placeHeroInScene(hero));
+        currentHeroIndex = 0;
+        updateTurnInfo();
+        logMessage("Game started.");
+        gameStarted = true;
+        gameLoop();
+      }
+      
+      // If party select is active, initialize its event listener.
+      if (currentScreen === "party-select") {
+        initPartySelection();
+      }
     </script>
   </body>
 </html>
