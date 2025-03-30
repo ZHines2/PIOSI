@@ -105,6 +105,11 @@
     </div>
     <script type="module">
       import { heroes } from "./heroes.js";
+
+      // Global Score Variables
+      let maxScore = 0;         // Used to derive the world level/difficulty.
+      let playerScore = 0;      // Usable by the player for upgrades later.
+      const SCORE_PER_SCENE_DISCOVERY = 50;  // Points awarded when a new scene is discovered.
       
       // Global game state.
       let currentScreen = "title-screen";
@@ -128,6 +133,12 @@
       const zoneOne = {};
       const discoveredZones = new Set();
       let enemies = [];
+
+      function sceneDiscovered() {
+        maxScore += SCORE_PER_SCENE_DISCOVERY;
+        logMessage(`New scene discovered! Max Score increased to: ${maxScore}`);
+        // Optionally, update any UI elements related to world level here.
+      }
       
       // Mark initial zone.
       party.forEach(hero => {
@@ -260,7 +271,7 @@
           });
         }
       }
-      
+            
       function getScene(sceneCoord) {
         const z = sceneCoord.z || 0;
         const key = `${sceneCoord.row},${sceneCoord.col},${z}`;
@@ -281,7 +292,11 @@
             zoneOne[key]._type = "normal";
             logMessage(`Generated normal scene at ${key}`);
           }
-          discoveredZones.add(key);
+          // Award discovery bonus only once.
+          if (!discoveredZones.has(key)) {
+            sceneDiscovered();
+            discoveredZones.add(key);
+          }
           spawnEnemiesForScene(sceneCoord);
         }
         return zoneOne[key];
