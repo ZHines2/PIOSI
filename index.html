@@ -4,7 +4,10 @@
     <meta charset="UTF-8" />
     <title>Zone One - Overworld (Attack Mode Range Marker)</title>
     <!-- Include the Sono font from Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Sono:wght@200&display=swap" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Sono:wght@200&display=swap"
+      rel="stylesheet"
+    />
     <style>
       body {
         font-family: 'Sono', sans-serif;
@@ -92,7 +95,8 @@
       <div id="hero-display"></div>
       <p id="selection-info"></p>
       <p>
-        Use Left/Right arrows to navigate and Spacebar to select/deselect heroes.<br />
+        Use Left/Right arrows to navigate and Spacebar to select/deselect
+        heroes.<br />
         Select exactly 3 heroes to proceed.
       </p>
     </div>
@@ -105,741 +109,745 @@
     </div>
 
     <script type="module">
-      import { initializePotionMapping, getRandomPotion, applyPotionEffect } from "./potions.js";
-      import { heroes } from "./heroes.js";
+          import { initializePotionMapping, getRandomPotion, applyPotionEffect } from "./potions.js";
+          import { heroes } from "./heroes.js";
 
-      // Initialize the potion mapping once at the start of the playthrough.
-      initializePotionMapping();
+          // Initialize the potion mapping once at the start of the playthrough.
+          initializePotionMapping();
 
-      // Global Score Variables
-      let maxScore = 0;         // Used to derive the world level/difficulty.
-      let playerScore = 0;      // Usable by the player for upgrades later.
-      const SCORE_PER_SCENE_DISCOVERY = 50;  // Points awarded when a new scene is discovered.
-      
-      // Global game state.
-      let currentScreen = "title-screen";
-      let heroIndex = 0;             // For party selection
-      let selectedHeroes = [];       // Indices of selected heroes
-      let party = [];                // Final party (from selected heroes)
-      let currentHeroIndex = 0;      // For game controls
-      let gameStarted = false;
-      let attackMode = false;        // Flag for attack mode
-      
-      // Grid and tile settings.
-      const GRID_SIZE = 10;
-      const TILE_WIDTH = 50;
-      const TILE_HEIGHT = 24;
-      const CORRIDOR_PROBABILITY = 0.1;
-      const TOWER_PROBABILITY = 0.0;
-      
-      const gameCanvas = document.getElementById("gameCanvas");
-      const ctx = gameCanvas.getContext("2d");
-      
-      const zoneOne = {};
-      const discoveredZones = new Set();
-      let enemies = [];
+          // Global Score Variables
+          let maxScore = 0;         // Used to derive the world level/difficulty.
+          let playerScore = 0;      // Usable by the player for upgrades later.
+          const SCORE_PER_SCENE_DISCOVERY = 50;  // Points awarded when a new scene is discovered.
 
-      function sceneDiscovered() {
-        maxScore += SCORE_PER_SCENE_DISCOVERY;
-        logMessage(`New scene discovered! Max Score increased to: ${maxScore}`);
-      }
-      
-      // Mark initial zone.
-      party.forEach(hero => {
-        discoveredZones.add("0,0,0");
-      });
-      
-      // -----------------------------------------------------
-      // 1) TITLE SCREEN: Press Space to transition to party select.
-      // -----------------------------------------------------
-      document.addEventListener("keydown", (e) => {
-        if (currentScreen === "title-screen" && e.code === "Space") {
-          currentScreen = "party-select";
-          document.getElementById("title-screen").classList.remove("active");
-          document.getElementById("party-select").classList.add("active");
-          initPartySelection();
-        }
-      });
-      
-      // -----------------------------------------------------
-      // 2) PARTY SELECTION: Display heroes and handle navigation.
-      // -----------------------------------------------------
-      function updateHeroDisplay() {
-        const hero = heroes[heroIndex];
-        document.getElementById("hero-display").innerHTML = `
-          <div class="hero-info ${selectedHeroes.includes(heroIndex) ? 'selected' : ''}">
-            <h3>${hero.name} (${hero.symbol})</h3>
-            <p>HP: ${hero.hp} | Attack: ${hero.attack} | Range: ${hero.range} | Agility: ${hero.agility}</p>
-            <p>${selectedHeroes.includes(heroIndex) ? "SELECTED" : "Press Space to Select"}</p>
-          </div>
-        `;
-        document.getElementById("selection-info").textContent =
-          `Selected Heroes: ${selectedHeroes.length}/3`;
-      }
-      
-      function handlePartySelectionKey(e) {
-        if (e.key === "ArrowLeft") {
-          heroIndex = (heroIndex - 1 + heroes.length) % heroes.length;
-          updateHeroDisplay();
-        } else if (e.key === "ArrowRight") {
-          heroIndex = (heroIndex + 1) % heroes.length;
-          updateHeroDisplay();
-        } else if (e.code === "Space") {
-          if (selectedHeroes.includes(heroIndex)) {
-            selectedHeroes = selectedHeroes.filter(i => i !== heroIndex);
-          } else if (selectedHeroes.length < 3) {
-            selectedHeroes.push(heroIndex);
+          // Global game state.
+          let currentScreen = "title-screen";
+          let heroIndex = 0;             // For party selection
+          let selectedHeroes = [];       // Indices of selected heroes
+          let party = [];                // Final party (from selected heroes)
+          let currentHeroIndex = 0;      // For game controls
+          let gameStarted = false;
+          let attackMode = false;        // Flag for attack mode
+
+          // Grid and tile settings.
+          const GRID_SIZE = 10;
+          const TILE_WIDTH = 50;
+          const TILE_HEIGHT = 24;
+          const CORRIDOR_PROBABILITY = 0.1;
+          const TOWER_PROBABILITY = 0.0;
+
+          const gameCanvas = document.getElementById("gameCanvas");
+          const ctx = gameCanvas.getContext("2d");
+
+          const zoneOne = {};
+          const discoveredZones = new Set();
+          let enemies = [];
+
+          function sceneDiscovered() {
+            maxScore += SCORE_PER_SCENE_DISCOVERY;
+            logMessage(`New scene discovered! Max Score increased to: ${maxScore}`);
           }
-          updateHeroDisplay();
-          if (selectedHeroes.length === 3) {
-            startGame();
-          }
-        }
-      }
-      
-      function initPartySelection() {
-        updateHeroDisplay();
-        document.addEventListener("keydown", handlePartySelectionKey);
-      }
-      
-      // -----------------------------------------------------
-      // 3) GAME (OVERWORLD) LOGIC & RENDERING
-      // -----------------------------------------------------
-      function generateOriginScene() {
-        const scene = [];
-        const center = Math.floor(GRID_SIZE / 2);
-        for (let y = 0; y < GRID_SIZE; y++) {
-          scene[y] = [];
-          for (let x = 0; x < GRID_SIZE; x++) {
-            if (y === 0 || y === GRID_SIZE - 1 || x === 0 || x === GRID_SIZE - 1) {
-              if (((y === 0 || y === GRID_SIZE - 1) && x >= center - 1 && x <= center + 1) ||
-                  ((x === 0 || x === GRID_SIZE - 1) && y >= center - 1 && y <= center + 1)) {
-                scene[y][x] = "floor";
-              } else {
-                scene[y][x] = "wall";
-              }
-            } else {
-              scene[y][x] = "floor";
-            }
-          }
-        }
-        scene._type = "origin";
-        return scene;
-      }
-      
-      function generateScene() {
-        const scene = [];
-        const floorProbability = 0.7;
-        for (let y = 0; y < GRID_SIZE; y++) {
-          scene[y] = [];
-          for (let x = 0; x < GRID_SIZE; x++) {
-            scene[y][x] = Math.random() < floorProbability ? "floor" : "wall";
-          }
-        }
-        return scene;
-      }
-      
-      function generateCorridorScene(orientation) {
-        const scene = [];
-        for (let y = 0; y < GRID_SIZE; y++) {
-          scene[y] = [];
-          for (let x = 0; x < GRID_SIZE; x++) {
-            if (orientation === "vertical") {
-              scene[y][x] = (x >= Math.floor(GRID_SIZE/2) - 1 && x <= Math.floor(GRID_SIZE/2)) ? "floor" : "wall";
-            } else if (orientation === "horizontal") {
-              scene[y][x] = (y >= Math.floor(GRID_SIZE/2) - 1 && y <= Math.floor(GRID_SIZE/2)) ? "floor" : "wall";
-            }
-          }
-        }
-        return scene;
-      }
-      
-      function spawnEnemiesForScene(sceneCoord) {
-        if (sceneCoord.row === 0 && sceneCoord.col === 0 && sceneCoord.z === 0) return;
-        const key = `${sceneCoord.row},${sceneCoord.col},${sceneCoord.z || 0}`;
-        if (enemies.some(e => 
-          e.sceneCoord.row === sceneCoord.row && 
-          e.sceneCoord.col === sceneCoord.col && 
-          (e.sceneCoord.z || 0) === (sceneCoord.z || 0))) return;
-        const numEnemies = Math.floor(Math.random() * 3);
-        const scene = getScene(sceneCoord);
-        for (let i = 0; i < numEnemies; i++) {
-          let pos = findRandomFloor(scene);
-          enemies.push({
-            type: "goblin",
-            symbol: "E",
-            hp: 30,
-            sceneCoord: { row: sceneCoord.row, col: sceneCoord.col, z: sceneCoord.z || 0 },
-            x: pos.x,
-            y: pos.y
+
+          // Mark initial zone.
+          party.forEach(hero => {
+            discoveredZones.add("0,0,0");
           });
-        }
-      }
-      
-      // When a new scene is created, assign it a random potion and a potion location.
-      function assignPotionToScene(scene) {
-        scene.potion = getRandomPotion();
-        scene.potionPos = findRandomFloor(scene);
-      }
-      
-      function getScene(sceneCoord) {
-        const z = sceneCoord.z || 0;
-        const key = `${sceneCoord.row},${sceneCoord.col},${z}`;
-        if (!zoneOne[key]) {
-          if (sceneCoord.row === 0 && sceneCoord.col === 0 && z === 0) {
-            zoneOne[key] = generateOriginScene();
-            zoneOne[key]._type = "origin";
-            logMessage(`Generated origin scene at ${key}`);
-          } else if (Math.random() < TOWER_PROBABILITY) {
-            // Tower scene disabled.
-          } else if (Math.random() < CORRIDOR_PROBABILITY) {
-            const orientation = Math.random() < 0.5 ? "vertical" : "horizontal";
-            zoneOne[key] = generateCorridorScene(orientation);
-            zoneOne[key]._type = "corridor";
-            logMessage(`Generated corridor scene (${orientation}) at ${key}`);
-          } else {
-            zoneOne[key] = generateScene();
-            zoneOne[key]._type = "normal";
-            logMessage(`Generated normal scene at ${key}`);
-          }
-          if (!discoveredZones.has(key)) {
-            sceneDiscovered();
-            discoveredZones.add(key);
-          }
-          spawnEnemiesForScene(sceneCoord);
-          // Inject a potion into the new scene.
-          assignPotionToScene(zoneOne[key]);
-          spawnEnemiesForScene(sceneCoord);
-        }
-        return zoneOne[key];
-      }
-      
-      function findRandomFloor(grid) {
-        let x, y;
-        do {
-          x = Math.floor(Math.random() * GRID_SIZE);
-          y = Math.floor(Math.random() * GRID_SIZE);
-        } while (grid[y][x] !== "floor");
-        return { x, y };
-      }
-      
-      function hasEnemyAt(sceneCoord, x, y) {
-        return enemies.some(enemy => {
-          return enemy.hp > 0 &&
-                 enemy.sceneCoord.row === sceneCoord.row &&
-                 enemy.sceneCoord.col === sceneCoord.col &&
-                 (enemy.sceneCoord.z || 0) === (sceneCoord.z || 0) &&
-                 enemy.x === x &&
-                 enemy.y === y;
-        });
-      }
-      
-      function hasHeroAt(sceneCoord, x, y, excludingIndex) {
-        return party.some((hero, index) => {
-          return index !== excludingIndex &&
-                 hero.alive &&
-                 hero.sceneCoord.row === sceneCoord.row &&
-                 hero.sceneCoord.col === sceneCoord.col &&
-                 (hero.sceneCoord.z || 0) === (sceneCoord.z || 0) &&
-                 hero.x === x &&
-                 hero.y === y;
-        });
-      }
-      
-      function placeHeroInScene(hero) {
-        const scene = getScene(hero.sceneCoord);
-        let pos = findRandomFloor(scene);
-        while (hasEnemyAt(hero.sceneCoord, pos.x, pos.y) ||
-               hasHeroAt(hero.sceneCoord, pos.x, pos.y, party.indexOf(hero))) {
-          pos = findRandomFloor(scene);
-        }
-        hero.x = pos.x;
-        hero.y = pos.y;
-        hero.movePoints = hero.agility;
-        logMessage(`${hero.name} placed at (${hero.x},${hero.y}) in scene ${hero.sceneCoord.row},${hero.sceneCoord.col},${hero.sceneCoord.z}`);
-      }
-      
-      function toIsometric(gridX, gridY) {
-        const isoX = (gridX - gridY) * (TILE_WIDTH / 2) + gameCanvas.width / 2;
-        const isoY = (gridX + gridY) * (TILE_HEIGHT / 2) + 50;
-        return { isoX, isoY };
-      }
-      
-      function drawTile(x, y, color) {
-        const { isoX, isoY } = toIsometric(x, y);
-        ctx.beginPath();
-        ctx.moveTo(isoX, isoY);
-        ctx.lineTo(isoX + TILE_WIDTH / 2, isoY + TILE_HEIGHT / 2);
-        ctx.lineTo(isoX, isoY + TILE_HEIGHT);
-        ctx.lineTo(isoX - TILE_WIDTH / 2, isoY + TILE_HEIGHT / 2);
-        ctx.closePath();
-        ctx.fillStyle = color;
-        ctx.fill();
-        ctx.strokeStyle = "#111";
-        ctx.stroke();
-      }
-      
-      function highlightTile(x, y, overlayColor) {
-        const { isoX, isoY } = toIsometric(x, y);
-        ctx.save();
-        ctx.fillStyle = overlayColor;
-        ctx.globalAlpha = 0.4;
-        ctx.beginPath();
-        ctx.moveTo(isoX, isoY);
-        ctx.lineTo(isoX + TILE_WIDTH / 2, isoY + TILE_HEIGHT / 2);
-        ctx.lineTo(isoX, isoY + TILE_HEIGHT);
-        ctx.lineTo(isoX - TILE_WIDTH / 2, isoY + TILE_HEIGHT / 2);
-        ctx.closePath();
-        ctx.fill();
-        ctx.restore();
-      }
-      
-      // NEW FUNCTION:
-      // This function checks if a hero lands on a potion cell.
-      // If so, it applies the potion effect and clears the potion.
-      function checkPotionPickup(hero) {
-        const scene = getScene(hero.sceneCoord);
-        if (
-          scene.potion &&
-          scene.potionPos &&
-          scene.potionPos.x === hero.x &&
-          scene.potionPos.y === hero.y
-        ) {
-          // Apply the potion effect to the hero.
-          const message = applyPotionEffect(scene.potion, hero);
-          // Log the detailed stats change to the in-game log.
-          logMessage(message);
-          // Remove the potion so it cannot be picked up again.
-          scene.potion = null;
-          scene.potionPos = null;
-        }
-      }
-      
-      // Draw a potion on the canvas at the given grid cell.
-      function drawPotion(x, y, potion) {
-        const { isoX, isoY } = toIsometric(x, y);
-        ctx.font = "1em sans-serif";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        // Draw a shadow/outline.
-        ctx.fillStyle = "black";
-        ctx.fillText("𖠎", isoX - 1, isoY - 1);
-        ctx.fillText("𖠎", isoX + 1, isoY - 1);
-        ctx.fillText("𖠎", isoX - 1, isoY + 1);
-        ctx.fillText("𖠎", isoX + 1, isoY + 1);
-        // Draw the potion symbol in its defined color.
-        ctx.fillStyle = potion.color;
-        ctx.fillText("𖠎", isoX, isoY);
-      }
-      
-      async function attackInDirection(hero, dx, dy) {
-        const range = hero.range || 1;
-        for (let i = 1; i <= range; i++) {
-          const targetX = hero.x + dx * i;
-          const targetY = hero.y + dy * i;
-          if (targetX < 0 || targetX >= GRID_SIZE || targetY < 0 || targetY >= GRID_SIZE) {
-            break;
-          }
-          const enemy = enemies.find(e =>
-            e.sceneCoord.row === hero.sceneCoord.row &&
-            e.sceneCoord.col === hero.sceneCoord.col &&
-            (e.sceneCoord.z || 0) === (hero.sceneCoord.z || 0) &&
-            e.x === targetX &&
-            e.y === targetY &&
-            e.hp > 0
-          );
-          if (enemy) {
-            enemy.hp -= hero.attack;
-            logMessage(`${hero.name} attacks enemy at (${targetX}, ${targetY}) for ${hero.attack} damage. Enemy HP is now ${enemy.hp}.`);
-            if (enemy.hp <= 0) {
-              logMessage(`Enemy defeated!`);
-              enemies = enemies.filter(e => e !== enemy);
+
+          // -----------------------------------------------------
+          // 1) TITLE SCREEN: Press Space to transition to party select.
+          // -----------------------------------------------------
+          document.addEventListener("keydown", (e) => {
+            if (currentScreen === "title-screen" && e.code === "Space") {
+              currentScreen = "party-select";
+              document.getElementById("title-screen").classList.remove("active");
+              document.getElementById("party-select").classList.add("active");
+              initPartySelection();
             }
+          });
+
+          // -----------------------------------------------------
+          // 2) PARTY SELECTION: Display heroes and handle navigation.
+          // -----------------------------------------------------
+          function updateHeroDisplay() {
+            const hero = heroes[heroIndex];
+            document.getElementById("hero-display").innerHTML = `
+              <div class="hero-info ${selectedHeroes.includes(heroIndex) ? 'selected' : ''}">
+                <h3>${hero.name} (${hero.symbol})</h3>
+                <p>HP: ${hero.hp} | Attack: ${hero.attack} | Range: ${hero.range} | Agility: ${hero.agility}</p>
+                <p>${selectedHeroes.includes(heroIndex) ? "SELECTED" : "Press Space to Select"}</p>
+              </div>
+            `;
+            document.getElementById("selection-info").textContent =
+              `Selected Heroes: ${selectedHeroes.length}/3`;
+          }
+
+          function handlePartySelectionKey(e) {
+            if (e.key === "ArrowLeft") {
+              heroIndex = (heroIndex - 1 + heroes.length) % heroes.length;
+              updateHeroDisplay();
+            } else if (e.key === "ArrowRight") {
+              heroIndex = (heroIndex + 1) % heroes.length;
+              updateHeroDisplay();
+            } else if (e.code === "Space") {
+              if (selectedHeroes.includes(heroIndex)) {
+                selectedHeroes = selectedHeroes.filter(i => i !== heroIndex);
+              } else if (selectedHeroes.length < 3) {
+                selectedHeroes.push(heroIndex);
+              }
+              updateHeroDisplay();
+              if (selectedHeroes.length === 3) {
+                startGame();
+              }
+            }
+          }
+
+          function initPartySelection() {
+            updateHeroDisplay();
+            document.addEventListener("keydown", handlePartySelectionKey);
+          }
+
+          // -----------------------------------------------------
+          // 3) GAME (OVERWORLD) LOGIC & RENDERING
+          // -----------------------------------------------------
+          function generateOriginScene() {
+            const scene = [];
+            const center = Math.floor(GRID_SIZE / 2);
+            for (let y = 0; y < GRID_SIZE; y++) {
+              scene[y] = [];
+              for (let x = 0; x < GRID_SIZE; x++) {
+                if (y === 0 || y === GRID_SIZE - 1 || x === 0 || x === GRID_SIZE - 1) {
+                  if (((y === 0 || y === GRID_SIZE - 1) && x >= center - 1 && x <= center + 1) ||
+                      ((x === 0 || x === GRID_SIZE - 1) && y >= center - 1 && y <= center + 1)) {
+                    scene[y][x] = "floor";
+                  } else {
+                    scene[y][x] = "wall";
+                  }
+                } else {
+                  scene[y][x] = "floor";
+                }
+              }
+            }
+            scene._type = "origin";
+            return scene;
+          }
+
+          function generateScene() {
+            const scene = [];
+            const floorProbability = 0.7;
+            for (let y = 0; y < GRID_SIZE; y++) {
+              scene[y] = [];
+              for (let x = 0; x < GRID_SIZE; x++) {
+                scene[y][x] = Math.random() < floorProbability ? "floor" : "wall";
+              }
+            }
+            return scene;
+          }
+
+          function generateCorridorScene(orientation) {
+            const scene = [];
+            for (let y = 0; y < GRID_SIZE; y++) {
+              scene[y] = [];
+              for (let x = 0; x < GRID_SIZE; x++) {
+                if (orientation === "vertical") {
+                  scene[y][x] = (x >= Math.floor(GRID_SIZE/2) - 1 && x <= Math.floor(GRID_SIZE/2)) ? "floor" : "wall";
+                } else if (orientation === "horizontal") {
+                  scene[y][x] = (y >= Math.floor(GRID_SIZE/2) - 1 && y <= Math.floor(GRID_SIZE/2)) ? "floor" : "wall";
+                }
+              }
+            }
+            return scene;
+          }
+
+          function spawnEnemiesForScene(sceneCoord) {
+            if (sceneCoord.row === 0 && sceneCoord.col === 0 && sceneCoord.z === 0) return;
+            const key = `${sceneCoord.row},${sceneCoord.col},${sceneCoord.z || 0}`;
+            if (enemies.some(e =>
+              e.sceneCoord.row === sceneCoord.row &&
+              e.sceneCoord.col === sceneCoord.col &&
+              (e.sceneCoord.z || 0) === (sceneCoord.z || 0))) return;
+            const numEnemies = Math.floor(Math.random() * 3);
+            const scene = getScene(sceneCoord);
+            for (let i = 0; i < numEnemies; i++) {
+              let pos = findRandomFloor(scene);
+              enemies.push({
+                type: "goblin",
+                symbol: "E",
+                hp: 30,
+                sceneCoord: { row: sceneCoord.row, col: sceneCoord.col, z: sceneCoord.z || 0 },
+                x: pos.x,
+                y: pos.y
+              });
+            }
+          }
+
+          // When a new scene is created, assign it a random potion and a potion location.
+          function assignPotionToScene(scene) {
+            scene.potion = getRandomPotion();
+            scene.potionPos = findRandomFloor(scene);
+          }
+
+          function getScene(sceneCoord) {
+            const z = sceneCoord.z || 0;
+            const key = `${sceneCoord.row},${sceneCoord.col},${z}`;
+            if (!zoneOne[key]) {
+              if (sceneCoord.row === 0 && sceneCoord.col === 0 && z === 0) {
+                zoneOne[key] = generateOriginScene();
+                zoneOne[key]._type = "origin";
+                logMessage(`Generated origin scene at ${key}`);
+              } else if (Math.random() < TOWER_PROBABILITY) {
+                // Tower scene disabled.
+              } else if (Math.random() < CORRIDOR_PROBABILITY) {
+                const orientation = Math.random() < 0.5 ? "vertical" : "horizontal";
+                zoneOne[key] = generateCorridorScene(orientation);
+                zoneOne[key]._type = "corridor";
+                logMessage(`Generated corridor scene (${orientation}) at ${key}`);
+              } else {
+                zoneOne[key] = generateScene();
+                zoneOne[key]._type = "normal";
+                logMessage(`Generated normal scene at ${key}`);
+              }
+              if (!discoveredZones.has(key)) {
+                sceneDiscovered();
+                discoveredZones.add(key);
+              }
+              spawnEnemiesForScene(sceneCoord);
+              // Inject a potion into the new scene.
+              assignPotionToScene(zoneOne[key]);
+              spawnEnemiesForScene(sceneCoord);
+            }
+            return zoneOne[key];
+          }
+
+          function findRandomFloor(grid) {
+            let x, y;
+            do {
+              x = Math.floor(Math.random() * GRID_SIZE);
+              y = Math.floor(Math.random() * GRID_SIZE);
+            } while (grid[y][x] !== "floor");
+            return { x, y };
+          }
+
+          function hasEnemyAt(sceneCoord, x, y) {
+            return enemies.some(enemy => {
+              return enemy.hp > 0 &&
+                     enemy.sceneCoord.row === sceneCoord.row &&
+                     enemy.sceneCoord.col === sceneCoord.col &&
+                     (enemy.sceneCoord.z || 0) === (sceneCoord.z || 0) &&
+                     enemy.x === x &&
+                     enemy.y === y;
+            });
+          }
+
+          function hasHeroAt(sceneCoord, x, y, excludingIndex) {
+            return party.some((hero, index) => {
+              return index !== excludingIndex &&
+                     hero.sceneCoord.row === sceneCoord.row &&
+                     hero.sceneCoord.col === sceneCoord.col &&
+                     (hero.sceneCoord.z || 0) === (sceneCoord.z || 0) &&
+                     hero.x === x &&
+                     hero.y === y;
+            });
+          }
+
+          function placeHeroInScene(hero) {
+            const scene = getScene(hero.sceneCoord);
+            let pos = findRandomFloor(scene);
+            while (hasEnemyAt(hero.sceneCoord, pos.x, pos.y) ||
+                   hasHeroAt(hero.sceneCoord, pos.x, pos.y, party.indexOf(hero))) {
+              pos = findRandomFloor(scene);
+            }
+            hero.x = pos.x;
+            hero.y = pos.y;
+            hero.movePoints = hero.agility;
+            logMessage(`${hero.name} placed at (${hero.x},${hero.y}) in scene ${hero.sceneCoord.row},${hero.sceneCoord.col},${hero.sceneCoord.z}`);
+          }
+
+          function toIsometric(gridX, gridY) {
+            const isoX = (gridX - gridY) * (TILE_WIDTH / 2) + gameCanvas.width / 2;
+            const isoY = (gridX + gridY) * (TILE_HEIGHT / 2) + 50;
+            return { isoX, isoY };
+          }
+
+          function drawTile(x, y, color) {
+            const { isoX, isoY } = toIsometric(x, y);
+            ctx.beginPath();
+            ctx.moveTo(isoX, isoY);
+            ctx.lineTo(isoX + TILE_WIDTH / 2, isoY + TILE_HEIGHT / 2);
+            ctx.lineTo(isoX, isoY + TILE_HEIGHT);
+            ctx.lineTo(isoX - TILE_WIDTH / 2, isoY + TILE_HEIGHT / 2);
+            ctx.closePath();
+            ctx.fillStyle = color;
+            ctx.fill();
+            ctx.strokeStyle = "#111";
+            ctx.stroke();
+          }
+
+          function highlightTile(x, y, overlayColor) {
+            const { isoX, isoY } = toIsometric(x, y);
+            ctx.save();
+            ctx.fillStyle = overlayColor;
+            ctx.globalAlpha = 0.4;
+            ctx.beginPath();
+            ctx.moveTo(isoX, isoY);
+            ctx.lineTo(isoX + TILE_WIDTH / 2, isoY + TILE_HEIGHT / 2);
+            ctx.lineTo(isoX, isoY + TILE_HEIGHT);
+            ctx.lineTo(isoX - TILE_WIDTH / 2, isoY + TILE_HEIGHT / 2);
+            ctx.closePath();
+            ctx.fill();
+            ctx.restore();
+          }
+
+          // NEW FUNCTION:
+          // This function checks if a hero lands on a potion cell.
+          // If so, it applies the potion effect and clears the potion.
+          function checkPotionPickup(hero) {
+            const scene = getScene(hero.sceneCoord);
+            if (
+              scene.potion &&
+              scene.potionPos &&
+              scene.potionPos.x === hero.x &&
+              scene.potionPos.y === hero.y
+            ) {
+              // Apply the potion effect to the hero.
+              const message = applyPotionEffect(scene.potion, hero);
+              // Log the detailed stats change to the in-game log.
+              logMessage(message);
+              // Remove the potion so it cannot be picked up again.
+              scene.potion = null;
+              scene.potionPos = null;
+            }
+          }
+
+          // Draw a potion on the canvas at the given grid cell.
+          function drawPotion(x, y, potion) {
+            const { isoX, isoY } = toIsometric(x, y);
+            ctx.font = "1em sans-serif";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            // Draw a shadow/outline.
+            ctx.fillStyle = "black";
+            ctx.fillText("𖠎", isoX - 1, isoY - 1);
+            ctx.fillText("𖠎", isoX + 1, isoY - 1);
+            ctx.fillText("𖠎", isoX - 1, isoY + 1);
+            ctx.fillText("𖠎", isoX + 1, isoY + 1);
+            // Draw the potion symbol in its defined color.
+            ctx.fillStyle = potion.color;
+            ctx.fillText("𖠎", isoX, isoY);
+          }
+
+          async function attackInDirection(hero, dx, dy) {
+            const range = hero.range || 1;
+            for (let i = 1; i <= range; i++) {
+              const targetX = hero.x + dx * i;
+              const targetY = hero.y + dy * i;
+              if (targetX < 0 || targetX >= GRID_SIZE || targetY < 0 || targetY >= GRID_SIZE) {
+                break;
+              }
+              const enemy = enemies.find(e =>
+                e.sceneCoord.row === hero.sceneCoord.row &&
+                e.sceneCoord.col === hero.sceneCoord.col &&
+                (e.sceneCoord.z || 0) === (hero.sceneCoord.z || 0) &&
+                e.x === targetX &&
+                e.y === targetY &&
+                e.hp > 0
+              );
+              if (enemy) {
+                enemy.hp -= hero.attack;
+                logMessage(`${hero.name} attacks enemy at (${targetX}, ${targetY}) for ${hero.attack} damage. Enemy HP is now ${enemy.hp}.`);
+                if (enemy.hp <= 0) {
+                  logMessage(`Enemy defeated!`);
+                  enemies = enemies.filter(e => e !== enemy);
+                }
+                await shortPause();
+                nextTurn();
+                return;
+              }
+            }
+            logMessage(`${hero.name} attacked, but no enemy was in range.`);
             await shortPause();
             nextTurn();
-            return;
           }
-        }
-        logMessage(`${hero.name} attacked, but no enemy was in range.`);
-        await shortPause();
-        nextTurn();
-      }
-      
-      function shortPause() {
-        return new Promise(resolve => setTimeout(resolve, 300));
-      }
-      
-      function drawScene() {
-        const activeHero = party[currentHeroIndex];
-        const scene = getScene(activeHero.sceneCoord);
-        ctx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
-        const heroIso = toIsometric(activeHero.x, activeHero.y);
-        const cameraOffsetX = heroIso.isoX - gameCanvas.width / 2;
-        const cameraOffsetY = heroIso.isoY - gameCanvas.height / 2;
-        ctx.save();
-        ctx.translate(-cameraOffsetX, -cameraOffsetY);
-        for (let y = 0; y < GRID_SIZE; y++) {
-          for (let x = 0; x < GRID_SIZE; x++) {
-            const cell = scene[y][x];
-            let color = (cell === "floor") ? ((scene._type==="origin") ? "#ddf" : "#bbb") : "#333";
-            drawTile(x, y, color);
+
+          function shortPause() {
+            return new Promise(resolve => setTimeout(resolve, 300));
           }
-        }
-        // Draw the potion if it is assigned in this scene.
-        if (scene.potion && scene.potionPos) {
-          drawPotion(scene.potionPos.x, scene.potionPos.y, scene.potion);
-        }
-        highlightTile(activeHero.x, activeHero.y, "rgba(255,255,0,0.4)");
-        if (attackMode) {
-          for (let i = 1; i <= activeHero.range; i++) {
-            if (activeHero.y - i >= 0) highlightTile(activeHero.x, activeHero.y - i, "rgba(0,150,255,0.4)");
-            if (activeHero.y + i < GRID_SIZE) highlightTile(activeHero.x, activeHero.y + i, "rgba(0,150,255,0.4)");
-            if (activeHero.x - i >= 0) highlightTile(activeHero.x - i, activeHero.y, "rgba(0,150,255,0.4)");
-            if (activeHero.x + i < GRID_SIZE) highlightTile(activeHero.x + i, activeHero.y, "rgba(0,150,255,0.4)");
-          }
-        } else {
-          let fdX = 0, fdY = 0;
-          switch(activeHero.facing) {
-            case "up": fdY = -1; break;
-            case "down": fdY = 1; break;
-            case "left": fdX = -1; break;
-            case "right": fdX = 1; break;
-          }
-          const targetX = activeHero.x + fdX;
-          const targetY = activeHero.y + fdY;
-          if (targetX >= 0 && targetX < GRID_SIZE && targetY >= 0 && targetY < GRID_SIZE) {
-            highlightTile(targetX, targetY, "rgba(0,150,255,0.4)");
-          }
-        }
-        enemies.forEach(enemy => {
-          if (enemy.sceneCoord.row === activeHero.sceneCoord.row &&
-              enemy.sceneCoord.col === activeHero.sceneCoord.col &&
-              (enemy.sceneCoord.z || 0) === (activeHero.sceneCoord.z || 0) &&
-              enemy.hp > 0) {
-            const pos = toIsometric(enemy.x, enemy.y);
-            ctx.fillStyle = "#ff0";
-            ctx.font = "16px Sono, sans-serif";
-            ctx.fillText(enemy.symbol, pos.isoX - 6, pos.isoY + 6);
-          }
-        });
+
+          function drawScene() {
+            const activeHero = party[currentHeroIndex];
+            const scene = getScene(activeHero.sceneCoord);
+            ctx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
+            const heroIso = toIsometric(activeHero.x, activeHero.y);
+            const cameraOffsetX = heroIso.isoX - gameCanvas.width / 2;
+            const cameraOffsetY = heroIso.isoY - gameCanvas.height / 2;
+            ctx.save();
+            ctx.translate(-cameraOffsetX, -cameraOffsetY);
+            for (let y = 0; y < GRID_SIZE; y++) {
+              for (let x = 0; x < GRID_SIZE; x++) {
+                const cell = scene[y][x];
+                let color = (cell === "floor") ? ((scene._type==="origin") ? "#ddf" : "#bbb") : "#333";
+                drawTile(x, y, color);
+              }
+            }
+            // Draw the potion if it is assigned in this scene.
+            if (scene.potion && scene.potionPos) {
+              drawPotion(scene.potionPos.x, scene.potionPos.y, scene.potion);
+            }
+            highlightTile(activeHero.x, activeHero.y, "rgba(255,255,0,0.4)");
+            if (attackMode) {
+              for (let i = 1; i <= activeHero.range; i++) {
+                if (activeHero.y - i >= 0) highlightTile(activeHero.x, activeHero.y - i, "rgba(0,150,255,0.4)");
+                if (activeHero.y + i < GRID_SIZE) highlightTile(activeHero.x, activeHero.y + i, "rgba(0,150,255,0.4)");
+                if (activeHero.x - i >= 0) highlightTile(activeHero.x - i, activeHero.y, "rgba(0,150,255,0.4)");
+                if (activeHero.x + i < GRID_SIZE) highlightTile(activeHero.x + i, activeHero.y, "rgba(0,150,255,0.4)");
+              }
+            } else {
+              let fdX = 0, fdY = 0;
+              switch(activeHero.facing) {
+                case "up": fdY = -1; break;
+                case "down": fdY = 1; break;
+                case "left": fdX = -1; break;
+                case "right": fdX = 1; break;
+              }
+              const targetX = activeHero.x + fdX;
+              const targetY = activeHero.y + fdY;
+              if (targetX >= 0 && targetX < GRID_SIZE && targetY >= 0 && targetY < GRID_SIZE) {
+                highlightTile(targetX, targetY, "rgba(0,150,255,0.4)");
+              }
+            }
+            enemies.forEach(enemy => {
+              if (enemy.sceneCoord.row === activeHero.sceneCoord.row &&
+                  enemy.sceneCoord.col === activeHero.sceneCoord.col &&
+                  (enemy.sceneCoord.z || 0) === (activeHero.sceneCoord.z || 0) &&
+                  enemy.hp > 0) {
+                const pos = toIsometric(enemy.x, enemy.y);
+                ctx.fillStyle = "#ff0";
+                ctx.font = "16px Sono, sans-serif";
+                ctx.fillText(enemy.symbol, pos.isoX - 6, pos.isoY + 6);
+              }
+            }); // Draw all heroes (dead or alive)
         party.forEach((hero, index) => {
-          if (hero.sceneCoord.row === activeHero.sceneCoord.row &&
-              hero.sceneCoord.col === activeHero.sceneCoord.col &&
-              (hero.sceneCoord.z || 0) === (activeHero.sceneCoord.z || 0) &&
-              hero.alive) {
+          if (
+            hero.sceneCoord.row === activeHero.sceneCoord.row &&
+            hero.sceneCoord.col === activeHero.sceneCoord.col &&
+            (hero.sceneCoord.z || 0) === (activeHero.sceneCoord.z || 0)
+          ) {
             const { isoX, isoY } = toIsometric(hero.x, hero.y);
-            ctx.fillStyle = (index === currentHeroIndex) ? "#f00" : "#0cf";
+            // Alive heroes are drawn in normal color; dead heroes are drawn in gray.
+            let heroColor = hero.alive
+              ? ((index === currentHeroIndex) ? "#f00" : "#0cf")
+              : "#888";
+            ctx.fillStyle = heroColor;
             ctx.font = "16px Sono, sans-serif";
             ctx.fillText(hero.symbol, isoX - 6, isoY + 6);
           }
         });
         ctx.restore();
-      
 
 
-    // ------------------------------
-    // Draw stat display overlay on the canvas.
-    // ------------------------------
-    drawHeroStatsOverlay(activeHero);
-  }
 
-  // New function to draw hero stats overlay
-  function drawHeroStatsOverlay(hero) {
-    // Set up overlay dimensions and styles
-    const overlayX = 10;
-    const overlayY = 10;
-    const overlayWidth = 200;
-    const overlayHeight = 120;
-    ctx.save();
-    ctx.fillStyle = "rgba(0, 0, 0, 0.75)";
-    ctx.fillRect(overlayX, overlayY, overlayWidth, overlayHeight);
-    ctx.strokeStyle = "#eee";
-    ctx.strokeRect(overlayX, overlayY, overlayWidth, overlayHeight);
+        // ------------------------------
+        // Draw stat display overlay on the canvas.
+        // ------------------------------
+        drawHeroStatsOverlay(activeHero);
+      }
 
-    // Set text properties
-    ctx.fillStyle = "#fff";
-    ctx.font = "14px Sans-serif";
-    ctx.textBaseline = "top";
-
-    // Format the hero's stats
-    const stats = [
-      `Name: ${hero.name}`,
-      `HP: ${hero.hp}`,
-      `Attack: ${hero.attack}`,
-      `Range: ${hero.range}`,
-      `Agility: ${hero.agility}`
-      // Add any additional stats as needed
-    ];
-  
-    // Draw each stat on its own line
-    stats.forEach((stat, index) => {
-      ctx.fillText(stat, overlayX + 10, overlayY + 10 + index * 18);
-    });
-    
-    ctx.restore();
-  }
-      
-      function drawMinimapOverlay() {
-        const minimapSize = 100;
-        const margin = 10;
-        const adjacentZones = new Set();
-        discoveredZones.forEach(key => {
-          const parts = key.split(",");
-          const row = Number(parts[0]), col = Number(parts[1]), z = Number(parts[2] || 0);
-          const directions = [
-            { row: row - 1, col: col, z: z },
-            { row: row + 1, col: col, z: z },
-            { row: row, col: col - 1, z: z },
-            { row: row, col: col + 1, z: z }
-          ];
-          directions.forEach(d => {
-            const adjKey = `${d.row},${d.col},${d.z}`;
-            if (!discoveredZones.has(adjKey)) adjacentZones.add(adjKey);
-          });
-        });
-        const occupiedZones = new Set();
-        party.forEach(hero => {
-          if (hero.alive) {
-            const key = `${hero.sceneCoord.row},${hero.sceneCoord.col},${hero.sceneCoord.z || 0}`;
-            occupiedZones.add(key);
-          }
-        });
-        const allKeys = new Set([...discoveredZones, ...adjacentZones]);
-        let minRow = Infinity, maxRow = -Infinity, minCol = Infinity, maxCol = -Infinity;
-        allKeys.forEach(key => {
-          const parts = key.split(",");
-          const row = Number(parts[0]), col = Number(parts[1]);
-          if (row < minRow) minRow = row;
-          if (row > maxRow) maxRow = row;
-          if (col < minCol) minCol = col;
-          if (col > maxCol) maxCol = col;
-        });
-        const totalRows = maxRow - minRow + 1;
-        const totalCols = maxCol - minCol + 1;
-        const cellWidth = minimapSize / totalCols;
-        const cellHeight = minimapSize / totalRows;
-      
+      // New function to draw hero stats overlay
+      function drawHeroStatsOverlay(hero) {
+        // Set up overlay dimensions and styles
+        const overlayX = 10;
+        const overlayY = 10;
+        const overlayWidth = 200;
+        const overlayHeight = 120;
         ctx.save();
-        ctx.globalAlpha = 0.8;
-        ctx.fillStyle = "#111";
-        ctx.fillRect(gameCanvas.width - minimapSize - margin, margin, minimapSize, minimapSize);
-        for (let row = minRow; row <= maxRow; row++) {
-          for (let col = minCol; col <= maxCol; col++) {
-            const key = `${row},${col},0`;
-            const x = gameCanvas.width - minimapSize - margin + (col - minCol) * cellWidth;
-            const y = margin + (row - minRow) * cellHeight;
-            let fillColor;
-            if (zoneOne[key] && zoneOne[key]._type === "origin") fillColor = "#00f";
-            else if (occupiedZones.has(key)) fillColor = "#ff3333";
-            else if (discoveredZones.has(key)) fillColor = "#66cc66";
-            else if (adjacentZones.has(key)) fillColor = "#225522";
-            else fillColor = "#000";
-            ctx.fillStyle = fillColor;
-            ctx.fillRect(x, y, cellWidth, cellHeight);
-            ctx.strokeStyle = "#333";
-            ctx.strokeRect(x, y, cellWidth, cellHeight);
-          }
-        }
-        const activeKey = `${party[currentHeroIndex].sceneCoord.row},${party[currentHeroIndex].sceneCoord.col},${party[currentHeroIndex].sceneCoord.z || 0}`;
-        const parts = activeKey.split(",");
-        const aRow = Number(parts[0]), aCol = Number(parts[1]);
-        const ax = gameCanvas.width - minimapSize - margin + (aCol - minCol) * cellWidth;
-        const ay = margin + (aRow - minRow) * cellHeight;
-        ctx.strokeStyle = "#FF0";
-        ctx.lineWidth = 2;
-        ctx.strokeRect(ax, ay, cellWidth, cellHeight);
-        ctx.lineWidth = 1;
-        ctx.globalAlpha = 1.0;
+        ctx.fillStyle = "rgba(0, 0, 0, 0.75)";
+        ctx.fillRect(overlayX, overlayY, overlayWidth, overlayHeight);
+        ctx.strokeStyle = "#eee";
+        ctx.strokeRect(overlayX, overlayY, overlayWidth, overlayHeight);
+
+        // Set text properties
+        ctx.fillStyle = "#fff";
+        ctx.font = "14px Sans-serif";
+        ctx.textBaseline = "top";
+
+        // Format the hero's stats
+        const stats = [
+          `Name: ${hero.name}`,
+          `HP: ${hero.hp}`,
+          `Attack: ${hero.attack}`,
+          `Range: ${hero.range}`,
+          `Agility: ${hero.agility}`
+          // Add any additional stats as needed
+        ];
+
+        // Draw each stat on its own line
+        stats.forEach((stat, index) => {
+          ctx.fillText(stat, overlayX + 10, overlayY + 10 + index * 18);
+        });
+
         ctx.restore();
       }
-      
-      function updateTurnInfo() {
-        const activeHero = party[currentHeroIndex];
-        document.getElementById("turn-info").textContent =
-          `Active Hero: ${activeHero.name} (Scene: ${activeHero.sceneCoord.row},${activeHero.sceneCoord.col},${activeHero.sceneCoord.z || 0}) ` +
-          `| Coordinates: (${activeHero.x},${activeHero.y}) | Facing: ${activeHero.facing} | Move Points: ${activeHero.movePoints}` +
-          (attackMode ? " | ATTACK MODE" : "");
-      }
-      
-      function logMessage(message) {
-        const logEl = document.getElementById("game-log");
-        const timeStamp = new Date().toLocaleTimeString();
-        const newLine = document.createElement("div");
-        newLine.textContent = `[${timeStamp}] ${message}`;
-        logEl.appendChild(newLine);
-        logEl.scrollTop = logEl.scrollHeight;
-      }
-      
-      function nextTurn() {
-        const currentHero = party[currentHeroIndex];
-        logMessage(`${currentHero.name} ends turn.`);
-        attackMode = false;
-        for (let i = 0; i < party.length; i++) {
-          currentHeroIndex = (currentHeroIndex + 1) % party.length;
-          if (party[currentHeroIndex].alive) {
-            party[currentHeroIndex].movePoints = party[currentHeroIndex].agility;
-            logMessage(`${party[currentHeroIndex].name} starts turn at (${party[currentHeroIndex].x},${party[currentHeroIndex].y}).`);
-            break;
+
+          function drawMinimapOverlay() {
+            const minimapSize = 100;
+            const margin = 10;
+            const adjacentZones = new Set();
+            discoveredZones.forEach(key => {
+              const parts = key.split(",");
+              const row = Number(parts[0]), col = Number(parts[1]), z = Number(parts[2] || 0);
+              const directions = [
+                { row: row - 1, col: col, z: z },
+                { row: row + 1, col: col, z: z },
+                { row: row, col: col - 1, z: z },
+                { row: row, col: col + 1, z: z }
+              ];
+              directions.forEach(d => {
+                const adjKey = `${d.row},${d.col},${d.z}`;
+                if (!discoveredZones.has(adjKey)) adjacentZones.add(adjKey);
+              });
+            });
+            const occupiedZones = new Set();
+            party.forEach(hero => {
+              if (hero.alive) {
+                const key = `${hero.sceneCoord.row},${hero.sceneCoord.col},${hero.sceneCoord.z || 0}`;
+                occupiedZones.add(key);
+              }
+            });
+            const allKeys = new Set([...discoveredZones, ...adjacentZones]);
+            let minRow = Infinity, maxRow = -Infinity, minCol = Infinity, maxCol = -Infinity;
+            allKeys.forEach(key => {
+              const parts = key.split(",");
+              const row = Number(parts[0]), col = Number(parts[1]);
+              if (row < minRow) minRow = row;
+              if (row > maxRow) maxRow = row;
+              if (col < minCol) minCol = col;
+              if (col > maxCol) maxCol = col;
+            });
+            const totalRows = maxRow - minRow + 1;
+            const totalCols = maxCol - minCol + 1;
+            const cellWidth = minimapSize / totalCols;
+            const cellHeight = minimapSize / totalRows;
+
+            ctx.save();
+            ctx.globalAlpha = 0.8;
+            ctx.fillStyle = "#111";
+            ctx.fillRect(gameCanvas.width - minimapSize - margin, margin, minimapSize, minimapSize);
+            for (let row = minRow; row <= maxRow; row++) {
+              for (let col = minCol; col <= maxCol; col++) {
+                const key = `${row},${col},0`;
+                const x = gameCanvas.width - minimapSize - margin + (col - minCol) * cellWidth;
+                const y = margin + (row - minRow) * cellHeight;
+                let fillColor;
+                if (zoneOne[key] && zoneOne[key]._type === "origin") fillColor = "#00f";
+                else if (occupiedZones.has(key)) fillColor = "#ff3333";
+                else if (discoveredZones.has(key)) fillColor = "#66cc66";
+                else if (adjacentZones.has(key)) fillColor = "#225522";
+                else fillColor = "#000";
+                ctx.fillStyle = fillColor;
+                ctx.fillRect(x, y, cellWidth, cellHeight);
+                ctx.strokeStyle = "#333";
+                ctx.strokeRect(x, y, cellWidth, cellHeight);
+              }
+            }
+            const activeKey = `${party[currentHeroIndex].sceneCoord.row},${party[currentHeroIndex].sceneCoord.col},${party[currentHeroIndex].sceneCoord.z || 0}`;
+            const parts = activeKey.split(",");
+            const aRow = Number(parts[0]), aCol = Number(parts[1]);
+            const ax = gameCanvas.width - minimapSize - margin + (aCol - minCol) * cellWidth;
+            const ay = margin + (aRow - minRow) * cellHeight;
+            ctx.strokeStyle = "#FF0";
+            ctx.lineWidth = 2;
+            ctx.strokeRect(ax, ay, cellWidth, cellHeight);
+            ctx.lineWidth = 1;
+            ctx.globalAlpha = 1.0;
+            ctx.restore();
           }
-        }
-        updateTurnInfo();
-      }
-      
-      document.addEventListener("keydown", async (e) => {
-        if (!gameStarted || currentScreen !== "game-screen") return;
-        console.log("Key pressed:", e.key);
-        const hero = party[currentHeroIndex];
-      
-        if (!attackMode && e.key === " ") {
-          attackMode = true;
-          logMessage(`${hero.name} has entered ATTACK MODE. Press an arrow key to attack.`);
-          updateTurnInfo();
-          return;
-        }
-      
-        if (attackMode && ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
-          let dx = 0, dy = 0;
-          let direction = "";
-          switch(e.key) {
-            case "ArrowUp":
-              dy = -1;
-              direction = "up";
-              break;
-            case "ArrowDown":
-              dy = 1;
-              direction = "down";
-              break;
-            case "ArrowLeft":
-              dx = -1;
-              direction = "left";
-              break;
-            case "ArrowRight":
-              dx = 1;
-              direction = "right";
-              break;
+
+          function updateTurnInfo() {
+            const activeHero = party[currentHeroIndex];
+            document.getElementById("turn-info").textContent =
+              `Active Hero: ${activeHero.name} (Scene: ${activeHero.sceneCoord.row},${activeHero.sceneCoord.col},${activeHero.sceneCoord.z || 0}) ` +
+              `| Coordinates: (${activeHero.x},${activeHero.y}) | Facing: ${activeHero.facing} | Move Points: ${activeHero.movePoints}` +
+              (attackMode ? " | ATTACK MODE" : "");
           }
-          hero.facing = direction;
-          logMessage(`${hero.name} is attacking in the ${direction} direction.`);
-          await attackInDirection(hero, dx, dy);
-          attackMode = false;
-          updateTurnInfo();
-          return;
-        }
-      
-        let newX = hero.x, newY = hero.y;
-        let moved = false;
-        let direction = "";
-        switch (e.key) {
-          case "ArrowUp":
-            newY--;
-            direction = "up";
-            break;
-          case "ArrowDown":
-            newY++;
-            direction = "down";
-            break;
-          case "ArrowLeft":
-            newX--;
-            direction = "left";
-            break;
-          case "ArrowRight":
-            newX++;
-            direction = "right";
-            break;
-          default:
-            return;
-        }
-      
-        hero.facing = direction;
-        const scene = getScene(hero.sceneCoord);
-        let grid = scene;
-        console.log("Current Position:", hero.x, hero.y, "Attempting to move to:", newX, newY);
-      
-        if (newX >= 0 && newX < GRID_SIZE && newY >= 0 && newY < GRID_SIZE) {
-          if (grid[newY][newX] === "floor" && !hasEnemyAt(hero.sceneCoord, newX, newY) &&
-              !hasHeroAt(hero.sceneCoord, newX, newY, currentHeroIndex)) {
-            hero.x = newX;
-            hero.y = newY;
-            moved = true;
-            logMessage(`${hero.name} moved ${direction} to (${hero.x},${hero.y}).`);
+
+          function logMessage(message) {
+            const logEl = document.getElementById("game-log");
+            const timeStamp = new Date().toLocaleTimeString();
+            const newLine = document.createElement("div");
+            newLine.textContent = `[${timeStamp}] ${message}`;
+            logEl.appendChild(newLine);
+            logEl.scrollTop = logEl.scrollHeight;
           }
-        } else {
-          if (trySceneTransition(hero, direction)) {
-            moved = true;
+
+          function nextTurn() {
+            const currentHero = party[currentHeroIndex];
+            logMessage(`${currentHero.name} ends turn.`);
+            attackMode = false;
+            for (let i = 0; i < party.length; i++) {
+              currentHeroIndex = (currentHeroIndex + 1) % party.length;
+              if (party[currentHeroIndex].alive) {
+                party[currentHeroIndex].movePoints = party[currentHeroIndex].agility;
+                logMessage(`${party[currentHeroIndex].name} starts turn at (${party[currentHeroIndex].x},${party[currentHeroIndex].y}).`);
+                break;
+              }
+            }
+            updateTurnInfo();
           }
-        }
-      
-        if (moved) {
-          hero.movePoints--;
-          // NEW: Check for potion pickup after moving.
-          checkPotionPickup(hero);
-          updateTurnInfo();
-          if (hero.movePoints <= 0) {
-            nextTurn();
+
+          document.addEventListener("keydown", async (e) => {
+            if (!gameStarted || currentScreen !== "game-screen") return;
+            console.log("Key pressed:", e.key);
+            const hero = party[currentHeroIndex];
+
+            if (!attackMode && e.key === " ") {
+              attackMode = true;
+              logMessage(`${hero.name} has entered ATTACK MODE. Press an arrow key to attack.`);
+              updateTurnInfo();
+              return;
+            }
+
+            if (attackMode && ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
+              let dx = 0, dy = 0;
+              let direction = "";
+              switch(e.key) {
+                case "ArrowUp":
+                  dy = -1;
+                  direction = "up";
+                  break;
+                case "ArrowDown":
+                  dy = 1;
+                  direction = "down";
+                  break;
+                case "ArrowLeft":
+                  dx = -1;
+                  direction = "left";
+                  break;
+                case "ArrowRight":
+                  dx = 1;
+                  direction = "right";
+                  break;
+              }
+              hero.facing = direction;
+              logMessage(`${hero.name} is attacking in the ${direction} direction.`);
+              await attackInDirection(hero, dx, dy);
+              attackMode = false;
+              updateTurnInfo();
+              return;
+            }
+
+            let newX = hero.x, newY = hero.y;
+            let moved = false;
+            let direction = "";
+            switch (e.key) {
+              case "ArrowUp":
+                newY--;
+                direction = "up";
+                break;
+              case "ArrowDown":
+                newY++;
+                direction = "down";
+                break;
+              case "ArrowLeft":
+                newX--;
+                direction = "left";
+                break;
+              case "ArrowRight":
+                newX++;
+                direction = "right";
+                break;
+              default:
+                return;
+            }
+
+            hero.facing = direction;
+            const scene = getScene(hero.sceneCoord);
+            let grid = scene;
+            console.log("Current Position:", hero.x, hero.y, "Attempting to move to:", newX, newY);
+
+            if (newX >= 0 && newX < GRID_SIZE && newY >= 0 && newY < GRID_SIZE) {
+              if (grid[newY][newX] === "floor" && !hasEnemyAt(hero.sceneCoord, newX, newY) &&
+                  !hasHeroAt(hero.sceneCoord, newX, newY, currentHeroIndex)) {
+                hero.x = newX;
+                hero.y = newY;
+                moved = true;
+                logMessage(`${hero.name} moved ${direction} to (${hero.x},${hero.y}).`);
+              }
+            } else {
+              if (trySceneTransition(hero, direction)) {
+                moved = true;
+              }
+            }
+
+            if (moved) {
+              hero.movePoints--;
+              // NEW: Check for potion pickup after moving.
+              checkPotionPickup(hero);
+              updateTurnInfo();
+              if (hero.movePoints <= 0) {
+                nextTurn();
+              }
+            }
+          });
+
+          function trySceneTransition(hero, direction) {
+            let newSceneCoord = { ...hero.sceneCoord };
+            let targetX = hero.x;
+            let targetY = hero.y;
+            if (direction === "left") {
+              newSceneCoord.col -= 1;
+              targetX = GRID_SIZE - 1;
+            } else if (direction === "right") {
+              newSceneCoord.col += 1;
+              targetX = 0;
+            } else if (direction === "up") {
+              newSceneCoord.row -= 1;
+              targetY = GRID_SIZE - 1;
+            } else if (direction === "down") {
+              newSceneCoord.row += 1;
+              targetY = 0;
+            }
+            const newScene = getScene(newSceneCoord);
+            let grid = newScene;
+            if (["floor"].includes(grid[targetY][targetX]) &&
+                !hasEnemyAt(newSceneCoord, targetX, targetY) &&
+                !hasHeroAt(newSceneCoord, targetX, targetY, party.indexOf(hero))) {
+              hero.sceneCoord = newSceneCoord;
+              hero.x = targetX;
+              hero.y = targetY;
+              logMessage(`${hero.name} transitioned to scene ${hero.sceneCoord.row},${hero.sceneCoord.col},${hero.sceneCoord.z}.`);
+              return true;
+            }
+            return false;
           }
-        }
-      });
-      
-      function trySceneTransition(hero, direction) {
-        let newSceneCoord = { ...hero.sceneCoord };
-        let targetX = hero.x;
-        let targetY = hero.y;
-        if (direction === "left") {
-          newSceneCoord.col -= 1;
-          targetX = GRID_SIZE - 1;
-        } else if (direction === "right") {
-          newSceneCoord.col += 1;
-          targetX = 0;
-        } else if (direction === "up") {
-          newSceneCoord.row -= 1;
-          targetY = GRID_SIZE - 1;
-        } else if (direction === "down") {
-          newSceneCoord.row += 1;
-          targetY = 0;
-        }
-        const newScene = getScene(newSceneCoord);
-        let grid = newScene;
-        if (["floor"].includes(grid[targetY][targetX]) &&
-            !hasEnemyAt(newSceneCoord, targetX, targetY) &&
-            !hasHeroAt(newSceneCoord, targetX, targetY, party.indexOf(hero))) {
-          hero.sceneCoord = newSceneCoord;
-          hero.x = targetX;
-          hero.y = targetY;
-          logMessage(`${hero.name} transitioned to scene ${hero.sceneCoord.row},${hero.sceneCoord.col},${hero.sceneCoord.z}.`);
-          return true;
-        }
-        return false;
-      }
-      
-      function gameLoop() {
-        drawScene();
-        drawMinimapOverlay();
-        requestAnimationFrame(gameLoop);
-      }
-      
-      function startGame() {
-        // Build the party using selected heroes.
-        party = selectedHeroes.map(i => ({
-          ...heroes[i],
-          alive: true,
-          hp: 100,
-          sceneCoord: { row: 0, col: 0, z: 0 }
-        }));
-        document.removeEventListener("keydown", handlePartySelectionKey);
-        currentScreen = "game-screen";
-        document.getElementById("party-select").classList.remove("active");
-        document.getElementById("game-screen").classList.add("active");
-        party.forEach(hero => placeHeroInScene(hero));
-        currentHeroIndex = 0;
-        updateTurnInfo();
-        logMessage("Game started.");
-        gameStarted = true;
-        gameLoop();
-      }
-      
-      if (currentScreen === "party-select") {
-        initPartySelection();
-      }
+
+          function gameLoop() {
+            drawScene();
+            drawMinimapOverlay();
+            requestAnimationFrame(gameLoop);
+          }
+
+          function startGame() {
+            // Build the party using selected heroes.
+            party = selectedHeroes.map(i => ({
+              ...heroes[i],
+              alive: true,
+              hp: 100,
+              sceneCoord: { row: 0, col: 0, z: 0 }
+            }));
+            document.removeEventListener("keydown", handlePartySelectionKey);
+            currentScreen = "game-screen";
+            document.getElementById("party-select").classList.remove("active");
+            document.getElementById("game-screen").classList.add("active");
+            party.forEach(hero => placeHeroInScene(hero));
+            currentHeroIndex = 0;
+            updateTurnInfo();
+            logMessage("Game started.");
+            gameStarted = true;
+            gameLoop();
+          }
+
+          if (currentScreen === "party-select") {
+            initPartySelection();
+          }
     </script>
   </body>
 </html>
