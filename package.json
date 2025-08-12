@@ -11,7 +11,7 @@
   "author": "Your Name",
   "license": "MIT",
   "devDependencies": {
-    "parcel": "^2.0.0",
-    "gh-pages": "^4.0.0"
+    "gh-pages": "^6.3.0",
+    "parcel": "^2.0.0"
   }
 }
