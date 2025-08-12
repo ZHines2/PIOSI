@@ -359,7 +359,7 @@
         let volume = 1;
         const fadeInterval = setInterval(() => {
           if (volume > 0) {
-            volume -= 0.1;
+            volume = Math.max(0, volume - 0.1);
             heroSelectMusic.volume = volume;
           } else {
             clearInterval(fadeInterval);
@@ -531,7 +531,7 @@
           let volume = backgroundMusic.volume;
           const fadeInterval = setInterval(() => {
             if (volume > 0) {
-              volume -= 0.1;
+              volume = Math.max(0, volume - 0.1);
               backgroundMusic.volume = volume;
             } else {
               clearInterval(fadeInterval);
@@ -626,7 +626,7 @@
           let volume = level5Music.volume;
           const fadeInterval = setInterval(() => {
             if (volume > 0) {
-              volume -= 0.1;
+              volume = Math.max(0, volume - 0.1);
               level5Music.volume = volume;
             } else {
               clearInterval(fadeInterval);
