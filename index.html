@@ -666,7 +666,7 @@
             document.getElementById("turn-info").textContent =
               `Active Hero: ${activeHero.name} (Scene: ${activeHero.sceneCoord.row},${activeHero.sceneCoord.col},${activeHero.sceneCoord.z || 0}) ` +
               `| Coordinates: (${activeHero.x},${activeHero.y}) | Facing: ${activeHero.facing} | Move Points: ${activeHero.movePoints}` +
-              (attackMode ? " | ATTACK MODE" : "");
+              (attackMode ? " | ATTACK MODE" : "") + " | Press 'S' for game state report";
           }
 
           function logMessage(message) {
@@ -676,6 +676,103 @@
             newLine.textContent = `[${timeStamp}] ${message}`;
             logEl.appendChild(newLine);
             logEl.scrollTop = logEl.scrollHeight;
+          }
+
+          // NEW FUNCTION: Generate comprehensive game state report
+          function generateGameStateReport() {
+            const activeHero = party[currentHeroIndex];
+            const currentScene = getScene(activeHero.sceneCoord);
+            const aliveHeroes = party.filter(hero => hero.alive);
+            const deadHeroes = party.filter(hero => !hero.alive);
+            
+            // Count enemies in current scene
+            const currentSceneEnemies = enemies.filter(enemy => 
+              enemy.sceneCoord.row === activeHero.sceneCoord.row &&
+              enemy.sceneCoord.col === activeHero.sceneCoord.col &&
+              (enemy.sceneCoord.z || 0) === (activeHero.sceneCoord.z || 0) &&
+              enemy.hp > 0
+            );
+
+            // Build comprehensive report
+            const report = {
+              timestamp: new Date().toLocaleString(),
+              gameSession: {
+                maxScore: maxScore,
+                playerScore: playerScore,
+                discoveredZones: discoveredZones.size,
+                totalEnemies: enemies.filter(e => e.hp > 0).length
+              },
+              currentLocation: {
+                scene: `${activeHero.sceneCoord.row},${activeHero.sceneCoord.col},${activeHero.sceneCoord.z || 0}`,
+                sceneType: currentScene._type || 'unknown',
+                enemiesPresent: currentSceneEnemies.length,
+                potionAvailable: currentScene.potion ? `${currentScene.potion.color} (${currentScene.potion.effectName})` : 'none'
+              },
+              party: {
+                activeHero: {
+                  name: activeHero.name,
+                  position: `(${activeHero.x},${activeHero.y})`,
+                  facing: activeHero.facing || 'undefined',
+                  movePoints: activeHero.movePoints,
+                  hp: activeHero.hp,
+                  attack: activeHero.attack,
+                  range: activeHero.range,
+                  agility: activeHero.agility
+                },
+                aliveHeroes: aliveHeroes.map(hero => ({
+                  name: hero.name,
+                  position: `(${hero.x},${hero.y})`,
+                  scene: `${hero.sceneCoord.row},${hero.sceneCoord.col},${hero.sceneCoord.z || 0}`,
+                  hp: hero.hp,
+                  stats: `ATK:${hero.attack} RNG:${hero.range} AGI:${hero.agility}`
+                })),
+                deadHeroes: deadHeroes.map(hero => ({
+                  name: hero.name,
+                  lastPosition: `(${hero.x},${hero.y})`,
+                  lastScene: `${hero.sceneCoord.row},${hero.sceneCoord.col},${hero.sceneCoord.z || 0}`
+                }))
+              },
+              worldState: {
+                discoveredScenes: Array.from(discoveredZones),
+                totalEnemiesByScene: {}
+              }
+            };
+
+            // Count enemies by scene
+            const enemiesByScene = {};
+            enemies.filter(e => e.hp > 0).forEach(enemy => {
+              const sceneKey = `${enemy.sceneCoord.row},${enemy.sceneCoord.col},${enemy.sceneCoord.z || 0}`;
+              enemiesByScene[sceneKey] = (enemiesByScene[sceneKey] || 0) + 1;
+            });
+            report.worldState.totalEnemiesByScene = enemiesByScene;
+
+            return report;
+          }
+
+          // Display game state report in console and game log
+          function displayGameStateReport() {
+            const report = generateGameStateReport();
+            
+            // Log to browser console for detailed view
+            console.log("=== PIOSI GAME STATE REPORT ===");
+            console.log(report);
+            
+            // Create formatted summary for game log
+            const summary = [
+              "=== GAME STATE REPORT ===",
+              `Time: ${report.timestamp}`,
+              `Score: ${report.gameSession.playerScore}/${report.gameSession.maxScore} | Discovered: ${report.gameSession.discoveredZones} zones`,
+              `Location: Scene ${report.currentLocation.scene} (${report.currentLocation.sceneType})`,
+              `Enemies here: ${report.currentLocation.enemiesPresent} | Potion: ${report.currentLocation.potionAvailable}`,
+              `Active: ${report.party.activeHero.name} at ${report.party.activeHero.position} | HP:${report.party.activeHero.hp} | Moves:${report.party.activeHero.movePoints}`,
+              `Party: ${report.party.aliveHeroes.length} alive, ${report.party.deadHeroes.length} dead`,
+              `Total enemies: ${report.gameSession.totalEnemies} across all scenes`
+            ];
+
+            // Log each line to game log
+            summary.forEach(line => logMessage(line));
+            
+            return report;
           }
 
           function nextTurn() {
@@ -697,6 +794,12 @@
             if (!gameStarted || currentScreen !== "game-screen") return;
             console.log("Key pressed:", e.key);
             const hero = party[currentHeroIndex];
+
+            // Press 'S' key to display game state report
+            if (e.key.toLowerCase() === 's') {
+              displayGameStateReport();
+              return;
+            }
 
             if (!attackMode && e.key === " ") {
               attackMode = true;
