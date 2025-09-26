@@ -27,7 +27,6 @@ function renderNodes() {
 export function initWorldMap() {
   currentIndex = 0; // Set default starting position on "Gratt ߁"
   renderNodes();
-  console.log("World map initialized with nodes:", nodes);
 }
 
 // Move selection to the left. Wrap around if necessary.
@@ -47,7 +46,6 @@ export function selectCurrentNode(openLevel99, startSummitMode, startEmanationsM
   const selectedNode = nodes[currentIndex];
   if (selectedNode === "Gratt ߂") {
     // Load new suite of levels.
-    console.log("Transitioning to new suite of levels via", selectedNode);
     alert("Loading new suite of levels...");
     // In a full game, you would transition to a new set of levels here.
   } else if (selectedNode === "Gratt ߃") {
@@ -55,15 +53,12 @@ export function selectCurrentNode(openLevel99, startSummitMode, startEmanationsM
     alert("Not yet accessible with current clearance level");
   } else if (selectedNode === "Gratt ߷") {
     // Open level 99.
-    console.log("Opening level 99 via", selectedNode);
     openLevel99(); // Call the function to open level 99
   } else if (selectedNode === "Summit Mode") {
     // Start summit mode.
-    console.log("Starting Summit Mode via", selectedNode);
     startSummitMode(); // Call the function to start summit mode
   } else if (selectedNode === "Emanations Mode") {
     // Start emanations mode.
-    console.log("Starting Emanations Mode via", selectedNode);
     startEmanationsMode(); // Call the function to start emanations mode
   } else {
     // For "Gratt ߁", the current location.
