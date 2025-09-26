@@ -1,17 +1,34 @@
 {
-  "name": "piosi-project",
-  "version": "1.0.0",
-  "description": "Pee OH See project bundled for Squarespace via GitHub Pages",
-  "main": "index.js",
+  "name": "new-piosi",
+  "version": "2.0.0",
+  "description": "NEW PIOSI - A modern, polished version of the PIOSI game using contemporary development practices",
+  "main": "src/index.js",
+  "type": "module",
   "scripts": {
-    "start": "parcel src/index.html --open",
-    "build": "parcel build src/index.html",
-    "deploy": "gh-pages -d dist"
+    "start": "vite",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint src --ext js,jsx,ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "format": "prettier --write src/**/*.{js,jsx,ts,tsx,json,css,md}",
+    "deploy": "gh-pages -d dist",
+    "test": "echo 'No tests yet' && exit 0"
   },
-  "author": "Your Name",
+  "author": "Zachary Hines, II",
   "license": "MIT",
   "devDependencies": {
-    "parcel": "^2.0.0",
-    "gh-pages": "^4.0.0"
+    "vite": "^5.0.0",
+    "eslint": "^8.0.0",
+    "prettier": "^3.0.0",
+    "gh-pages": "^4.0.0",
+    "@types/node": "^20.0.0"
+  },
+  "dependencies": {
+    "canvas-confetti": "^1.9.2"
+  },
+  "keywords": ["game", "javascript", "strategy", "rpg", "turn-based"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ZHines2/PIOSI.git"
   }
 }
