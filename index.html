@@ -137,6 +137,11 @@
         playPreviousSong,
         togglePlayPause
       } from "./emanations.js";
+      import {
+        GameStateAnalyzer,
+        globalAnalyzer,
+        logStateAnalysis
+      } from "./gameStateAnalyzer.js";
 
       // Global variables to manage game state
       let currentScreen = "title";
@@ -147,6 +152,9 @@
       let enemies = [];
       let battleEngine = null;
       let cheatActive = false; // Prevent waiting cheat activation
+      
+      // Game state analyzer for agentic technology integration
+      const stateAnalyzer = globalAnalyzer;
 
       // Cheat detection variables
       const cheatSequence = [
@@ -580,6 +588,11 @@
           onGameOver
         );
         renderBattlefield();
+        
+        // Analyze initial battle state
+        console.log(`%c🎮 Level ${level} initialized: ${title}`, 'color: #4CAF50; font-weight: bold');
+        const initialState = stateAnalyzer.analyzeBattleState(battleEngine);
+        console.log(stateAnalyzer.getFormattedReport(initialState));
 
         // Play new song if current level is 5
         if (level === 5) {
@@ -607,6 +620,13 @@
        * Secret level (level 99) remains unchanged.
        */
       function onLevelComplete() {
+        // Log final battle state before level completion
+        console.log(`%c✅ Level ${level} Complete!`, 'color: #4CAF50; font-weight: bold; font-size: 14px');
+        if (battleEngine) {
+          const finalState = stateAnalyzer.analyzeBattleState(battleEngine);
+          console.log(stateAnalyzer.getFormattedReport(finalState));
+        }
+        
         if (level >= 1 && level <= 19) {
           logMessage(`Level ${level} complete!`);
           showModeUpWindow();
@@ -663,6 +683,10 @@
           "'s Turn (Moves Left: " +
           battleEngine.movePoints +
           ")";
+        
+        // Analyze and log game state using agentic technology
+        const stateAnalysis = stateAnalyzer.analyzeBattleState(battleEngine);
+        logStateAnalysis(stateAnalysis);
       }
 
       /**
@@ -776,8 +800,14 @@
           showScreen("victory");
         };
         const summitMode = new SummitMode(logCallback, onGameOver, onVictory);
+        
+        // Integrate state analyzer with Summit Mode
+        summitMode.stateAnalyzer = stateAnalyzer;
+        
         summitMode.start();
         showScreen("summitMode");
+        
+        console.log("%c🏔️ Summit Mode Started", 'color: #FF9800; font-weight: bold; font-size: 14px');
       }
       function startEmanationsMode() {
         showScreen("emanationsMode");
@@ -1015,6 +1045,36 @@
       initializeGriot("fantasy_narrative.txt").then(() => {
         showScreen("title");
       });
+      
+      // Expose game state analyzer to global scope for developer console access
+      window.PIOSI = {
+        analyzer: stateAnalyzer,
+        getBattleState: () => battleEngine ? stateAnalyzer.analyzeBattleState(battleEngine) : null,
+        getFormattedReport: () => {
+          const analysis = battleEngine ? stateAnalyzer.analyzeBattleState(battleEngine) : null;
+          return analysis ? stateAnalyzer.getFormattedReport(analysis) : "No active battle";
+        },
+        logState: () => {
+          const analysis = battleEngine ? stateAnalyzer.analyzeBattleState(battleEngine) : null;
+          if (analysis) {
+            console.log(stateAnalyzer.getFormattedReport(analysis));
+          } else {
+            console.log("No active battle to analyze");
+          }
+        },
+        getStateHistory: () => stateAnalyzer.stateHistory,
+        exportHistory: () => stateAnalyzer.exportHistory(),
+        clearHistory: () => stateAnalyzer.clearHistory(),
+        version: "1.0.0-agentic"
+      };
+      
+      console.log("%c🎮 PIOSI Game State Analyzer Ready", 'color: #00BCD4; font-weight: bold; font-size: 16px');
+      console.log("%cAccess the analyzer via: window.PIOSI", 'color: #00BCD4');
+      console.log("%cCommands:", 'color: #00BCD4; font-weight: bold');
+      console.log("  - PIOSI.logState() - Display current game state");
+      console.log("  - PIOSI.getFormattedReport() - Get formatted state report");
+      console.log("  - PIOSI.getStateHistory() - View state history");
+      console.log("  - PIOSI.exportHistory() - Export history as JSON");
     </script>
   </body>
 </html>

@@ -9,10 +9,30 @@ For detailed guidelines on creating new heroes, refer to the [Hero Manifestation
 
 For detailed gameplay instructions, refer to the [Player's Manual](docs/players-manual.md).
 
+For information about the Game State Analyzer and agentic technology integration, refer to the [Game State Analyzer Documentation](docs/game-state-analyzer.md).
+
 The Level Creation Rubric provides comprehensive guidelines for defining level properties such as `level`, `title`, `rows`, `cols`, `wallHP`, and `enemies`. It also explains the use of the `enemyGenerator` function for dynamic enemy generation and offers examples and best practices for creating balanced and engaging levels.
 
 The Hero Manifestation Guide now includes new hero stats `yeet` and `swarm`, which are used by the new heroes "Yeetrian" and "Mellitron" respectively. These stats add new dimensions to hero abilities and strategies in the game.
 
+## Game State Analyzer (Agentic Technology)
+
+PIOSI now features an advanced Game State Analyzer that provides real-time analysis of game states using modern agentic technology principles. The analyzer:
+
+- **Tracks game state** in real-time across all game modes
+- **Provides strategic insights** and tactical recommendations
+- **Analyzes battle flow** and progression trends
+- **Maintains state history** for analysis and debugging
+- **Offers developer console access** for advanced users
+
+Access the analyzer via the browser console:
+```javascript
+PIOSI.logState()        // Display current game state
+PIOSI.getFormattedReport()  // Get detailed report
+PIOSI.getStateHistory() // View historical states
+```
+
+See the [Game State Analyzer Documentation](docs/game-state-analyzer.md) for detailed usage and examples.
 
 ### Background Music for Level 5
 
