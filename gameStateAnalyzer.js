@@ -12,6 +12,11 @@
  * game state without interfering with game logic.
  */
 
+// Constants for normalization factors
+const HP_NORMALIZATION_FACTOR_HERO = 100;
+const HP_NORMALIZATION_FACTOR_ENEMY = 50;
+const AGILITY_DIVISOR = 10; // For agility normalization in effectiveness calculation
+
 /**
  * GameStateAnalyzer class - Main analyzer agent
  */
@@ -20,6 +25,16 @@ export class GameStateAnalyzer {
     this.stateHistory = [];
     this.maxHistoryLength = 50;
     this.analysisCallbacks = [];
+  }
+
+  /**
+   * Helper method to get live heroes from a battle engine
+   * @private
+   */
+  _getLiveHeroes(battleEngine) {
+    if (!battleEngine || !battleEngine.party) return [];
+    return battleEngine.getLiveHeroes ? battleEngine.getLiveHeroes() : 
+           battleEngine.party.filter(h => h.hp > 0 && !h.persistentDeath);
   }
 
   /**
@@ -33,8 +48,6 @@ export class GameStateAnalyzer {
     }
 
     const timestamp = Date.now();
-    const liveHeroes = battleEngine.getLiveHeroes ? battleEngine.getLiveHeroes() : 
-                       battleEngine.party.filter(h => h.hp > 0 && !h.persistentDeath);
     
     const analysis = {
       timestamp,
@@ -215,8 +228,7 @@ export class GameStateAnalyzer {
    * Generate strategic assessment
    */
   generateStrategicAssessment(battleEngine) {
-    const liveHeroes = battleEngine.getLiveHeroes ? battleEngine.getLiveHeroes() : 
-                       battleEngine.party.filter(h => h.hp > 0 && !h.persistentDeath);
+    const liveHeroes = this._getLiveHeroes(battleEngine);
     const enemies = battleEngine.enemies;
     
     const avgHeroHP = liveHeroes.reduce((sum, h) => sum + h.hp, 0) / (liveHeroes.length || 1);
@@ -338,8 +350,7 @@ export class GameStateAnalyzer {
    * Determine current game phase
    */
   determineGamePhase(battleEngine) {
-    const liveHeroes = battleEngine.getLiveHeroes ? battleEngine.getLiveHeroes() : 
-                       battleEngine.party.filter(h => h.hp > 0 && !h.persistentDeath);
+    const liveHeroes = this._getLiveHeroes(battleEngine);
     const enemyCount = battleEngine.enemies.length;
     
     if (enemyCount === 0 && battleEngine.wallHP <= 0) return "victory_imminent";
@@ -373,8 +384,10 @@ export class GameStateAnalyzer {
   calculateCombatEffectiveness(hero) {
     if (!hero || hero.hp <= 0) return 0;
     
-    const baseScore = hero.attack * hero.range * (hero.agility / 10);
-    const hpFactor = hero.hp / 100; // Normalize HP
+    // Base combat score: attack power × range × mobility factor
+    const baseScore = hero.attack * hero.range * (hero.agility / AGILITY_DIVISOR);
+    // HP factor: normalize current HP to a 0-1 scale (heroes typically have up to ~100 HP)
+    const hpFactor = hero.hp / HP_NORMALIZATION_FACTOR_HERO;
     const specialAbilities = (hero.heal || 0) + (hero.burn || 0) + (hero.chain || 0) + 
                             (hero.yeet || 0) + (hero.swarm || 0);
     
@@ -388,7 +401,8 @@ export class GameStateAnalyzer {
     if (!enemy || enemy.hp <= 0) return 0;
     
     const baseScore = enemy.attack * (enemy.range || 1) * (enemy.agility || 1);
-    const hpFactor = enemy.hp / 50; // Normalize HP
+    // HP factor: normalize current HP (enemies typically have lower HP than heroes, ~50)
+    const hpFactor = enemy.hp / HP_NORMALIZATION_FACTOR_ENEMY;
     
     return baseScore * hpFactor;
   }
