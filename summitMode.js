@@ -163,6 +163,15 @@ export class SummitMode {
     this.turnIndex++;
     this.drawCanvas();
     this.updateSummitHeroInfo();
+    
+    // Analyze and log Summit Mode state periodically (every 10 turns)
+    if (this.stateAnalyzer && this.turnIndex % 10 === 0) {
+      const summitAnalysis = this.stateAnalyzer.analyzeSummitState(this);
+      console.log(`%c🏔️ Summit Turn ${this.turnIndex}`, 'color: #FF9800; font-weight: bold');
+      console.log(`Teams: ${summitAnalysis.teams.length}, Alive: ${summitAnalysis.aliveHeroes}/${summitAnalysis.totalHeroes}`);
+      console.log(`Phase: ${summitAnalysis.battlePhase}, Dominant Team: ${summitAnalysis.dominantTeam?.teamId || 'none'}`);
+    }
+    
     this.scheduleNextTurn();
   }
 
