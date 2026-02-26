@@ -406,3 +406,64 @@ button:active {
 #iso-toggle-btn:hover {
   opacity: 1;
 }
+
+/* ======================================================
+   MOBILE D-PAD — on-screen controls for touch devices
+   ====================================================== */
+
+/* Hidden on pointer-accurate (mouse/trackpad) devices */
+#mobile-dpad {
+  display: none;
+}
+
+/* Show only on touch / coarse-pointer devices */
+@media (pointer: coarse) {
+  /* Push battle screen content up so D-pad (≈196px tall) doesn't overlap it */
+  #game-container {
+    padding-bottom: 220px;
+  }
+
+  #mobile-dpad {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 200;
+    opacity: 0.82;
+    user-select: none;
+  }
+
+  .dpad-row {
+    display: flex;
+    gap: 6px;
+  }
+
+  .dpad-btn {
+    width: 62px;
+    height: 62px;
+    font-size: 22px;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1.5px solid rgba(255, 255, 255, 0.45);
+    border-radius: 10px;
+    color: white;
+    touch-action: manipulation;
+    cursor: pointer;
+  }
+
+  .dpad-btn:active {
+    background: rgba(255, 255, 255, 0.28);
+  }
+
+  .dpad-action {
+    background: rgba(200, 40, 40, 0.28);
+    font-size: 26px;
+  }
+
+  .dpad-action:active {
+    background: rgba(220, 60, 60, 0.5);
+  }
+}
