@@ -376,3 +376,16 @@ button:active {
 #log::-webkit-scrollbar-track  { background: #111; }
 #log::-webkit-scrollbar-thumb  { background: #444; border-radius: 3px; }
 #log::-webkit-scrollbar-thumb:hover { background: #666; }
+
+/* Isometric battlefield canvas */
+#iso-battlefield {
+  display: block;
+  margin: 0 auto 10px;
+  border: 2px solid white;
+  box-shadow: 0 0 24px rgba(255, 255, 255, 0.1);
+}
+
+/* Isometric toggle button */
+#iso-toggle-btn {
+  margin-bottom: 8px;
+}
