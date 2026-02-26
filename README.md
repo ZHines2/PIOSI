@@ -1,6 +1,13 @@
 # PIOSI
 THE SAGAS CONTINUE
 
+## Quick Start (Double Click)
+
+1. Install Node.js (if not already installed).
+2. Double click `Play PIOSI.cmd` in the repo root.
+3. Your browser opens to `http://localhost:8080/`.
+4. Keep the launcher window open while you play. Close it to stop the local server.
+
 ## Documentation
 
 For detailed guidelines on creating new levels, refer to the [Level Creation Rubric](docs/level-creation.md).

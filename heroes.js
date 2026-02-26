@@ -288,10 +288,15 @@ export const heroes = [
  * Handles the hero selection logic specifically for Summit Mode.
  * This function cycles through all available heroes and allows the player to choose one.
  */
-export function selectHeroForSummitMode() {
+export function selectHeroForSummitMode(startSummitModeWithHero) {
   let selectedHeroIndex = 0;
   const heroList = document.getElementById("hero-list");
   const confirmButton = document.getElementById("confirm-hero");
+
+  if (!heroList || !confirmButton) {
+    console.warn("Summit hero selection UI was not found.");
+    return;
+  }
 
   function updateHeroDisplay() {
     const hero = heroes[selectedHeroIndex];
@@ -314,7 +319,9 @@ export function selectHeroForSummitMode() {
     document.removeEventListener("keydown", handleKeyDown);
     confirmButton.removeEventListener("click", confirmSelection);
     // Proceed with the selected hero for Summit Mode
-    startSummitModeWithHero(selectedHeroIndex);
+    if (typeof startSummitModeWithHero === "function") {
+      startSummitModeWithHero(selectedHeroIndex);
+    }
   }
 
   document.addEventListener("keydown", handleKeyDown);

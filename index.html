@@ -566,7 +566,7 @@
             return;
           }
         }
-        const { rows, cols, wallHP, title, enemies: levelEnemies } = settings;
+        const { rows, cols, wallHP, title, enemies: levelEnemies, layout } = settings;
         document.getElementById("level-title").textContent = title;
         enemies = levelEnemies;
         battleEngine = new BattleEngine(
@@ -577,7 +577,8 @@
           wallHP,
           logMessage,
           onLevelComplete,
-          onGameOver
+          onGameOver,
+          layout
         );
         renderBattlefield();
 

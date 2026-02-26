@@ -6,6 +6,17 @@ let trainingCorpus = "";
 const markovChain = {};
 const recentInteractions = [];
 const MAX_INTERACTIONS = 10;
+const API_TIMEOUT_MS = 3000;
+
+async function fetchWithTimeout(url, timeoutMs = API_TIMEOUT_MS) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { signal: controller.signal, cache: "no-store" });
+  } finally {
+    clearTimeout(timeout);
+  }
+}
 
 // Loads the initial corpus from a URL or file path.
 export async function loadTrainingCorpus(corpusUrl = "fantasy_narrative.txt") {
@@ -76,7 +87,7 @@ function getRandomStartWord() {
 
 export async function fetchJoke() {
   try {
-    const response = await fetch("https://v2.jokeapi.dev/joke/Programming?type=single");
+    const response = await fetchWithTimeout("https://v2.jokeapi.dev/joke/Programming?type=single");
     const data = await response.json();
     return data.joke;
   } catch (error) {
@@ -87,7 +98,7 @@ export async function fetchJoke() {
 
 export async function fetchBaconIpsum() {
   try {
-    const response = await fetch("https://baconipsum.com/api/?type=meat-and-filler&sentences=1");
+    const response = await fetchWithTimeout("https://baconipsum.com/api/?type=meat-and-filler&sentences=1");
     const data = await response.json();
     return data[0];
   } catch (error) {
@@ -98,7 +109,7 @@ export async function fetchBaconIpsum() {
 
 export async function fetchTarotCard() {
   try {
-    const response = await fetch("https://tarotapi.dev/api/v1/cards/random");
+    const response = await fetchWithTimeout("https://tarotapi.dev/api/v1/cards/random");
     const data = await response.json();
     if (data.cards && data.cards.length > 0) {
       const card = data.cards[0];
@@ -114,7 +125,7 @@ export async function fetchTarotCard() {
 
 export async function fetchNonseqFact() {
   try {
-    const response = await fetch("https://uselessfacts.jsph.pl/random.json?language=en");
+    const response = await fetchWithTimeout("https://uselessfacts.jsph.pl/random.json?language=en");
     const data = await response.json();
     return data.text;
   } catch (error) {
@@ -126,7 +137,7 @@ export async function fetchNonseqFact() {
 // New: Fetch psychology advice from a free API for the Shrink hero.
 export async function fetchShrinkAdvice() {
   try {
-    const response = await fetch("https://api.adviceslip.com/advice");
+    const response = await fetchWithTimeout("https://api.adviceslip.com/advice");
     const data = await response.json();
     return data.slip.advice;
   } catch (error) {
@@ -138,7 +149,7 @@ export async function fetchShrinkAdvice() {
 // New: Fetch a random recipe for the Gastronomer hero using a free API.
 export async function fetchRandomRecipe() {
   try {
-    const response = await fetch("https://www.themealdb.com/api/json/v1/1/random.php");
+    const response = await fetchWithTimeout("https://www.themealdb.com/api/json/v1/1/random.php");
     const data = await response.json();
     if (data.meals && data.meals.length > 0) {
       const meal = data.meals[0];

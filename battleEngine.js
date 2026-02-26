@@ -22,7 +22,7 @@ export class PersistentDeath {
 }
 
 export class BattleEngine {
-  constructor(party, enemies, fieldRows, fieldCols, wallHP, logCallback, onLevelComplete, onGameOver) {
+  constructor(party, enemies, fieldRows, fieldCols, wallHP, logCallback, onLevelComplete, onGameOver, levelLayout = null) {
     // Keep all heroes in the party array.
     // NOTE: Heroes with persistent death will no longer be referenced in the battlefield.
     this.party = party;
@@ -33,6 +33,7 @@ export class BattleEngine {
     this.logCallback = logCallback;
     this.onLevelComplete = onLevelComplete;
     this.onGameOver = onGameOver;
+    this.levelLayout = levelLayout;
 
     this.currentUnit = 0;
     // Only live heroes get move points.
@@ -66,18 +67,12 @@ export class BattleEngine {
 
   initializeBattlefield() {
     const field = Array.from({ length: this.rows }, () => Array(this.cols).fill('.'));
+    this.applyLevelLayout(field);
     this.placeHeroes(field);
     this.placeEnemies(field);
     this.createWall(field);
     this.placeHealingItem(field);
     this.placeMushroom(field);
-    if (this.levelSettings && this.levelSettings.layout) {
-      for (let y = 0; y < this.levelSettings.layout.length; y++) {
-        for (let x = 0; x < this.levelSettings.layout[y].length; x++) {
-          if (this.levelSettings.layout[y][x] === '.wall') field[y][x] = '.wall';
-        }
-      }
-    }
     // Apply caprice and fate buffs only to live heroes.
     this.getLiveHeroes().forEach(hero => {
       if (hero.caprice && hero.caprice > 0) {
@@ -105,6 +100,19 @@ export class BattleEngine {
       }
     });
     return field;
+  }
+
+  applyLevelLayout(field) {
+    if (!Array.isArray(this.levelLayout)) return;
+    for (let y = 0; y < this.levelLayout.length; y++) {
+      if (!Array.isArray(this.levelLayout[y])) continue;
+      for (let x = 0; x < this.levelLayout[y].length; x++) {
+        const cell = this.levelLayout[y][x];
+        if (cell && cell.type === "wall") {
+          field[y][x] = "#";
+        }
+      }
+    }
   }
 
   placeHeroes(field) {
@@ -210,7 +218,7 @@ export class BattleEngine {
     }
     const newX = unit.x + dx, newY = unit.y + dy;
     if (!this.isWithinBounds(newX, newY)) return;
-    if (this.battlefield[newY][newX] === 'ᚙ' || this.battlefield[newY][newX] === '█') {
+    if (this.battlefield[newY][newX] === 'ᚙ' || this.battlefield[newY][newX] === '█' || this.battlefield[newY][newX] === '#') {
       this.wallHP -= unit.attack;
       this.logCallback(`${unit.name} attacks the wall for ${unit.attack} damage! (Wall HP: ${this.wallHP})`);
       if (this.wallHP <= 0 && !this.transitioningLevel) {
@@ -358,7 +366,7 @@ export class BattleEngine {
         this.nextTurn();
         return;
       }
-      if (this.battlefield[targetY][targetX] === 'ᚙ' || this.battlefield[targetY][targetX] === '█') {
+      if (this.battlefield[targetY][targetX] === 'ᚙ' || this.battlefield[targetY][targetX] === '█' || this.battlefield[targetY][targetX] === '#') {
         this.wallHP -= unit.attack;
         this.logCallback(`${unit.name} attacks the wall for ${unit.attack} damage! (Wall HP: ${this.wallHP})`);
         this.awaitingAttackDirection = false;
