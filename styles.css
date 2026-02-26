@@ -407,3 +407,70 @@ button:active {
   opacity: 1;
 }
 
+/* D-pad toggle button — floating joystick icon, below the iso-toggle */
+#dpad-toggle-btn {
+  position: absolute;
+  top: 54px;
+  right: 20px;
+  font-size: 22px;
+  padding: 2px 5px;
+  margin: 0;
+  line-height: 1;
+  opacity: 0.45;
+  border-color: #444;
+  background-color: transparent;
+}
+
+#dpad-toggle-btn:hover {
+  opacity: 1;
+}
+
+/* D-pad — hidden by default; visible when .dpad-visible is toggled */
+#mobile-dpad {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 200;
+  opacity: 0.82;
+  user-select: none;
+}
+
+#mobile-dpad.dpad-visible {
+  display: flex;
+}
+
+.dpad-row {
+  display: flex;
+  gap: 6px;
+}
+
+.dpad-btn {
+  width: 62px;
+  height: 62px;
+  font-size: 22px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1.5px solid rgba(255, 255, 255, 0.45);
+  border-radius: 10px;
+  color: white;
+  touch-action: manipulation;
+  cursor: pointer;
+}
+
+.dpad-btn:active {
+  background: rgba(255, 255, 255, 0.28);
+}
+
+.dpad-action {
+  background: rgba(200, 40, 40, 0.28);
+  font-size: 26px;
+}
+
+.dpad-action:active {
+  background: rgba(220, 60, 60, 0.5);
+}
+
