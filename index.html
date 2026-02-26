@@ -35,7 +35,7 @@
     <!-- Battle Screen -->
     <div id="game-container">
       <h1 id="level-title">Level Title</h1>
-      <button id="iso-toggle-btn">Switch to Isometric View</button>
+      <button id="iso-toggle-btn" title="Toggle Isometric View" aria-label="Toggle Isometric View">⬡</button>
       <div id="battlefield"></div>
       <canvas id="iso-battlefield" style="display:none;"></canvas>
       <p id="status"></p>
@@ -940,9 +940,6 @@
       // Toggle between grid view and isometric canvas view during battle.
       document.getElementById("iso-toggle-btn").addEventListener("click", () => {
         isometricMode = !isometricMode;
-        document.getElementById("iso-toggle-btn").textContent = isometricMode
-          ? "Switch to Grid View"
-          : "Switch to Isometric View";
         if (battleEngine) renderBattlefield();
       });
     </script>

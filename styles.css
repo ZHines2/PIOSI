@@ -30,6 +30,10 @@ body {
   padding: 20px; /* Padding around content for spacing */
 }
 
+#game-container {
+  position: relative;
+}
+
 /* Title Screen Styles */
 /* Styles for the title screen which covers the full viewport */
 #title-screen {
@@ -385,12 +389,16 @@ button:active {
   box-shadow: 0 0 24px rgba(255, 255, 255, 0.1);
 }
 
-/* Isometric toggle button — small, unobtrusive */
+/* Isometric toggle button — floating cube icon, out of document flow */
 #iso-toggle-btn {
-  font-size: 11px;
-  padding: 3px 8px;
-  margin-bottom: 6px;
-  opacity: 0.55;
+  position: absolute;
+  top: 18px;
+  right: 20px;
+  font-size: 22px;
+  padding: 2px 5px;
+  margin: 0;
+  line-height: 1;
+  opacity: 0.45;
   border-color: #444;
   background-color: transparent;
 }
