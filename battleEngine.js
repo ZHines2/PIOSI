@@ -174,24 +174,65 @@ export class BattleEngine {
     }
   }
 
+ 
   drawBattlefield() {
-    let html = '';
+    const useIsometric = globalThis.PIOSI_ISOMETRIC !== false;
+    const activeHero =
+      this.party[this.currentUnit] && !this.party[this.currentUnit].persistentDeath
+        ? this.party[this.currentUnit]
+        : null;
+
+    if (!useIsometric) {
+      let html = "";
+      for (let y = 0; y < this.rows; y++) {
+        html += '<div class="row">';
+        for (let x = 0; x < this.cols; x++) {
+          const cellContent = this.battlefield[y][x];
+          let cellClass = "";
+          if (cellContent !== "." && this.isCellPassable(x, y)) cellClass += " healing-item";
+          if (this.enemies.some(enemy => enemy.symbol === cellContent)) cellClass += " enemy";
+          if (activeHero && activeHero.x === x && activeHero.y === y) {
+            cellClass += this.awaitingAttackDirection ? " attack-mode" : " active";
+          }
+          html += `<div class="cell${cellClass}">${cellContent}</div>`;
+        }
+        html += "</div>";
+      }
+      return html;
+    }
+
+    const tileWidth = 56;
+    const tileHeight = 28;
+    const gridWidth = ((this.cols + this.rows) * tileWidth) / 2 + tileWidth;
+    const gridHeight = ((this.cols + this.rows) * tileHeight) / 2 + tileHeight + 30;
+    const originX = (this.rows * tileWidth) / 2;
+
+    let html = `<div class="iso-battlefield" style="width:${Math.round(gridWidth)}px;height:${Math.round(gridHeight)}px;">`;
     for (let y = 0; y < this.rows; y++) {
-      html += '<div class="row">';
       for (let x = 0; x < this.cols; x++) {
         const cellContent = this.battlefield[y][x];
-        let cellClass = '';
-        if (cellContent === 'ౚ' || cellContent === 'ඉ') cellClass += ' healing-item';
-        if (this.enemies.some(enemy => enemy.symbol === cellContent)) cellClass += ' enemy';
-        // Use the active hero from the party (if not dead) for highlighting.
-        const activeHero = this.party[this.currentUnit] && !this.party[this.currentUnit].persistentDeath ? this.party[this.currentUnit] : null;
+        const isoX = (x - y) * (tileWidth / 2) + originX;
+        const isoY = (x + y) * (tileHeight / 2);
+        const isEnemySymbol = this.enemies.some(enemy => enemy.symbol === cellContent);
+        const isHeroSymbol = this.party.some(hero => !hero.persistentDeath && hero.symbol === cellContent);
+        const isHealing = cellContent !== "." && this.isCellPassable(x, y);
+        const isWall = !isHealing && !isEnemySymbol && !isHeroSymbol && cellContent !== ".";
+        const isElevated = isEnemySymbol || isHeroSymbol;
+        const zIndex = (x + y) * 10 + (isElevated ? 8 : 1) + (isWall ? 4 : 0);
+        let cellClass = " iso-ground";
+
+        if (isHealing) cellClass += " healing-item";
+        if (isEnemySymbol) cellClass += " enemy enemy-tile elevated";
+        if (isHeroSymbol) cellClass += " hero-tile elevated";
+        if (isWall) cellClass += " wall-tile wall-height";
         if (activeHero && activeHero.x === x && activeHero.y === y) {
-          cellClass += this.awaitingAttackDirection ? ' attack-mode' : ' active';
+          cellClass += this.awaitingAttackDirection ? " attack-mode elevated" : " active elevated";
         }
-        html += `<div class="cell${cellClass}">${cellContent}</div>`;
+
+        html += `<div class="iso-cell${cellClass}" style="left:${Math.round(isoX)}px;top:${Math.round(isoY)}px;z-index:${zIndex};"><span class="iso-cell-content">${cellContent}</span></div>`;
       }
-      html += '</div>';
     }
+    html += "</div>";
     return html;
   }
 

@@ -97,8 +97,41 @@ body {
 #battlefield {
   display: inline-block; /* Inline block to size according to its contents */
   border: 2px solid white; /* White border around the battlefield */
-  padding: 10px; /* Padding inside the battlefield */
+  padding: 14px; /* Padding inside the battlefield */
   margin-bottom: 10px; /* Margin below the battlefield for spacing */
+  overflow: auto;
+  max-width: 95vw;
+  max-height: 70vh;
+  background: radial-gradient(circle at 20% 10%, #16202b, #0b0f14 75%);
+  border-radius: 10px;
+  box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.5);
+}
+
+#game-container {
+  position: relative;
+}
+
+#battle-view-controls {
+  position: absolute;
+  right: -180px;
+  top: 75px;
+}
+
+#toggle-isometric {
+  width: 150px;
+  padding: 10px 12px;
+  border: 1px solid #8bb7df;
+  background: linear-gradient(180deg, #17344f, #102235);
+  color: #e5f3ff;
+  font-family: 'Sono', monospace;
+  font-size: 0.9rem;
+  cursor: pointer;
+  border-radius: 8px;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.35);
+}
+
+#toggle-isometric:hover {
+  filter: brightness(1.08);
 }
 
 /* Flex container for rows in the battlefield */
@@ -117,6 +150,112 @@ body {
   border: 1px solid gray; /* Gray border around each cell */
   line-height: 40px; /* Line height matches cell height for vertical centering */
   transition: all 0.2s ease-in-out; /* Smooth transition for state changes */
+}
+
+/* Isometric battlefield */
+.iso-battlefield {
+  position: relative;
+  margin: 10px auto;
+  filter: drop-shadow(0 12px 18px rgba(0, 0, 0, 0.45));
+}
+
+.iso-cell {
+  position: absolute;
+  width: 56px;
+  height: 28px;
+  transform: translateX(-50%);
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+  background: linear-gradient(180deg, #425568, #273747);
+  border: 1px solid #5f7386;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  line-height: 1;
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+
+.iso-cell.iso-ground {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), inset 0 -2px 0 rgba(0, 0, 0, 0.28);
+}
+
+.iso-cell-content {
+  transform: translateY(-2px);
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.8);
+}
+
+.iso-cell.active {
+  background: linear-gradient(180deg, #2f8de6, #125b9f);
+  border-color: #8dc7ff;
+}
+
+.iso-cell.attack-mode {
+  background: linear-gradient(180deg, #cf4747, #8b1f1f);
+  border-color: #ff9f9f;
+}
+
+.iso-cell.healing-item {
+  color: #f5c37b;
+  text-shadow: 0 0 8px rgba(245, 195, 123, 0.4);
+}
+
+.iso-cell.enemy {
+  color: #ff7a4c;
+  font-weight: bold;
+}
+
+.iso-cell.wall-tile {
+  background: linear-gradient(180deg, #b8b8b8, #8a8a8a);
+  border-color: #d6d6d6;
+}
+
+.iso-cell.wall-height::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 52%;
+  height: 18px;
+  clip-path: polygon(0 0, 50% 50%, 50% 100%, 0 50%);
+  background: linear-gradient(180deg, #7f7f7f, #5d5d5d);
+  opacity: 0.95;
+  z-index: -1;
+}
+
+.iso-cell.wall-height::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  right: 0;
+  top: 52%;
+  height: 18px;
+  clip-path: polygon(0 50%, 50% 0, 100% 50%, 50% 100%);
+  background: linear-gradient(180deg, #9a9a9a, #6f6f6f);
+  opacity: 0.95;
+  z-index: -1;
+}
+
+.iso-cell.elevated {
+  transform: translateX(-50%) translateY(-12px);
+  filter: drop-shadow(0 8px 6px rgba(0, 0, 0, 0.35));
+}
+
+.iso-cell.hero-tile {
+  background: linear-gradient(180deg, #70b9ff, #2a5d8b);
+  border-color: #c1e4ff;
+}
+
+.iso-cell.enemy-tile {
+  background: linear-gradient(180deg, #ffab8c, #a24229);
+  border-color: #ffd3c4;
+}
+
+@media (max-width: 1100px) {
+  #battle-view-controls {
+    position: static;
+    margin: 0 0 8px 0;
+  }
 }
 
 /* Active cell state styles */

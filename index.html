@@ -35,6 +35,9 @@
     <!-- Battle Screen -->
     <div id="game-container">
       <h1 id="level-title">Level Title</h1>
+      <div id="battle-view-controls">
+        <button id="toggle-isometric" type="button">Isometric: ON</button>
+      </div>
       <div id="battlefield"></div>
       <p id="status"></p>
       <div id="log"></div>
@@ -147,6 +150,8 @@
       let enemies = [];
       let battleEngine = null;
       let cheatActive = false; // Prevent waiting cheat activation
+      let isometricEnabled = true;
+      globalThis.PIOSI_ISOMETRIC = isometricEnabled;
 
       // Cheat detection variables
       const cheatSequence = [
@@ -666,6 +671,12 @@
           ")";
       }
 
+      function updateIsometricToggleLabel() {
+        const btn = document.getElementById("toggle-isometric");
+        if (!btn) return;
+        btn.textContent = `Isometric: ${isometricEnabled ? "ON" : "OFF"}`;
+      }
+
       /**
        * Log messages to the game log area.
        */
@@ -1011,6 +1022,19 @@
           document.dispatchEvent(keyEvent);
         });
       }
+
+      const toggleIsometricButton = document.getElementById("toggle-isometric");
+      if (toggleIsometricButton) {
+        toggleIsometricButton.addEventListener("click", () => {
+          isometricEnabled = !isometricEnabled;
+          globalThis.PIOSI_ISOMETRIC = isometricEnabled;
+          updateIsometricToggleLabel();
+          if (battleEngine && currentScreen === "battle") {
+            renderBattlefield();
+          }
+        });
+      }
+      updateIsometricToggleLabel();
 
       // Initialize griot narrative and show title screen when ready.
       initializeGriot("fantasy_narrative.txt").then(() => {
