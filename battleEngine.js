@@ -34,10 +34,19 @@ export class BattleEngine {
     this.onLevelComplete = onLevelComplete;
     this.onGameOver = onGameOver;
 
+    // Advance past any heroes that are already persistently dead at battle start.
     this.currentUnit = 0;
-    // Only live heroes get move points.
-    // Use party[this.currentUnit] instead of filtering in order to maintain the correct pointer.
-    this.movePoints = this.party.length > 0 && !this.party[0].persistentDeath ? this.party[0].agility : 0;
+    while (this.currentUnit < this.party.length && this.party[this.currentUnit].persistentDeath) {
+      this.currentUnit++;
+    }
+    if (this.currentUnit >= this.party.length) {
+      // All heroes are persistently dead — trigger game over after construction.
+      this.currentUnit = 0;
+      this.movePoints = 0;
+      setTimeout(() => { if (typeof this.onGameOver === 'function') this.onGameOver(); }, 0);
+    } else {
+      this.movePoints = this.party[this.currentUnit].agility;
+    }
     this.awaitingAttackDirection = false;
     this.transitioningLevel = false;
 

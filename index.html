@@ -472,11 +472,8 @@
       function initializeBattle() {
         const settings = getLevel(level);
         if (!settings) {
-          // If no settings found, show victory unless in special level sequences.
-          if (level < 99 || level > 101) {
-            showScreen("victory");
-            return;
-          }
+          showScreen("victory");
+          return;
         }
         const { rows, cols, wallHP, title, enemies: levelEnemies } = settings;
         document.getElementById("level-title").textContent = title;
