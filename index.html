@@ -44,16 +44,6 @@
         Use Arrow Keys to Move | Press Spacebar to Attack, then choose attack
         direction.
       </p>
-      <!-- On-screen D-pad for touch/mobile (hidden on desktop via CSS) -->
-      <div id="mobile-dpad" aria-hidden="true">
-        <button class="dpad-btn" data-key="ArrowUp" aria-label="Move Up">▲</button>
-        <div class="dpad-row">
-          <button class="dpad-btn" data-key="ArrowLeft" aria-label="Move Left">◀</button>
-          <button class="dpad-btn dpad-action" data-key="Space" aria-label="Attack">⚔</button>
-          <button class="dpad-btn" data-key="ArrowRight" aria-label="Move Right">▶</button>
-        </div>
-        <button class="dpad-btn" data-key="ArrowDown" aria-label="Move Down">▼</button>
-      </div>
     </div>
 
     <!-- Victory Screen -->
@@ -914,7 +904,6 @@
       if ("ontouchstart" in window) {
         document.addEventListener("touchend", function (e) {
           // Let buttons and links handle their own click events on mobile (e.g. iso-toggle-btn).
-          // Their touchstart handlers (D-pad) or native click behavior already handle them correctly.
           if (e.target.closest("button, a, [role='button']")) return;
           e.preventDefault();
           const touch = e.changedTouches[0];
@@ -956,15 +945,6 @@
         if (battleEngine) renderBattlefield();
       });
 
-      // Wire D-pad buttons: touchstart for immediate response on mobile.
-      document.querySelectorAll(".dpad-btn").forEach((btn) => {
-        btn.addEventListener("touchstart", (e) => {
-          e.preventDefault();
-          const keyCode = btn.dataset.key;
-          const keyVal = keyCode === "Space" ? " " : keyCode;
-          document.dispatchEvent(new KeyboardEvent("keydown", { code: keyCode, key: keyVal, bubbles: true, cancelable: true }));
-        });
-      });
     </script>
   </body>
 </html>
