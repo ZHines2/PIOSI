@@ -385,7 +385,16 @@ button:active {
   box-shadow: 0 0 24px rgba(255, 255, 255, 0.1);
 }
 
-/* Isometric toggle button */
+/* Isometric toggle button — small, unobtrusive */
 #iso-toggle-btn {
-  margin-bottom: 8px;
+  font-size: 11px;
+  padding: 3px 8px;
+  margin-bottom: 6px;
+  opacity: 0.55;
+  border-color: #444;
+  background-color: transparent;
+}
+
+#iso-toggle-btn:hover {
+  opacity: 1;
 }
