@@ -1,0 +1,164 @@
+client:
+  name: basic
+  file-system: device-agnostic
+tools: {}
+targets:
+  "PIOSI-x86_64-unknown-linux-gnu-debug.module": ["<PIOSI-x86_64-unknown-linux-gnu-debug.module>"]
+  "PIOSIPackageDiscoveredTests-x86_64-unknown-linux-gnu-debug.module": ["<PIOSIPackageDiscoveredTests-x86_64-unknown-linux-gnu-debug.module>"]
+  "PIOSIPackageTests-x86_64-unknown-linux-gnu-debug.module": ["<PIOSIPackageTests-x86_64-unknown-linux-gnu-debug.module>"]
+  "PIOSIPackageTests-x86_64-unknown-linux-gnu-debug.test": ["<PIOSIPackageTests-x86_64-unknown-linux-gnu-debug.test>"]
+  "PIOSITests-x86_64-unknown-linux-gnu-debug.module": ["<PIOSITests-x86_64-unknown-linux-gnu-debug.module>"]
+  "PackageStructure": ["<PackageStructure>"]
+  "main": ["<PIOSI-x86_64-unknown-linux-gnu-debug.module>"]
+  "test": ["<PIOSI-x86_64-unknown-linux-gnu-debug.module>","<PIOSIPackageTests-x86_64-unknown-linux-gnu-debug.test>","<PIOSITests-x86_64-unknown-linux-gnu-debug.module>"]
+default: "main"
+nodes:
+  "/home/runner/work/PIOSI/PIOSI/swift/Sources/PIOSI/":
+    is-directory-structure: true
+    content-exclusion-patterns: [".git",".build"]
+  "/home/runner/work/PIOSI/PIOSI/swift/Tests/PIOSITests/":
+    is-directory-structure: true
+    content-exclusion-patterns: [".git",".build"]
+commands:
+  "/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSI.build/PIOSI.swiftmodule.o":
+    tool: shell
+    inputs: ["/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/Modules/PIOSI.swiftmodule"]
+    outputs: ["/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSI.build/PIOSI.swiftmodule.o"]
+    description: "Wrapping AST for PIOSI for debugging"
+    args: ["/usr/share/swift/usr/bin/swiftc","-modulewrap","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/Modules/PIOSI.swiftmodule","-o","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSI.build/PIOSI.swiftmodule.o","-target","x86_64-unknown-linux-gnu"]
+
+  "/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSI.build/sources":
+    tool: write-auxiliary-file
+    inputs: ["<sources-file-list>","/home/runner/work/PIOSI/PIOSI/swift/Sources/PIOSI/Models/BattleEngine.swift","/home/runner/work/PIOSI/PIOSI/swift/Sources/PIOSI/Models/Enemy.swift","/home/runner/work/PIOSI/PIOSI/swift/Sources/PIOSI/Models/Hero.swift","/home/runner/work/PIOSI/PIOSI/swift/Sources/PIOSI/Models/Level.swift","/home/runner/work/PIOSI/PIOSI/swift/Sources/PIOSI/PIOSIApp.swift","/home/runner/work/PIOSI/PIOSI/swift/Sources/PIOSI/Views/BattleView.swift","/home/runner/work/PIOSI/PIOSI/swift/Sources/PIOSI/Views/ContentView.swift","/home/runner/work/PIOSI/PIOSI/swift/Sources/PIOSI/Views/HeroSelectionView.swift","/home/runner/work/PIOSI/PIOSI/swift/Sources/PIOSI/Views/WorldMapView.swift"]
+    outputs: ["/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSI.build/sources"]
+    description: "Write auxiliary file /home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSI.build/sources"
+
+  "/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageDiscoveredTests.build/PIOSIPackageDiscoveredTests.swiftmodule.o":
+    tool: shell
+    inputs: ["/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/Modules/PIOSIPackageDiscoveredTests.swiftmodule"]
+    outputs: ["/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageDiscoveredTests.build/PIOSIPackageDiscoveredTests.swiftmodule.o"]
+    description: "Wrapping AST for PIOSIPackageDiscoveredTests for debugging"
+    args: ["/usr/share/swift/usr/bin/swiftc","-modulewrap","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/Modules/PIOSIPackageDiscoveredTests.swiftmodule","-o","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageDiscoveredTests.build/PIOSIPackageDiscoveredTests.swiftmodule.o","-target","x86_64-unknown-linux-gnu"]
+
+  "/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageDiscoveredTests.build/sources":
+    tool: write-auxiliary-file
+    inputs: ["<sources-file-list>","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageDiscoveredTests.derived/PIOSITests.swift","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageDiscoveredTests.derived/all-discovered-tests.swift"]
+    outputs: ["/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageDiscoveredTests.build/sources"]
+    description: "Write auxiliary file /home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageDiscoveredTests.build/sources"
+
+  "/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageDiscoveredTests.derived/all-discovered-tests.swift":
+    tool: test-discovery-tool
+    inputs: ["/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSITests.build/PIOSITests.swift.o"]
+    outputs: ["/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageDiscoveredTests.derived/PIOSITests.swift","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageDiscoveredTests.derived/all-discovered-tests.swift"]
+
+  "/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageTests.build/PIOSIPackageTests.swiftmodule.o":
+    tool: shell
+    inputs: ["/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/Modules/PIOSIPackageTests.swiftmodule"]
+    outputs: ["/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageTests.build/PIOSIPackageTests.swiftmodule.o"]
+    description: "Wrapping AST for PIOSIPackageTests for debugging"
+    args: ["/usr/share/swift/usr/bin/swiftc","-modulewrap","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/Modules/PIOSIPackageTests.swiftmodule","-o","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageTests.build/PIOSIPackageTests.swiftmodule.o","-target","x86_64-unknown-linux-gnu"]
+
+  "/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageTests.build/sources":
+    tool: write-auxiliary-file
+    inputs: ["<sources-file-list>","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageTests.derived/runner.swift"]
+    outputs: ["/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageTests.build/sources"]
+    description: "Write auxiliary file /home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageTests.build/sources"
+
+  "/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageTests.derived/runner.swift":
+    tool: test-entry-point-tool
+    inputs: ["/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/Modules/PIOSIPackageDiscoveredTests.swiftmodule"]
+    outputs: ["/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageTests.derived/runner.swift"]
+
+  "/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageTests.product/Objects.LinkFileList":
+    tool: write-auxiliary-file
+    inputs: ["<link-file-list>","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSI.build/BattleEngine.swift.o","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSI.build/BattleView.swift.o","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSI.build/ContentView.swift.o","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSI.build/Enemy.swift.o","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSI.build/Hero.swift.o","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSI.build/HeroSelectionView.swift.o","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSI.build/Level.swift.o","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSI.build/PIOSI.swiftmodule.o","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSI.build/PIOSIApp.swift.o","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSI.build/WorldMapView.swift.o","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageDiscoveredTests.build/PIOSIPackageDiscoveredTests.swiftmodule.o","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageDiscoveredTests.build/PIOSITests.swift.o","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageDiscoveredTests.build/all-discovered-tests.swift.o","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageTests.build/PIOSIPackageTests.swiftmodule.o","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageTests.build/runner.swift.o","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSITests.build/PIOSITests.swift.o","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSITests.build/PIOSITests.swiftmodule.o"]
+    outputs: ["/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageTests.product/Objects.LinkFileList"]
+    description: "Write auxiliary file /home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageTests.product/Objects.LinkFileList"
+
+  "/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSITests.build/PIOSITests.swiftmodule.o":
+    tool: shell
+    inputs: ["/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/Modules/PIOSITests.swiftmodule"]
+    outputs: ["/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSITests.build/PIOSITests.swiftmodule.o"]
+    description: "Wrapping AST for PIOSITests for debugging"
+    args: ["/usr/share/swift/usr/bin/swiftc","-modulewrap","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/Modules/PIOSITests.swiftmodule","-o","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSITests.build/PIOSITests.swiftmodule.o","-target","x86_64-unknown-linux-gnu"]
+
+  "/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSITests.build/sources":
+    tool: write-auxiliary-file
+    inputs: ["<sources-file-list>","/home/runner/work/PIOSI/PIOSI/swift/Tests/PIOSITests/PIOSITests.swift"]
+    outputs: ["/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSITests.build/sources"]
+    description: "Write auxiliary file /home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSITests.build/sources"
+
+  "/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/swift-version--1BFCD5C06E9F820A.txt":
+    tool: write-auxiliary-file
+    inputs: ["<swift-get-version>","/usr/share/swift/usr/bin/swiftc"]
+    outputs: ["/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/swift-version--1BFCD5C06E9F820A.txt"]
+    always-out-of-date: "true"
+    description: "Write auxiliary file /home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/swift-version--1BFCD5C06E9F820A.txt"
+
+  "<PIOSI-x86_64-unknown-linux-gnu-debug.module>":
+    tool: phony
+    inputs: ["/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSI.build/BattleEngine.swift.o","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSI.build/Enemy.swift.o","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSI.build/Hero.swift.o","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSI.build/Level.swift.o","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSI.build/PIOSIApp.swift.o","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSI.build/BattleView.swift.o","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSI.build/ContentView.swift.o","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSI.build/HeroSelectionView.swift.o","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSI.build/WorldMapView.swift.o","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/Modules/PIOSI.swiftmodule"]
+    outputs: ["<PIOSI-x86_64-unknown-linux-gnu-debug.module>"]
+
+  "<PIOSIPackageDiscoveredTests-x86_64-unknown-linux-gnu-debug.module>":
+    tool: phony
+    inputs: ["/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageDiscoveredTests.build/PIOSITests.swift.o","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageDiscoveredTests.build/all-discovered-tests.swift.o","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/Modules/PIOSIPackageDiscoveredTests.swiftmodule"]
+    outputs: ["<PIOSIPackageDiscoveredTests-x86_64-unknown-linux-gnu-debug.module>"]
+
+  "<PIOSIPackageTests-x86_64-unknown-linux-gnu-debug.module>":
+    tool: phony
+    inputs: ["/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageTests.build/runner.swift.o","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/Modules/PIOSIPackageTests.swiftmodule"]
+    outputs: ["<PIOSIPackageTests-x86_64-unknown-linux-gnu-debug.module>"]
+
+  "<PIOSIPackageTests-x86_64-unknown-linux-gnu-debug.test>":
+    tool: phony
+    inputs: ["/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageTests.xctest"]
+    outputs: ["<PIOSIPackageTests-x86_64-unknown-linux-gnu-debug.test>"]
+
+  "<PIOSITests-x86_64-unknown-linux-gnu-debug.module>":
+    tool: phony
+    inputs: ["/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSITests.build/PIOSITests.swift.o","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/Modules/PIOSITests.swiftmodule"]
+    outputs: ["<PIOSITests-x86_64-unknown-linux-gnu-debug.module>"]
+
+  "C.PIOSI-x86_64-unknown-linux-gnu-debug.module":
+    tool: shell
+    inputs: ["/home/runner/work/PIOSI/PIOSI/swift/Sources/PIOSI/Models/BattleEngine.swift","/home/runner/work/PIOSI/PIOSI/swift/Sources/PIOSI/Models/Enemy.swift","/home/runner/work/PIOSI/PIOSI/swift/Sources/PIOSI/Models/Hero.swift","/home/runner/work/PIOSI/PIOSI/swift/Sources/PIOSI/Models/Level.swift","/home/runner/work/PIOSI/PIOSI/swift/Sources/PIOSI/PIOSIApp.swift","/home/runner/work/PIOSI/PIOSI/swift/Sources/PIOSI/Views/BattleView.swift","/home/runner/work/PIOSI/PIOSI/swift/Sources/PIOSI/Views/ContentView.swift","/home/runner/work/PIOSI/PIOSI/swift/Sources/PIOSI/Views/HeroSelectionView.swift","/home/runner/work/PIOSI/PIOSI/swift/Sources/PIOSI/Views/WorldMapView.swift","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/swift-version--1BFCD5C06E9F820A.txt","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSI.build/sources"]
+    outputs: ["/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSI.build/BattleEngine.swift.o","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSI.build/Enemy.swift.o","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSI.build/Hero.swift.o","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSI.build/Level.swift.o","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSI.build/PIOSIApp.swift.o","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSI.build/BattleView.swift.o","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSI.build/ContentView.swift.o","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSI.build/HeroSelectionView.swift.o","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSI.build/WorldMapView.swift.o","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/Modules/PIOSI.swiftmodule"]
+    description: "Compiling Swift Module 'PIOSI' (9 sources)"
+    args: ["/usr/share/swift/usr/bin/swiftc","-module-name","PIOSI","-emit-dependencies","-emit-module","-emit-module-path","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/Modules/PIOSI.swiftmodule","-output-file-map","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSI.build/output-file-map.json","-parse-as-library","-incremental","-c","@/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSI.build/sources","-I","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/Modules","-target","x86_64-unknown-linux-gnu","-incremental","-enable-batch-mode","-serialize-diagnostics","-index-store-path","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/index/store","-Onone","-enable-testing","-j4","-DSWIFT_PACKAGE","-DDEBUG","-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE","-module-cache-path","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/ModuleCache","-parseable-output","-parse-as-library","-emit-objc-header","-emit-objc-header-path","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSI.build/include/PIOSI-Swift.h","-color-diagnostics","-swift-version","5","-g","-Xcc","-fPIC","-Xcc","-g","-package-name","swift","-Xcc","-fno-omit-frame-pointer"]
+
+  "C.PIOSIPackageDiscoveredTests-x86_64-unknown-linux-gnu-debug.module":
+    tool: shell
+    inputs: ["/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageDiscoveredTests.derived/PIOSITests.swift","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageDiscoveredTests.derived/all-discovered-tests.swift","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/swift-version--1BFCD5C06E9F820A.txt","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/Modules/PIOSITests.swiftmodule","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageDiscoveredTests.build/sources"]
+    outputs: ["/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageDiscoveredTests.build/PIOSITests.swift.o","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageDiscoveredTests.build/all-discovered-tests.swift.o","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/Modules/PIOSIPackageDiscoveredTests.swiftmodule"]
+    description: "Compiling Swift Module 'PIOSIPackageDiscoveredTests' (2 sources)"
+    args: ["/usr/share/swift/usr/bin/swiftc","-module-name","PIOSIPackageDiscoveredTests","-emit-dependencies","-emit-module","-emit-module-path","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/Modules/PIOSIPackageDiscoveredTests.swiftmodule","-output-file-map","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageDiscoveredTests.build/output-file-map.json","-parse-as-library","-incremental","-c","@/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageDiscoveredTests.build/sources","-I","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/Modules","-target","x86_64-unknown-linux-gnu","-incremental","-enable-batch-mode","-serialize-diagnostics","-index-store-path","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/index/store","-Onone","-enable-testing","-Xfrontend","-enable-cross-import-overlays","-j4","-DSWIFT_PACKAGE","-DDEBUG","-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE","-module-cache-path","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/ModuleCache","-parseable-output","-parse-as-library","-emit-objc-header","-emit-objc-header-path","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageDiscoveredTests.build/include/PIOSIPackageDiscoveredTests-Swift.h","-color-diagnostics","-g","-Xcc","-fPIC","-Xcc","-g","-package-name","swift","-Xcc","-fno-omit-frame-pointer"]
+
+  "C.PIOSIPackageTests-x86_64-unknown-linux-gnu-debug.module":
+    tool: shell
+    inputs: ["/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageTests.derived/runner.swift","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/swift-version--1BFCD5C06E9F820A.txt","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/Modules/PIOSITests.swiftmodule","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/Modules/PIOSIPackageDiscoveredTests.swiftmodule","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageTests.build/sources"]
+    outputs: ["/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageTests.build/runner.swift.o","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/Modules/PIOSIPackageTests.swiftmodule"]
+    description: "Compiling Swift Module 'PIOSIPackageTests' (1 sources)"
+    args: ["/usr/share/swift/usr/bin/swiftc","-module-name","PIOSIPackageTests","-emit-dependencies","-emit-module","-emit-module-path","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/Modules/PIOSIPackageTests.swiftmodule","-output-file-map","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageTests.build/output-file-map.json","-parse-as-library","-incremental","-c","@/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageTests.build/sources","-I","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/Modules","-target","x86_64-unknown-linux-gnu","-incremental","-enable-batch-mode","-serialize-diagnostics","-index-store-path","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/index/store","-Onone","-enable-testing","-Xfrontend","-enable-cross-import-overlays","-j4","-DSWIFT_PACKAGE","-DDEBUG","-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE","-module-cache-path","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/ModuleCache","-parseable-output","-parse-as-library","-emit-objc-header","-emit-objc-header-path","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageTests.build/include/PIOSIPackageTests-Swift.h","-color-diagnostics","-g","-Xcc","-fPIC","-Xcc","-g","-package-name","swift","-Xcc","-fno-omit-frame-pointer"]
+
+  "C.PIOSIPackageTests-x86_64-unknown-linux-gnu-debug.test":
+    tool: shell
+    inputs: ["/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSI.build/BattleEngine.swift.o","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSI.build/BattleView.swift.o","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSI.build/ContentView.swift.o","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSI.build/Enemy.swift.o","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSI.build/Hero.swift.o","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSI.build/HeroSelectionView.swift.o","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSI.build/Level.swift.o","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSI.build/PIOSI.swiftmodule.o","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSI.build/PIOSIApp.swift.o","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSI.build/WorldMapView.swift.o","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageDiscoveredTests.build/PIOSIPackageDiscoveredTests.swiftmodule.o","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageDiscoveredTests.build/PIOSITests.swift.o","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageDiscoveredTests.build/all-discovered-tests.swift.o","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageTests.build/PIOSIPackageTests.swiftmodule.o","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageTests.build/runner.swift.o","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSITests.build/PIOSITests.swift.o","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSITests.build/PIOSITests.swiftmodule.o","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageTests.product/Objects.LinkFileList"]
+    outputs: ["/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageTests.xctest"]
+    description: "Linking ./.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageTests.xctest"
+    args: ["/usr/share/swift/usr/bin/swiftc","-L","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug","-o","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageTests.xctest","-module-name","PIOSIPackageTests","-emit-executable","-Xlinker","-rpath=$ORIGIN","@/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageTests.product/Objects.LinkFileList","-target","x86_64-unknown-linux-gnu","-g"]
+
+  "C.PIOSITests-x86_64-unknown-linux-gnu-debug.module":
+    tool: shell
+    inputs: ["/home/runner/work/PIOSI/PIOSI/swift/Tests/PIOSITests/PIOSITests.swift","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/swift-version--1BFCD5C06E9F820A.txt","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/Modules/PIOSI.swiftmodule","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSITests.build/sources"]
+    outputs: ["/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSITests.build/PIOSITests.swift.o","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/Modules/PIOSITests.swiftmodule"]
+    description: "Compiling Swift Module 'PIOSITests' (1 sources)"
+    args: ["/usr/share/swift/usr/bin/swiftc","-module-name","PIOSITests","-emit-dependencies","-emit-module","-emit-module-path","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/Modules/PIOSITests.swiftmodule","-output-file-map","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSITests.build/output-file-map.json","-parse-as-library","-incremental","-c","@/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSITests.build/sources","-I","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/Modules","-target","x86_64-unknown-linux-gnu","-incremental","-enable-batch-mode","-serialize-diagnostics","-index-store-path","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/index/store","-Onone","-enable-testing","-Xfrontend","-enable-cross-import-overlays","-j4","-DSWIFT_PACKAGE","-DDEBUG","-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE","-module-cache-path","/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/ModuleCache","-parseable-output","-parse-as-library","-color-diagnostics","-swift-version","5","-g","-Xcc","-fPIC","-Xcc","-g","-package-name","swift","-Xcc","-fno-omit-frame-pointer"]
+
+  "PackageStructure":
+    tool: package-structure-tool
+    inputs: ["/home/runner/work/PIOSI/PIOSI/swift/Sources/PIOSI/","/home/runner/work/PIOSI/PIOSI/swift/Tests/PIOSITests/","/home/runner/work/PIOSI/PIOSI/swift/Package.swift","/home/runner/work/PIOSI/PIOSI/swift/Package.resolved"]
+    outputs: ["<PackageStructure>"]
+    description: "Planning build"
+    allow-missing-inputs: true
+

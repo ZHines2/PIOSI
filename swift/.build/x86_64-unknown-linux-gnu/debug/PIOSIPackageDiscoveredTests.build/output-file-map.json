@@ -1,0 +1,19 @@
+{
+  "": {
+    "swift-dependencies": "/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageDiscoveredTests.build/master.swiftdeps"
+  },
+  "/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageDiscoveredTests.derived/PIOSITests.swift": {
+    "dependencies": "/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageDiscoveredTests.build/PIOSITests.d",
+    "object": "/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageDiscoveredTests.build/PIOSITests.swift.o",
+    "swiftmodule": "/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageDiscoveredTests.build/PIOSITests~partial.swiftmodule",
+    "swift-dependencies": "/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageDiscoveredTests.build/PIOSITests.swiftdeps",
+    "diagnostics": "/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageDiscoveredTests.build/PIOSITests.dia"
+  },
+  "/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageDiscoveredTests.derived/all-discovered-tests.swift": {
+    "dependencies": "/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageDiscoveredTests.build/all-discovered-tests.d",
+    "object": "/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageDiscoveredTests.build/all-discovered-tests.swift.o",
+    "swiftmodule": "/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageDiscoveredTests.build/all-discovered-tests~partial.swiftmodule",
+    "swift-dependencies": "/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageDiscoveredTests.build/all-discovered-tests.swiftdeps",
+    "diagnostics": "/home/runner/work/PIOSI/PIOSI/swift/.build/x86_64-unknown-linux-gnu/debug/PIOSIPackageDiscoveredTests.build/all-discovered-tests.dia"
+  }
+}
