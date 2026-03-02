@@ -155,14 +155,14 @@
       const SELECTABLE_NAMES = ["Knight", "Archer", "Rogue"];
       const selectableHeroes = allHeroes.filter(h => SELECTABLE_NAMES.includes(h.name));
 
-      // ─── HOW TO ADD A NEW STAT ────────────────────────────────────────────────
+      // ─── HOW TO ADD A NEW STAT ─────────────────────────────────────────────────
       // 1. heroes.js   – add the stat property to any hero object(s) that have it.
       // 2. STAT_LABELS (below) – add one entry: statKey: "Display Label".
       //    getCompleteStats() is derived from these keys, so no further changes
       //    are needed in index.html.
       // 3. modeup.js   – add a buff entry in getModeUpBuff() if the stat should
       //    increase on mode-up, and a messageParts push in applyModeUp().
-      // ─────────────────────────────────────────────────────────────────────────
+      // ───────────────────────────────────────────────────────────────────────────
 
       // Single source of truth for all numeric stats.
       // renderNonZeroStats() only displays stats whose current value is > 0.
