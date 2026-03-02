@@ -12,6 +12,7 @@
  */
 
 import { applyKnockback } from './applyKnockback.js';
+import { applySlujEffect } from './sluj.js';
 
 // Class to represent a persistent death effect.
 export class PersistentDeath {
@@ -23,7 +24,7 @@ export class PersistentDeath {
 export class BattleEngine {
   constructor(party, enemies, fieldRows, fieldCols, wallHP, logCallback, onLevelComplete, onGameOver) {
     // Keep all heroes in the party array.
-    // NOTE: Heroes with persistent death will not be respawned unless they have a "rise" stat.
+    // NOTE: Heroes with persistent death will no longer be referenced in the battlefield.
     this.party = party;
     this.enemies = enemies;
     this.rows = fieldRows;
@@ -33,9 +34,19 @@ export class BattleEngine {
     this.onLevelComplete = onLevelComplete;
     this.onGameOver = onGameOver;
 
+    // Advance past any heroes that are already persistently dead at battle start.
     this.currentUnit = 0;
-    // Only live heroes get move points.
-    this.movePoints = this.getLiveHeroes().length ? this.getLiveHeroes()[0].agility : 0;
+    while (this.currentUnit < this.party.length && this.party[this.currentUnit].persistentDeath) {
+      this.currentUnit++;
+    }
+    if (this.currentUnit >= this.party.length) {
+      // All heroes are persistently dead — trigger game over after construction.
+      this.currentUnit = 0;
+      this.movePoints = 0;
+      setTimeout(() => { if (typeof this.onGameOver === 'function') this.onGameOver(); }, 0);
+    } else {
+      this.movePoints = this.party[this.currentUnit].agility;
+    }
     this.awaitingAttackDirection = false;
     this.transitioningLevel = false;
 
@@ -46,7 +57,7 @@ export class BattleEngine {
       if (!hero.persistentDeath) hero.persistentDeath = null;
       // Initialize rise stat if not set.
       if (typeof hero.rise !== 'number') hero.rise = 0;
-       // Initialize dodge stat if not set.
+      // Initialize dodge stat if not set.
       if (typeof hero.dodge !== 'number') hero.dodge = 0;
     });
     this.enemies.forEach(enemy => {
@@ -107,7 +118,9 @@ export class BattleEngine {
 
   placeHeroes(field) {
     // Only place live heroes.
-    this.getLiveHeroes().forEach(hero => {
+    // Use the party order so that currentUnit pointer correctly corresponds to the hero's position on the field.
+    this.party.forEach(hero => {
+      if (hero.persistentDeath) return;
       let placed = false;
       for (let y = 0; y < this.rows && !placed; y++) {
         for (let x = 0; x < this.cols && !placed; x++) {
@@ -139,8 +152,9 @@ export class BattleEngine {
   placeHealingItem(field) {
     let emptyCells = [];
     for (let y = 0; y < this.rows - 1; y++) {
-      for (let x = 0; x < this.cols; x++)
+      for (let x = 0; x < this.cols; x++) {
         if (field[y][x] === '.') emptyCells.push({ x, y });
+      }
     }
     if (emptyCells.length) {
       const cell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
@@ -151,8 +165,9 @@ export class BattleEngine {
   placeMushroom(field) {
     let emptyCells = [];
     for (let y = 0; y < this.rows - 1; y++) {
-      for (let x = 0; x < this.cols; x++)
+      for (let x = 0; x < this.cols; x++) {
         if (field[y][x] === '.') emptyCells.push({ x, y });
+      }
     }
     if (emptyCells.length) {
       const cell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
@@ -169,10 +184,11 @@ export class BattleEngine {
         let cellClass = '';
         if (cellContent === 'ౚ' || cellContent === 'ඉ') cellClass += ' healing-item';
         if (this.enemies.some(enemy => enemy.symbol === cellContent)) cellClass += ' enemy';
-        if (this.getLiveHeroes()[this.currentUnit] &&
-            this.getLiveHeroes()[this.currentUnit].x === x &&
-            this.getLiveHeroes()[this.currentUnit].y === y)
+        // Use the active hero from the party (if not dead) for highlighting.
+        const activeHero = this.party[this.currentUnit] && !this.party[this.currentUnit].persistentDeath ? this.party[this.currentUnit] : null;
+        if (activeHero && activeHero.x === x && activeHero.y === y) {
           cellClass += this.awaitingAttackDirection ? ' attack-mode' : ' active';
+        }
         html += `<div class="cell${cellClass}">${cellContent}</div>`;
       }
       html += '</div>';
@@ -194,7 +210,9 @@ export class BattleEngine {
 
   moveUnit(dx, dy) {
     if (this.awaitingAttackDirection || this.movePoints <= 0 || this.transitioningLevel) return;
-    const unit = this.getLiveHeroes()[this.currentUnit];
+    // Always refer to the active hero directly from party.
+    const unit = this.party[this.currentUnit];
+    if (!unit || unit.persistentDeath) return;
     if (unit.hp <= 0) {
       this.logCallback(`${unit.name} is dead and cannot move.`);
       return;
@@ -249,7 +267,8 @@ export class BattleEngine {
     for (let i = 1; i <= unit.range; i++) {
       const targetX = unit.x + dx * i, targetY = unit.y + dy * i;
       if (!this.isWithinBounds(targetX, targetY)) break;
-      const ally = this.party.find(h => h.x === targetX && h.y === targetY && h !== unit);
+      // Use only live heroes for targeting; dead heroes never register.
+      const ally = this.getLiveHeroes().find(h => h.x === targetX && h.y === targetY && h !== unit);
       if (ally) {
         if (unit.heal && unit.heal > 0) {
           ally.hp += unit.heal;
@@ -262,6 +281,15 @@ export class BattleEngine {
         } else {
           this.logCallback(`${unit.name} attacks ${ally.name} but nothing happens.`);
         }
+        this.awaitingAttackDirection = false;
+        await this.shortPause();
+        this.nextTurn();
+        return;
+      }
+      // If a hero is found at the targeted cell but is dead, treat it as an empty cell.
+      const deadHero = this.party.find(h => h.x === targetX && h.y === targetY && h.persistentDeath);
+      if (deadHero) {
+        this.logCallback(`${unit.name} attacks an empty cell where ${deadHero.name} once stood.`);
         this.awaitingAttackDirection = false;
         await this.shortPause();
         this.nextTurn();
@@ -315,17 +343,24 @@ export class BattleEngine {
             this.applyChainDamage(enemy, initialChainDamage, effectiveMultiplier, new Set());
           }
         }
+        // Check for adjacent heroes with a non-zero "bomba" stat
+        const adjacentOffsets = [
+          { x: -1, y: 0 }, { x: 1, y: 0 },
+          { x: 0, y: -1 }, { x: 0, y: 1 }
+        ];
+        adjacentOffsets.forEach(offset => {
+          const adjX = enemy.x + offset.x, adjY = enemy.y + offset.y;
+          const adjacentHero = this.getLiveHeroes().find(h => h.x === adjX && h.y === adjY && h.bomba && h.bomba > 0);
+          if (adjacentHero) {
+            enemy.hp -= adjacentHero.bomba;
+            this.logCallback(`${adjacentHero.name}'s bomba deals ${adjacentHero.bomba} additional damage to ${enemy.name}! (HP left: ${enemy.hp})`);
+          }
+        });
+        // Check for enemy defeat
         if (enemy.hp <= 0) {
           this.logCallback(`${enemy.name} is defeated!`);
-          this.battlefield[targetY][targetX] = '.';
+          this.battlefield[enemy.y][enemy.x] = '.';
           this.enemies = this.enemies.filter(e => e !== enemy);
-          // Bulk stat check: Raise a random stat when an enemy is defeated
-          if (unit.bulk && unit.bulk > 0) {
-            const stats = ['attack', 'range', 'agility', 'hp'];
-            const randomStat = stats[Math.floor(Math.random() * stats.length)];
-            unit[randomStat] += unit.bulk;
-            this.logCallback(`${unit.name}'s bulk raises their ${randomStat} by ${unit.bulk}! (New ${randomStat}: ${unit[randomStat]})`);
-          }
         }
         this.awaitingAttackDirection = false;
         await this.shortPause();
@@ -385,6 +420,20 @@ export class BattleEngine {
     this.enemies.forEach(enemy => {
       for (let moves = 0; moves < enemy.agility; moves++) this.moveEnemy(enemy);
       this.enemyAttackAdjacent(enemy);
+      
+      // Apply the slüj effect for each enemy.
+      if (enemy.statusEffects.sluj) {
+        applySlujEffect(enemy, this.logCallback);
+      }
+      
+      // Kill logic for enemies affected by slüj damage.
+      if (enemy.hp <= 0 && enemy.statusEffects.sluj && enemy.statusEffects.sluj.level > 0) {
+        this.logCallback(`${enemy.name} is defeated by its slüj effect!`);
+        this.battlefield[enemy.y][enemy.x] = '.';
+        this.enemies = this.enemies.filter(e => e !== enemy);
+        return;
+      }
+      
       if (Array.isArray(enemy.dialogue) && enemy.dialogue.length > 0) {
         this.logCallback(`${enemy.name} says: "${enemy.dialogue[Math.floor(Math.random() * enemy.dialogue.length)]}"`);
       }
@@ -435,16 +484,17 @@ export class BattleEngine {
   
   enemyAttackAdjacent(enemy) {
     const directions = [[0, -1], [0, 1], [-1, 0], [1, 0]];
+    // Use only live heroes when determining targets.
     directions.forEach(([dx, dy]) => {
       const tx = enemy.x + dx, ty = enemy.y + dy;
-      const targetHero = this.party.find(hero => hero.x === tx && hero.y === ty);
+      const targetHero = this.getLiveHeroes().find(hero => hero.x === tx && hero.y === ty);
       if (targetHero) {
          // DODGE CHECK START
-        let dodgeChance = targetHero.dodge / (100 + targetHero.dodge); // Diminishing returns
-        dodgeChance = Math.min(dodgeChance, 0.5); // Cap dodge chance at 50%
+        let dodgeChance = targetHero.dodge / (100 + targetHero.dodge);
+        dodgeChance = Math.min(dodgeChance, 0.5);
         if (Math.random() < dodgeChance) {
           this.logCallback(`${targetHero.name} dodges ${enemy.name}'s attack!`);
-          return; // Skip the rest of the attack logic
+          return;
         }
         // DODGE CHECK END
         if (targetHero.armor && targetHero.armor > 0) {
@@ -519,28 +569,7 @@ export class BattleEngine {
           this.enemies = this.enemies.filter(e => e !== enemy);
         }
       }
-      if (enemy.statusEffects.sluj && enemy.statusEffects.sluj.duration > 0) {
-        enemy.statusEffects.sluj.counter++;
-        let damage = 0, trigger = false;
-        const level = enemy.statusEffects.sluj.level;
-        if (level === 1 && enemy.statusEffects.sluj.counter % 4 === 0) { trigger = true; damage = 1; }
-        else if (level === 2 && enemy.statusEffects.sluj.counter % 3 === 0) { trigger = true; damage = 1; }
-        else if (level === 3 && enemy.statusEffects.sluj.counter % 2 === 0) { trigger = true; damage = 1; }
-        else if (level === 4) { trigger = true; damage = 1; }
-        else if (level === 5) { trigger = true; damage = 2; }
-        else if (level >= 6) { trigger = true; damage = 3; }
-        if (trigger) {
-          this.logCallback(`${enemy.name} takes ${damage} slüj damage!`);
-          enemy.hp -= damage;
-        }
-        enemy.statusEffects.sluj.duration--;
-        if (enemy.hp <= 0) {
-          this.logCallback(`${enemy.name} died from slüj damage!`);
-          this.battlefield[enemy.y][enemy.x] = '.';
-          // Remove enemy from list so they don't reappear next turn with negative HP.
-          this.enemies = this.enemies.filter(e => e !== enemy);
-        }
-      }
+      // The slüj effect is handled via the imported applySlujEffect() in enemyTurn().
     });
   }
 
@@ -572,9 +601,7 @@ export class BattleEngine {
     });
   }
 
-  // NEW: Handle hero death with consideration for the "rise" stat.
-  // If a hero has a nonzero rise stat, they are resurrected on the next level with HP equal to the rise value,
-  // the rise stat is reset to zero, and ankh boosts are applied to all live heroes.
+  // Updated handleHeroDeath method to ensure a dead hero's cell is cleared.
   handleHeroDeath(hero) {
     if (hero.rise > 0) {
       this.logCallback(`Hero ${hero.name} falls but rises with ${hero.rise} HP!`);
@@ -587,7 +614,10 @@ export class BattleEngine {
     this.logCallback(`Hero ${hero.name} has fallen permanently. Applying persistent death and ankh effects...`);
     hero.statusEffects.death = true;
     hero.persistentDeath = new PersistentDeath();
+    // Clear the cell so the dead hero is no longer represented on the battlefield.
     this.battlefield[hero.y][hero.x] = '.';
+    // Optionally, remove the hero from future selections.
+    // this.party = this.party.filter(h => h !== hero);
     this.applyAnkhBoost();
   }
 
@@ -601,6 +631,93 @@ export class BattleEngine {
         this.logCallback(`${h.name} gains an ankh boost of ${h.ankh} ${randomStat} (Now: ${h[randomStat]}).`);
       }
     });
+  }
+
+  /**
+   * Draw the battlefield in an isometric perspective onto a provided canvas element.
+   * Tiles are rendered as diamonds arranged on an isometric grid.
+   * @param {HTMLCanvasElement} canvas - The canvas element to draw on.
+   */
+  drawIsometricBattlefield(canvas) {
+    const tileW = 48;
+    const tileH = 24;
+    const padding = 30;
+
+    // Size canvas to fit the full isometric grid only if dimensions changed.
+    const neededWidth = (this.cols + this.rows) * tileW / 2 + padding * 2;
+    const neededHeight = (this.cols + this.rows) * tileH / 2 + padding * 2;
+    if (canvas.width !== neededWidth || canvas.height !== neededHeight) {
+      canvas.width = neededWidth;
+      canvas.height = neededHeight;
+    }
+
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#222';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Horizontal offset places row-0 col-0 at the left edge; row origin shifts right by rows*tileW/2.
+    const offsetX = padding + this.rows * tileW / 2;
+    const offsetY = padding;
+
+    const activeHero = this.party[this.currentUnit] && !this.party[this.currentUnit].persistentDeath
+      ? this.party[this.currentUnit] : null;
+
+    for (let row = 0; row < this.rows; row++) {
+      for (let col = 0; col < this.cols; col++) {
+        const cellContent = this.battlefield[row][col];
+
+        // Isometric projection: convert (col, row) grid coords to screen (x, y).
+        const isoX = offsetX + (col - row) * tileW / 2;
+        const isoY = offsetY + (col + row) * tileH / 2;
+
+        // Determine tile fill and text color based on cell content.
+        let fillColor = '#2a2a2a';
+        let strokeColor = '#444';
+        let textColor = '#ccc';
+
+        if (cellContent === 'ᚙ' || cellContent === '█') {
+          fillColor = '#555';
+          strokeColor = '#777';
+        } else if (cellContent === 'ౚ' || cellContent === 'ඉ') {
+          fillColor = '#4a3a00';
+          textColor = 'tan';
+        } else if (activeHero && activeHero.x === col && activeHero.y === row) {
+          fillColor = this.awaitingAttackDirection ? '#6a0000' : '#00215a';
+          strokeColor = this.awaitingAttackDirection ? '#ff4444' : '#4488ff';
+          textColor = 'white';
+        } else if (this.enemies.some(e => e.x === col && e.y === row)) {
+          fillColor = '#4a1500';
+          strokeColor = '#ff5722';
+          textColor = '#ff5722';
+        } else if (cellContent !== '.') {
+          fillColor = '#0d2a40';
+          textColor = '#7cb8f0';
+        }
+
+        // Draw the diamond tile.
+        ctx.beginPath();
+        ctx.moveTo(isoX,              isoY);
+        ctx.lineTo(isoX + tileW / 2,  isoY + tileH / 2);
+        ctx.lineTo(isoX,              isoY + tileH);
+        ctx.lineTo(isoX - tileW / 2,  isoY + tileH / 2);
+        ctx.closePath();
+        ctx.fillStyle = fillColor;
+        ctx.fill();
+        ctx.strokeStyle = strokeColor;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        // Draw cell symbol centered on the tile.
+        if (cellContent !== '.') {
+          ctx.fillStyle = textColor;
+          ctx.font = '13px monospace';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(cellContent, isoX, isoY + tileH / 2);
+        }
+      }
+    }
   }
 
   shortPause() {
