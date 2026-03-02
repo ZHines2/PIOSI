@@ -281,7 +281,7 @@ export const heroes = [
     range: 1,
     agility: 6,
     hp: 20,
-    bomba: 5 // bomba stat, that does bonus damages to adjacent enemies that are attacked by another hero
+    bomba: 5 // bomba stat, that does bonus damage to adjacent enemies that are attacked by another hero
   }
 ];
 /**

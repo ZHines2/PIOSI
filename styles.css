@@ -474,3 +474,27 @@ button:active {
   background: rgba(220, 60, 60, 0.5);
 }
 
+/* Summit Mode hero info panel */
+#summit-hero-info {
+  background-color: #fff;
+  border: 1px solid #ccc;
+  padding: 8px;
+  margin: 10px 0;
+  max-height: 150px;
+  overflow-y: auto;
+  width: 800px;
+  font-size: 14px;
+}
+
+/* Summit Mode log panel */
+#summit-log {
+  background-color: #fff;
+  border: 1px solid #ccc;
+  padding: 8px;
+  margin: 10px 0;
+  max-height: 120px;
+  overflow-y: auto;
+  width: 800px;
+  font-size: 13px;
+}
+

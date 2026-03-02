@@ -117,8 +117,8 @@ export class BattleEngine {
   }
 
   placeHeroes(field) {
-    // Only place live heroes.
-    // Use the party order so that currentUnit pointer correctly corresponds to the hero's position on the field.
+    // Place heroes from party in order, skipping those that have persistently died.
+    // Using party order ensures the currentUnit pointer correctly corresponds to each hero's position on the field.
     this.party.forEach(hero => {
       if (hero.persistentDeath) return;
       let placed = false;
