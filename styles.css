@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Sono:wght@200&display=swap');
+
 /* Global Styles */
 /* Set the base font size for the html element */
 html {
@@ -26,6 +28,10 @@ body {
 #mode-up-window {
   display: none; /* Hide screens by default */
   padding: 20px; /* Padding around content for spacing */
+}
+
+#game-container {
+  position: relative;
 }
 
 /* Title Screen Styles */
@@ -97,6 +103,7 @@ body {
   border: 2px solid white; /* White border around the battlefield */
   padding: 10px; /* Padding inside the battlefield */
   margin-bottom: 10px; /* Margin below the battlefield for spacing */
+  box-shadow: 0 0 24px rgba(255, 255, 255, 0.1);
 }
 
 /* Flex container for rows in the battlefield */
@@ -121,18 +128,21 @@ body {
 .active {
   background-color: darkblue; /* Dark blue background for active cells */
   color: white; /* White text when active */
+  animation: active-pulse 1.2s ease-in-out infinite;
 }
 
 /* Attack mode cell state styles */
 .attack-mode {
   background-color: darkred; /* Dark red background for attack mode */
   color: white; /* White text color */
+  animation: attack-pulse 0.75s ease-in-out infinite;
 }
 
 /* Healing Item Styling */
 /* Mark healing items with a distinctive tan color */
 .healing-item {
   color: tan;
+  text-shadow: 0 0 6px rgba(210, 180, 140, 0.8);
 }
 
 /* Enemy cell style */
@@ -140,6 +150,7 @@ body {
 .enemy {
   color: #ff5722; /* Bright orange color for enemy text */
   font-weight: bold; /* Bold text for emphasis */
+  text-shadow: 0 0 6px rgba(255, 87, 34, 0.7);
 }
 
 /* Non-violent cell style */
@@ -160,6 +171,22 @@ button {
   padding: 10px;
   margin: 5px;
   font-size: 18px;
+  cursor: pointer;
+  background-color: #333;
+  color: white;
+  border: 1px solid #555;
+  border-radius: 4px;
+  transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+}
+
+button:hover {
+  background-color: #444;
+  box-shadow: 0 0 8px 2px rgba(255, 255, 255, 0.2);
+}
+
+button:active {
+  transform: scale(0.96);
+  background-color: #555;
 }
 
 /* Overlays */
@@ -224,6 +251,18 @@ button {
   max-width: 90%; /* Ensure it doesn't overflow on smaller screens */
 }
 
+/* Two-column stats layout for mode up window */
+#stats-container {
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.stat-column {
+  flex: 1;
+  min-width: 50%;
+}
+
 /* Instructions text for mode up window - Adjusted Margin and Font Size */
 #mode-up-instructions {
   margin-top: 5px; /* Reduce top margin */
@@ -278,3 +317,184 @@ button {
     font-size: 0.9em; /* Further reduction for very small screens */
   }
 }
+
+/* ======================================================
+   AESTHETIC UPGRADES — purely visual, no logic changes
+   ====================================================== */
+
+/* Keyframes for pulsing glow on the active hero cell */
+@keyframes active-pulse {
+  0%, 100% { box-shadow: 0 0 4px 2px rgba(40, 80, 255, 0.5); }
+  50%       { box-shadow: 0 0 12px 5px rgba(60, 120, 255, 0.9); }
+}
+
+/* Keyframes for pulsing glow on the attack-mode cell */
+@keyframes attack-pulse {
+  0%, 100% { box-shadow: 0 0 4px 2px rgba(200, 0, 0, 0.5); }
+  50%       { box-shadow: 0 0 14px 6px rgba(255, 40, 40, 1); }
+}
+
+/* "PRESS SPACE" text on title screen — gentle fade in/out */
+#title-screen > p {
+  animation: press-space-fade 1.8s ease-in-out infinite;
+  letter-spacing: 0.2em;
+  font-size: 1.3rem;
+}
+
+@keyframes press-space-fade {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.25; }
+}
+
+/* Level title — subtle white glow */
+#level-title {
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.35);
+  letter-spacing: 0.04em;
+}
+
+/* Victory screen — golden glow */
+#victory h1 {
+  color: gold;
+  text-shadow: 0 0 12px rgba(255, 215, 0, 0.7), 0 0 28px rgba(255, 215, 0, 0.35);
+}
+
+/* Game over screen — red glow */
+#game-over h1 {
+  color: #ff3333;
+  text-shadow: 0 0 12px rgba(255, 50, 50, 0.8), 0 0 28px rgba(255, 50, 50, 0.4);
+}
+
+/* Mode-up heading — subtle white shimmer */
+#mode-up-window h2 {
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+  letter-spacing: 0.08em;
+}
+
+/* Stat-up highlight — brightened glow */
+.stat-up {
+  text-shadow: 0 0 6px rgba(50, 205, 50, 0.7);
+}
+
+/* Log area — custom scrollbar for webkit browsers */
+#log::-webkit-scrollbar        { width: 6px; }
+#log::-webkit-scrollbar-track  { background: #111; }
+#log::-webkit-scrollbar-thumb  { background: #444; border-radius: 3px; }
+#log::-webkit-scrollbar-thumb:hover { background: #666; }
+
+/* Isometric battlefield canvas */
+#iso-battlefield {
+  display: block;
+  margin: 0 auto 10px;
+  border: 2px solid white;
+  box-shadow: 0 0 24px rgba(255, 255, 255, 0.1);
+}
+
+/* Isometric toggle button — floating cube icon, out of document flow */
+#iso-toggle-btn {
+  position: absolute;
+  top: 18px;
+  right: 20px;
+  font-size: 22px;
+  padding: 2px 5px;
+  margin: 0;
+  line-height: 1;
+  opacity: 0.45;
+  border-color: #444;
+  background-color: transparent;
+}
+
+#iso-toggle-btn:hover {
+  opacity: 1;
+}
+
+/* D-pad toggle button — floating joystick icon, below the iso-toggle */
+#dpad-toggle-btn {
+  position: absolute;
+  top: 54px;
+  right: 20px;
+  font-size: 22px;
+  padding: 2px 5px;
+  margin: 0;
+  line-height: 1;
+  opacity: 0.45;
+  border-color: #444;
+  background-color: transparent;
+}
+
+#dpad-toggle-btn:hover {
+  opacity: 1;
+}
+
+/* D-pad — hidden by default; visible when .dpad-visible is toggled */
+#mobile-dpad {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 200;
+  opacity: 0.82;
+  user-select: none;
+}
+
+#mobile-dpad.dpad-visible {
+  display: flex;
+}
+
+.dpad-row {
+  display: flex;
+  gap: 6px;
+}
+
+.dpad-btn {
+  width: 62px;
+  height: 62px;
+  font-size: 22px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1.5px solid rgba(255, 255, 255, 0.45);
+  border-radius: 10px;
+  color: white;
+  touch-action: manipulation;
+  cursor: pointer;
+}
+
+.dpad-btn:active {
+  background: rgba(255, 255, 255, 0.28);
+}
+
+.dpad-action {
+  background: rgba(200, 40, 40, 0.28);
+  font-size: 26px;
+}
+
+.dpad-action:active {
+  background: rgba(220, 60, 60, 0.5);
+}
+
+/* Summit Mode hero info panel */
+#summit-hero-info {
+  background-color: #fff;
+  border: 1px solid #ccc;
+  padding: 8px;
+  margin: 10px 0;
+  max-height: 150px;
+  overflow-y: auto;
+  width: 800px;
+  font-size: 14px;
+}
+
+/* Summit Mode log panel */
+#summit-log {
+  background-color: #fff;
+  border: 1px solid #ccc;
+  padding: 8px;
+  margin: 10px 0;
+  max-height: 120px;
+  overflow-y: auto;
+  width: 800px;
+  font-size: 13px;
+}
+

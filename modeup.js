@@ -114,6 +114,9 @@ export function getModeUpBuff(chosenHero, level) {
     case "Sysiphuge":
       // Sysiphuge's dodge increases.
       return { dodge: 1 * buffIncrement };
+    case "Bombador":
+      // Bombador's bomba stat increases.
+      return { bomba: 1 * buffIncrement };
     default:
       // Fallback for heroes with no defined buff – boost a generic stat.
       return { ghis: 1 * buffIncrement };
@@ -155,6 +158,8 @@ export function applyModeUp(chosenHero, level, party, logCallback) {
   if (buff.ankh) messageParts.push(`+${buff.ankh} Ankh`);
   if (buff.rise) messageParts.push(`+${buff.rise} Rise`);
   if (buff.dodge) messageParts.push(`+${buff.dodge} Dodge`);
+  if (buff.bomba) messageParts.push(`+${buff.bomba} Bomba`);
+
 
   const message = messageParts.length > 0
     ? `${chosenHero.name} empowers the party with ${messageParts.join(", ")}!`

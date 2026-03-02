@@ -24,6 +24,9 @@ Combat involves moving your heroes on a grid and attacking enemies within range.
 ### Special Abilities and Effects
 Heroes have special abilities that can affect combat in various ways. For example, some heroes can heal others, inflict burn damage, or knock back enemies. These abilities are determined by the hero's stats and can be used strategically to gain an advantage.
 
+### Agility-Based Turn Order
+In the game, the turn order of heroes is determined by their agility stat. Heroes with higher agility take their turns before those with lower agility. If two heroes have the same agility, the turn order can be randomized or based on their initial placement.
+
 ## Heroes
 
 ### List of Available Heroes
@@ -142,6 +145,20 @@ The game consists of multiple levels, each with unique challenges and objectives
 - **Knight and Cleric**: Use the Knight to tank damage and the Cleric to heal.
 - **Archer and Wizard**: Use the Archer's long-range attacks and the Wizard's powerful abilities to deal damage from a distance.
 - **Berserker and Rogue**: Use the Berserker's high attack and the Rogue's agility to quickly defeat enemies.
+
+## Summit Mode
+
+### Overview
+
+Summit Mode is a new game mode where all heroes compete at the same time on a large 50x50 map. The player controls one hero of their choice, while the others are controlled by the computer.
+
+### Rules
+
+- Each hero takes a turn moving on the map, with the turn order determined by their agility stat.
+- Heroes with higher agility take their turns before those with lower agility.
+- If two heroes have the same agility, the turn order can be randomized or based on their initial placement.
+- When the player is defeated by any hero, it is game over.
+- If a computer-controlled hero is defeated, they join the player's team and their turn is controlled by the player.
 
 ## Frequently Asked Questions (FAQ)
 
