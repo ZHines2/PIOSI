@@ -633,6 +633,93 @@ export class BattleEngine {
     });
   }
 
+  /**
+   * Draw the battlefield in an isometric perspective onto a provided canvas element.
+   * Tiles are rendered as diamonds arranged on an isometric grid.
+   * @param {HTMLCanvasElement} canvas - The canvas element to draw on.
+   */
+  drawIsometricBattlefield(canvas) {
+    const tileW = 48;
+    const tileH = 24;
+    const padding = 30;
+
+    // Size canvas to fit the full isometric grid only if dimensions changed.
+    const neededWidth = (this.cols + this.rows) * tileW / 2 + padding * 2;
+    const neededHeight = (this.cols + this.rows) * tileH / 2 + padding * 2;
+    if (canvas.width !== neededWidth || canvas.height !== neededHeight) {
+      canvas.width = neededWidth;
+      canvas.height = neededHeight;
+    }
+
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#222';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Horizontal offset places row-0 col-0 at the left edge; row origin shifts right by rows*tileW/2.
+    const offsetX = padding + this.rows * tileW / 2;
+    const offsetY = padding;
+
+    const activeHero = this.party[this.currentUnit] && !this.party[this.currentUnit].persistentDeath
+      ? this.party[this.currentUnit] : null;
+
+    for (let row = 0; row < this.rows; row++) {
+      for (let col = 0; col < this.cols; col++) {
+        const cellContent = this.battlefield[row][col];
+
+        // Isometric projection: convert (col, row) grid coords to screen (x, y).
+        const isoX = offsetX + (col - row) * tileW / 2;
+        const isoY = offsetY + (col + row) * tileH / 2;
+
+        // Determine tile fill and text color based on cell content.
+        let fillColor = '#2a2a2a';
+        let strokeColor = '#444';
+        let textColor = '#ccc';
+
+        if (cellContent === 'ᚙ' || cellContent === '█') {
+          fillColor = '#555';
+          strokeColor = '#777';
+        } else if (cellContent === 'ౚ' || cellContent === 'ඉ') {
+          fillColor = '#4a3a00';
+          textColor = 'tan';
+        } else if (activeHero && activeHero.x === col && activeHero.y === row) {
+          fillColor = this.awaitingAttackDirection ? '#6a0000' : '#00215a';
+          strokeColor = this.awaitingAttackDirection ? '#ff4444' : '#4488ff';
+          textColor = 'white';
+        } else if (this.enemies.some(e => e.x === col && e.y === row)) {
+          fillColor = '#4a1500';
+          strokeColor = '#ff5722';
+          textColor = '#ff5722';
+        } else if (cellContent !== '.') {
+          fillColor = '#0d2a40';
+          textColor = '#7cb8f0';
+        }
+
+        // Draw the diamond tile.
+        ctx.beginPath();
+        ctx.moveTo(isoX,              isoY);
+        ctx.lineTo(isoX + tileW / 2,  isoY + tileH / 2);
+        ctx.lineTo(isoX,              isoY + tileH);
+        ctx.lineTo(isoX - tileW / 2,  isoY + tileH / 2);
+        ctx.closePath();
+        ctx.fillStyle = fillColor;
+        ctx.fill();
+        ctx.strokeStyle = strokeColor;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        // Draw cell symbol centered on the tile.
+        if (cellContent !== '.') {
+          ctx.fillStyle = textColor;
+          ctx.font = '13px monospace';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(cellContent, isoX, isoY + tileH / 2);
+        }
+      }
+    }
+  }
+
   shortPause() {
     return new Promise(resolve => setTimeout(resolve, 300));
   }

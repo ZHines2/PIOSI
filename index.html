@@ -35,13 +35,26 @@
     <!-- Battle Screen -->
     <div id="game-container">
       <h1 id="level-title">Level Title</h1>
+      <button id="iso-toggle-btn" title="Toggle Isometric View" aria-label="Toggle Isometric View">⬡</button>
+      <button id="dpad-toggle-btn" title="Toggle D-Pad" aria-label="Toggle D-Pad">🕹</button>
       <div id="battlefield"></div>
+      <canvas id="iso-battlefield" style="display:none;"></canvas>
       <p id="status"></p>
       <div id="log"></div>
       <p>
         Use Arrow Keys to Move | Press Spacebar to Attack, then choose attack
         direction.
       </p>
+      <!-- On-screen D-pad for touch/mobile — toggled via #dpad-toggle-btn -->
+      <div id="mobile-dpad" aria-hidden="true">
+        <button class="dpad-btn" data-key="ArrowUp" aria-label="Move Up">▲</button>
+        <div class="dpad-row">
+          <button class="dpad-btn" data-key="ArrowLeft" aria-label="Move Left">◀</button>
+          <button class="dpad-btn dpad-action" data-key="Space" aria-label="Attack">⚔</button>
+          <button class="dpad-btn" data-key="ArrowRight" aria-label="Move Right">▶</button>
+        </div>
+        <button class="dpad-btn" data-key="ArrowDown" aria-label="Move Down">▼</button>
+      </div>
     </div>
 
     <!-- Victory Screen -->
@@ -147,6 +160,7 @@
       let enemies = [];
       let battleEngine = null;
       let cheatActive = false; // Prevent waiting cheat activation
+      let isometricMode = false; // Toggle between grid view and isometric canvas view
 
       // Cheat detection variables
       const cheatSequence = [
@@ -562,8 +576,17 @@
        * Render the battlefield by drawing it from the battle engine.
        */
       function renderBattlefield() {
-        document.getElementById("battlefield").innerHTML =
-          battleEngine.drawBattlefield();
+        const gridDiv = document.getElementById("battlefield");
+        const isoCanvas = document.getElementById("iso-battlefield");
+        if (isometricMode) {
+          gridDiv.style.display = "none";
+          isoCanvas.style.display = "block";
+          battleEngine.drawIsometricBattlefield(isoCanvas);
+        } else {
+          isoCanvas.style.display = "none";
+          gridDiv.style.display = "";
+          gridDiv.innerHTML = battleEngine.drawBattlefield();
+        }
         document.getElementById("status").textContent =
           "Wall HP: " +
           battleEngine.wallHP +
@@ -891,6 +914,8 @@
       // Minimal mobile support: Map a simple touch tap to a key event based on touch location.
       if ("ontouchstart" in window) {
         document.addEventListener("touchend", function (e) {
+          // Let buttons and links handle their own click events on mobile (e.g. iso-toggle-btn).
+          if (e.target.closest("button, a, [role='button']")) return;
           e.preventDefault();
           const touch = e.changedTouches[0];
           const x = touch.clientX;
@@ -924,6 +949,29 @@
       initializeGriot("fantasy_narrative.txt").then(() => {
         showScreen("title");
       });
+
+      // Toggle between grid view and isometric canvas view during battle.
+      document.getElementById("iso-toggle-btn").addEventListener("click", () => {
+        isometricMode = !isometricMode;
+        if (battleEngine) renderBattlefield();
+      });
+
+      // Toggle the on-screen D-pad visibility.
+      document.getElementById("dpad-toggle-btn").addEventListener("click", () => {
+        document.getElementById("mobile-dpad").classList.toggle("dpad-visible");
+      });
+
+      // Wire D-pad buttons: touchstart for immediate response on mobile, click as fallback.
+      document.querySelectorAll(".dpad-btn").forEach((btn) => {
+        const dispatchKey = () => {
+          const keyCode = btn.dataset.key;
+          const keyVal = keyCode === "Space" ? " " : keyCode;
+          document.dispatchEvent(new KeyboardEvent("keydown", { code: keyCode, key: keyVal, bubbles: true, cancelable: true }));
+        };
+        btn.addEventListener("touchstart", (e) => { e.preventDefault(); dispatchKey(); });
+        btn.addEventListener("click", dispatchKey);
+      });
+
     </script>
   </body>
 </html>

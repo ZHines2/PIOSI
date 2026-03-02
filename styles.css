@@ -30,6 +30,10 @@ body {
   padding: 20px; /* Padding around content for spacing */
 }
 
+#game-container {
+  position: relative;
+}
+
 /* Title Screen Styles */
 /* Styles for the title screen which covers the full viewport */
 #title-screen {
@@ -376,3 +380,97 @@ button:active {
 #log::-webkit-scrollbar-track  { background: #111; }
 #log::-webkit-scrollbar-thumb  { background: #444; border-radius: 3px; }
 #log::-webkit-scrollbar-thumb:hover { background: #666; }
+
+/* Isometric battlefield canvas */
+#iso-battlefield {
+  display: block;
+  margin: 0 auto 10px;
+  border: 2px solid white;
+  box-shadow: 0 0 24px rgba(255, 255, 255, 0.1);
+}
+
+/* Isometric toggle button — floating cube icon, out of document flow */
+#iso-toggle-btn {
+  position: absolute;
+  top: 18px;
+  right: 20px;
+  font-size: 22px;
+  padding: 2px 5px;
+  margin: 0;
+  line-height: 1;
+  opacity: 0.45;
+  border-color: #444;
+  background-color: transparent;
+}
+
+#iso-toggle-btn:hover {
+  opacity: 1;
+}
+
+/* D-pad toggle button — floating joystick icon, below the iso-toggle */
+#dpad-toggle-btn {
+  position: absolute;
+  top: 54px;
+  right: 20px;
+  font-size: 22px;
+  padding: 2px 5px;
+  margin: 0;
+  line-height: 1;
+  opacity: 0.45;
+  border-color: #444;
+  background-color: transparent;
+}
+
+#dpad-toggle-btn:hover {
+  opacity: 1;
+}
+
+/* D-pad — hidden by default; visible when .dpad-visible is toggled */
+#mobile-dpad {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 200;
+  opacity: 0.82;
+  user-select: none;
+}
+
+#mobile-dpad.dpad-visible {
+  display: flex;
+}
+
+.dpad-row {
+  display: flex;
+  gap: 6px;
+}
+
+.dpad-btn {
+  width: 62px;
+  height: 62px;
+  font-size: 22px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1.5px solid rgba(255, 255, 255, 0.45);
+  border-radius: 10px;
+  color: white;
+  touch-action: manipulation;
+  cursor: pointer;
+}
+
+.dpad-btn:active {
+  background: rgba(255, 255, 255, 0.28);
+}
+
+.dpad-action {
+  background: rgba(200, 40, 40, 0.28);
+  font-size: 26px;
+}
+
+.dpad-action:active {
+  background: rgba(220, 60, 60, 0.5);
+}
+
