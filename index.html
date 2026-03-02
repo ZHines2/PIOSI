@@ -101,6 +101,34 @@
         selectCurrentNode,
       } from "./worldMap.js";
 
+      // Only these three heroes are selectable in the initial version
+      const SELECTABLE_NAMES = ["Knight", "Archer", "Rogue"];
+      const selectableHeroes = allHeroes.filter(h => SELECTABLE_NAMES.includes(h.name));
+
+      // Stat display labels used in party selection and mode-up screens
+      const STAT_LABELS = {
+        hp: "HP", attack: "Attack", range: "Range", agility: "Agility",
+        heal: "Heal", burn: "Burn", sluj: "Slüj", ghis: "Ghïs", trick: "Trick",
+        yeet: "Yeet", swarm: "Swarm", spicy: "Spicy", armor: "Armor", spore: "Spore",
+        chain: "Chain", caprice: "Caprice", fate: "Fate", rage: "Rage", bulk: "Bulk",
+        psych: "Psych", ankh: "Ankh", rise: "Rise", dodge: "Dodge"
+      };
+
+      /**
+       * Render stat lines for a hero, omitting zero-valued stats.
+       * If buff is provided, include buff preview for each stat.
+       */
+      function renderNonZeroStats(hero, buff) {
+        const stats = getCompleteStats(hero);
+        return Object.entries(STAT_LABELS)
+          .filter(([key]) => stats[key] > 0)
+          .map(([key, label]) => {
+            const buffStr = buff && buff[key] ? ` <span class="stat-up">+${buff[key]}</span>` : "";
+            return `<p>${label}: ${stats[key]}${buffStr}</p>`;
+          })
+          .join("");
+      }
+
       // Global variables to manage game state
       let currentScreen = "title";
       let selectedHeroes = [];
@@ -197,7 +225,7 @@
        * Update the hero display in the party selection screen.
        */
       async function updateHeroDisplay() {
-        const hero = allHeroes[heroIndex];
+        const hero = selectableHeroes[heroIndex];
         let display = `<p class="highlight">${hero.name} (${hero.symbol})</p>`;
         // Display special interactions for heroes that have extra properties
         if (hero.joke) {
@@ -222,33 +250,8 @@
           const reaction = await getGriotReaction();
           display += `<p>${reaction}</p>`;
         }
-        // Get complete stats for the hero, including the new psych stat
-        const stats = getCompleteStats(hero);
-        display += `<p>
-          Attack: ${stats.attack} | 
-          Range: ${stats.range} | 
-          Agility: ${stats.agility} | 
-          HP: ${stats.hp} | 
-          Heal: ${stats.heal} | 
-          Burn: ${stats.burn} | 
-          Slüj: ${stats.sluj} | 
-          Ghïs: ${stats.ghis} | 
-          Trick: ${stats.trick} | 
-          Yeet: ${stats.yeet} | 
-          Swarm: ${stats.swarm} | 
-          Spicy: ${stats.spicy} | 
-          Armor: ${stats.armor} | 
-          Spore: ${stats.spore} | 
-          Chain: ${stats.chain} | 
-          Caprice: ${stats.caprice} | 
-          Fate: ${stats.fate} | 
-          Rage: ${stats.rage} | 
-          Bulk: ${stats.bulk} |
-          Psych: ${stats.psych} |
-          Ankh: ${stats.ankh} |
-          Rise: ${stats.rise} |
-          Dodge: ${stats.dodge} |
-        </p>`;
+        // Render only non-zero stats
+        display += renderNonZeroStats(hero, null);
         // Indicate selection status
         display += `<p>${
           selectedHeroes.includes(heroIndex)
@@ -299,7 +302,7 @@
         }, 100); // Adjust timing as needed
 
         // Clone selected heroes so that changes do not affect base definitions
-        party = selectedHeroes.map((i) => Object.assign({}, allHeroes[i]));
+        party = selectedHeroes.map((i) => Object.assign({}, selectableHeroes[i]));
         // Sort party by agility descending for turn order
         party.sort((a, b) => b.agility - a.agility);
         initializeBattle();
@@ -315,123 +318,8 @@
         const buff = getModeUpBuff(hero, level);
         const lines = [];
         lines.push(`<p class="highlight">${hero.name} (${hero.symbol})</p>`);
-        // Display current stats with buff preview for each stat
-        const stats = getCompleteStats(hero);
-        lines.push(
-          `<p>HP: ${stats.hp} ${
-            buff.hp ? `<span class="stat-up">+${buff.hp}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Attack: ${stats.attack} ${
-            buff.attack ? `<span class="stat-up">+${buff.attack}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Range: ${stats.range} ${
-            buff.range ? `<span class="stat-up">+${buff.range}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Agility: ${stats.agility} ${
-            buff.agility ? `<span class="stat-up">+${buff.agility}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Heal: ${stats.heal} ${
-            buff.heal ? `<span class="stat-up">+${buff.heal}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Burn: ${stats.burn} ${
-            buff.burn ? `<span class="stat-up">+${buff.burn}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Slüj: ${stats.sluj} ${
-            buff.sluj ? `<span class="stat-up">+${buff.sluj}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Ghïs: ${stats.ghis} ${
-            buff.ghis ? `<span class="stat-up">+${buff.ghis}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Trick: ${stats.trick} ${
-            buff.trick ? `<span class="stat-up">+${buff.trick}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Yeet: ${stats.yeet} ${
-            buff.yeet ? `<span class="stat-up">+${buff.yeet}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Swarm: ${stats.swarm} ${
-            buff.swarm ? `<span class="stat-up">+${buff.swarm}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Spicy: ${stats.spicy} ${
-            buff.spicy ? `<span class="stat-up">+${buff.spicy}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Armor: ${stats.armor} ${
-            buff.armor ? `<span class="stat-up">+${buff.armor}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Spore: ${stats.spore} ${
-            buff.spore ? `<span class="stat-up">+${buff.spore}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Chain: ${stats.chain} ${
-            buff.chain ? `<span class="stat-up">+${buff.chain}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Caprice: ${stats.caprice} ${
-            buff.caprice ? `<span class="stat-up">+${buff.caprice}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Fate: ${stats.fate} ${
-            buff.fate ? `<span class="stat-up">+${buff.fate}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Rage: ${stats.rage} ${
-            buff.rage ? `<span class="stat-up">+${buff.rage}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Bulk: ${stats.bulk} ${
-            buff.bulk ? `<span class="stat-up">+${buff.bulk}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Psych: ${stats.psych} ${
-            buff.psych ? `<span class="stat-up">+${buff.psych}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Ankh: ${stats.ankh} ${
-            buff.ankh ? `<span class="stat-up">+${buff.ankh}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Rise: ${stats.rise} ${
-            buff.rise ? `<span class="stat-up">+${buff.rise}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Dodge: ${stats.dodge} ${
-            buff.dodge ? `<span class="stat-up">+${buff.dodge}</span>` : ""
-          }</p>`
-        );
+        // Display current stats with buff preview, omitting zero-valued stats
+        lines.push(renderNonZeroStats(hero, buff));
         document.getElementById("mode-up-hero-display").innerHTML =
           lines.join("");
       }
@@ -734,11 +622,11 @@
         },
         party: {
           ArrowLeft: () => {
-            heroIndex = (heroIndex - 1 + allHeroes.length) % allHeroes.length;
+            heroIndex = (heroIndex - 1 + selectableHeroes.length) % selectableHeroes.length;
             updateHeroDisplay();
           },
           ArrowRight: () => {
-            heroIndex = (heroIndex + 1) % allHeroes.length;
+            heroIndex = (heroIndex + 1) % selectableHeroes.length;
             updateHeroDisplay();
           },
           Space: () => {
