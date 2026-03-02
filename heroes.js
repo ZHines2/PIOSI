@@ -10,7 +10,6 @@ export const heroes = [
   {
     name: "Knight",
     symbol: "♞",
-    sprite: "PIOSI Characters/Knight.png",
     attack: 4,
     range: 1,
     agility: 4,
@@ -19,7 +18,6 @@ export const heroes = [
   {
     name: "Archer",
     symbol: "⚔",
-    sprite: "PIOSI Characters/Archer.png",
     attack: 3,
     range: 5,
     agility: 4,
@@ -28,7 +26,6 @@ export const heroes = [
   {
     name: "Wizard",
     symbol: "✡",
-    sprite: "PIOSI Characters/Wizard.png",
     attack: 2,
     range: 7,
     agility: 2,
@@ -38,7 +35,6 @@ export const heroes = [
   {
     name: "Berserker",
     symbol: "⚒",
-    sprite: "PIOSI Characters/Berserker.png",
     attack: 6,
     range: 1,
     agility: 3,
@@ -48,7 +44,6 @@ export const heroes = [
   {
     name: "Rogue",
     symbol: "☠",
-    sprite: "PIOSI Characters/Rogue.png",
     attack: 4,
     range: 2,
     agility: 6,
@@ -57,7 +52,6 @@ export const heroes = [
   {
     name: "Cleric",
     symbol: "✝",
-    sprite: "PIOSI Characters/Cleric.png",
     attack: 2,
     range: 1,
     agility: 3,
@@ -67,7 +61,6 @@ export const heroes = [
   {
     name: "Jester",
     symbol: "♣",
-    sprite: "PIOSI Characters/Jester.png",
     attack: 3,
     range: 2,
     agility: 5,
@@ -78,7 +71,6 @@ export const heroes = [
   {  
     name: "Meatwalker",
     symbol: "₻",
-    sprite: "PIOSI Characters/Meatwalker.png",
     attack: 7,
     range: 1,
     agility: 2,
@@ -90,7 +82,6 @@ export const heroes = [
   {
     name: "Soothscribe",
     symbol: "☄",
-    sprite: "PIOSI Characters/Soothscribe.png",
     attack: 2,
     range: 6,
     agility: 3,
@@ -101,7 +92,6 @@ export const heroes = [
   {
     name: "Nonsequiteur",
     symbol: "∄",
-    sprite: "PIOSI Characters/Nonsequiteur.png",
     attack: 3,
     range: 3,
     agility: 3,
@@ -112,7 +102,6 @@ export const heroes = [
   {
     name: "Griot",
     symbol: "℣",
-    sprite: "PIOSI Characters/Griot.png",
     attack: 1,
     range: 1,
     agility: 1,
@@ -122,7 +111,6 @@ export const heroes = [
   {
     name: "Torcher",
     symbol: "⚶",
-    sprite: "PIOSI Characters/Torcher.png",
     attack: 4,
     range: 2,
     agility: 3,
@@ -133,7 +121,6 @@ export const heroes = [
   {
     name: "Slüjier",
     symbol: "🜜",
-    sprite: "PIOSI Characters/Slujier.png",
     attack: 5,
     range: 1,
     agility: 4,
@@ -144,7 +131,6 @@ export const heroes = [
   {
     name: "Shrink",
     symbol: "☊",
-    sprite: "PIOSI Characters/Shrink.png",
     attack: 2,
     range: 1,
     agility: 3,
@@ -155,7 +141,6 @@ export const heroes = [
   {
     name: "Sycophant",
     symbol: "♟",
-    sprite: "PIOSI Characters/Sycophant.png",
     attack: 0,
     range: 0,
     agility: 2,
@@ -165,7 +150,6 @@ export const heroes = [
   {
     name: "Yeetrian",
     symbol: "⛓",
-    sprite: "PIOSI Characters/Yeetrian.png",
     attack: 3,
     range: 2,
     agility: 4,
@@ -176,7 +160,6 @@ export const heroes = [
   {
     name: "Mellitron",
     symbol: "丰",
-    sprite: "PIOSI Characters/Mellitron.png",
     attack: 1,
     range: 3,
     agility: 5,
@@ -187,7 +170,6 @@ export const heroes = [
   {
     name: "Gastronomer",
     symbol: "𑍐",
-    sprite: "PIOSI Characters/Gastronomer.png",
     attack: 2,
     range: 1,
     agility: 3,
@@ -199,7 +181,6 @@ export const heroes = [
   {
     name: "Palisade",
     symbol: "ᱟ",
-    sprite: "PIOSI Characters/Palisade.png",
     attack: 3,
     range: 1,
     agility: 2,
@@ -211,7 +192,6 @@ export const heroes = [
   {
     name: "Mycelian",
     symbol: "ৡ",
-    sprite: "PIOSI Characters/Mycelian.png",
     attack: 2,
     range: 1,
     agility: 3,
@@ -222,7 +202,6 @@ export const heroes = [
   {
     name: "Pæg",
     symbol: "ꚤ",
-    sprite: "PIOSI Characters/Paeg.png",
     attack: 1,
     range: 1,
     agility: 1,  
@@ -242,7 +221,6 @@ export const heroes = [
   {
     name: "Kemetic",
     symbol: "𓋇",
-    sprite: "PIOSI Characters/Kemetic.png",
     attack: 5,
     range: 5,
     agility: 5,
@@ -254,70 +232,20 @@ export const heroes = [
   {
     name: "Greenjay",
     symbol: "࿈",
-    sprite: "PIOSI Characters/Greenjay.png",
     attack: 5,
     range: 2,
     agility: 4,
     hp: 30,
     rise: 5 // new rise stat
   },
-  // New hero "Sysiphuge"
+    // New hero "Sysiphuge"
   {
     name: "Sysiphuge",
     symbol: "₾",
-    sprite: "PIOSI Characters/Sysiphuge.png",
     attack: 4,
     range: 1,
     agility: 4,
     hp: 16,
     dodge: 4
-  },
-  // New hero "Bombador"
-  {
-    name: "Bombador",
-    symbol: "❦",
-    sprite: "PIOSI Characters/Bombador.png",
-    attack: 2,
-    range: 1,
-    agility: 6,
-    hp: 20,
-    bomba: 5 // bomba stat, that does bonus damages to adjacent enemies that are attacked by another hero
   }
 ];
-/**
- * Handles the hero selection logic specifically for Summit Mode.
- * This function cycles through all available heroes and allows the player to choose one.
- */
-export function selectHeroForSummitMode() {
-  let selectedHeroIndex = 0;
-  const heroList = document.getElementById("hero-list");
-  const confirmButton = document.getElementById("confirm-hero");
-
-  function updateHeroDisplay() {
-    const hero = heroes[selectedHeroIndex];
-    heroList.innerHTML = `<p>${hero.name} (${hero.symbol})</p>`;
-  }
-
-  function handleKeyDown(event) {
-    if (event.key === "ArrowLeft") {
-      selectedHeroIndex = (selectedHeroIndex - 1 + heroes.length) % heroes.length;
-      updateHeroDisplay();
-    } else if (event.key === "ArrowRight") {
-      selectedHeroIndex = (selectedHeroIndex + 1) % heroes.length;
-      updateHeroDisplay();
-    } else if (event.key === "Enter") {
-      confirmSelection();
-    }
-  }
-
-  function confirmSelection() {
-    document.removeEventListener("keydown", handleKeyDown);
-    confirmButton.removeEventListener("click", confirmSelection);
-    // Proceed with the selected hero for Summit Mode
-    startSummitModeWithHero(selectedHeroIndex);
-  }
-
-  document.addEventListener("keydown", handleKeyDown);
-  confirmButton.addEventListener("click", confirmSelection);
-  updateHeroDisplay();
-}

@@ -1,7 +1,6 @@
 {
   "name": "piosi-project",
   "version": "1.0.0",
-  "type": "module",
   "description": "Pee OH See project bundled for Squarespace via GitHub Pages",
   "main": "index.js",
   "scripts": {

@@ -1,4 +1,13 @@
-let nodes = ["Gratt ߁", "Gratt ߂", "Gratt ߃", "Gratt ߷", "Summit Mode", "Emanations Mode"];
+// worldMap.js
+// This script handles the world map functionality for PIOSI - THE SAGAS CONTINUE.
+// When the heroes beat level 20, they ascend to the world map (THE BROADLANDS) which shows destination nodes.
+// Nodes:
+//  - "Gratt ߁": Starting node representing the team's current position.
+//  - "Gratt ߂": When selected, will (ultimately) load a new suite of levels.
+//  - "Gratt ߃": Placeholder; if selected, displays "not yet accessible with current clearance level".
+//  - "Gratt ߷": When selected, opens level 99.
+
+let nodes = ["Gratt ߁", "Gratt ߂", "Gratt ߃", "Gratt ߷"];
 let currentIndex = 0;
 const worldMapEl = document.getElementById("world-map");
 
@@ -43,7 +52,7 @@ export function moveSelectionRight() {
 }
 
 // Handle selection (pressing Space) based on current node.
-export function selectCurrentNode(openLevel99, startSummitMode, startEmanationsMode) {
+export function selectCurrentNode(openLevel99) {
   const selectedNode = nodes[currentIndex];
   if (selectedNode === "Gratt ߂") {
     // Load new suite of levels.
@@ -54,17 +63,9 @@ export function selectCurrentNode(openLevel99, startSummitMode, startEmanationsM
     // Not accessible.
     alert("Not yet accessible with current clearance level");
   } else if (selectedNode === "Gratt ߷") {
-    // Open level 99.
-    console.log("Opening level 99 via", selectedNode);
-    openLevel99(); // Call the function to open level 99
-  } else if (selectedNode === "Summit Mode") {
-    // Start summit mode.
-    console.log("Starting Summit Mode via", selectedNode);
-    startSummitMode(); // Call the function to start summit mode
-  } else if (selectedNode === "Emanations Mode") {
-    // Start emanations mode.
-    console.log("Starting Emanations Mode via", selectedNode);
-    startEmanationsMode(); // Call the function to start emanations mode
+        // Open level 99.
+        console.log("Opening level 99 via", selectedNode);
+        openLevel99(); // Call the function to open level 99
   } else {
     // For "Gratt ߁", the current location.
     alert(`${selectedNode} is your current location. Use arrow keys to navigate to a new destination.`);

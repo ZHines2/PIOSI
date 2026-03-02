@@ -32,7 +32,6 @@ Some heroes have special properties that give them unique abilities. Here are so
 - `psych`: The hero can boost ally stats.
 - `ankh`: The hero can provide boosts on hero deaths.
 - `rise`: The hero can revive with HP equal to the rise value.
-- `bomba`: When a hero with a bomba stat is adjacent to an enemy attacked by another hero, the enemy takes additional damage equal to the bomba stat.
 
 ## Best Practices
 
@@ -253,21 +252,6 @@ Here are some examples of hero configurations:
 }
 ```
 
-### Example 14: Bombador
-
-```javascript
-{
-  name: "Bombador",
-  symbol: "❦",
-  attack: 2,
-  range: 1,
-  agility: 6,
-  hp: 20,
-  bomba: 5, // Bomba stat, that does bonus damage to adjacent enemies that are attacked by another hero.
-  description: "Bombador's bomba stat allows him to deal additional damage to enemies adjacent to those attacked by other heroes, making him a valuable asset in coordinated attacks."
-}
-```
-
 ## Griot.js Integration
 
 The `griot.js` module handles API calls for special characters and generates narrative text using a Markov chain that’s refreshed with recent interactions. The Griot hero reacts uniquely when encountering historical events, and the module provides various special API calls for characters.
@@ -300,19 +284,5 @@ Here is a list of 10 possible fates that can be applied to heroes:
 8. Decrease health points (HP)
 9. Increase healing power
 10. Decrease healing power
-
-## Summit Mode
-
-### Overview
-
-Summit Mode is a new game mode where all heroes compete at the same time on a large 50x50 map. The player controls one hero of their choice, while the others are controlled by the computer.
-
-### Rules
-
-- Each hero takes a turn moving on the map, with the turn order determined by their agility stat.
-- Heroes with higher agility take their turns before those with lower agility.
-- If two heroes have the same agility, the turn order can be randomized or based on their initial placement.
-- When the player is defeated by any hero, it is game over.
-- If a computer-controlled hero is defeated, they join the player's team and their turn is controlled by the player.
 
 By following these guidelines and best practices, you can create heroes that are balanced, engaging, and fun for players. Happy hero designing!

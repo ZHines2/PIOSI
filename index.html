@@ -151,6 +151,58 @@
         togglePlayPause
       } from "./emanations.js";
 
+      // Only these three heroes are selectable in the initial version
+      const SELECTABLE_NAMES = ["Knight", "Archer", "Rogue"];
+      const selectableHeroes = allHeroes.filter(h => SELECTABLE_NAMES.includes(h.name));
+
+      // ─── HOW TO ADD A NEW STAT ─────────────────────────────────────────────────
+      // 1. heroes.js   – add the stat property to any hero object(s) that have it.
+      // 2. STAT_LABELS (below) – add one entry: statKey: "Display Label".
+      //    getCompleteStats() is derived from these keys, so no further changes
+      //    are needed in index.html.
+      // 3. modeup.js   – add a buff entry in getModeUpBuff() if the stat should
+      //    increase on mode-up, and a messageParts push in applyModeUp().
+      // ───────────────────────────────────────────────────────────────────────────
+
+      // Single source of truth for all numeric stats.
+      // renderNonZeroStats() only displays stats whose current value is > 0.
+      const STAT_LABELS = {
+        hp: "HP", attack: "Attack", range: "Range", agility: "Agility",
+        heal: "Heal", burn: "Burn", sluj: "Slüj", ghis: "Ghïs", trick: "Trick",
+        yeet: "Yeet", swarm: "Swarm", spicy: "Spicy", armor: "Armor", spore: "Spore",
+        chain: "Chain", caprice: "Caprice", fate: "Fate", rage: "Rage", bulk: "Bulk",
+        psych: "Psych", ankh: "Ankh", rise: "Rise", dodge: "Dodge", bomba: "Bomba"
+      };
+      const STAT_KEYS = Object.keys(STAT_LABELS);
+
+      /**
+       * Build a complete stats object for a hero, defaulting missing keys to 0.
+       * Derived from STAT_LABELS so only STAT_LABELS needs updating when a new
+       * stat is added.
+       */
+      function getCompleteStats(hero) {
+        const stats = {};
+        for (const key of STAT_KEYS) {
+          stats[key] = hero[key] || 0;
+        }
+        return stats;
+      }
+
+      /**
+       * Render stat lines for a hero, omitting zero-valued stats.
+       * If buff is provided, include buff preview for each stat.
+       */
+      function renderNonZeroStats(hero, buff) {
+        const stats = getCompleteStats(hero);
+        return Object.entries(STAT_LABELS)
+          .filter(([key]) => stats[key] > 0)
+          .map(([key, label]) => {
+            const buffStr = buff && buff[key] ? ` <span class="stat-up">+${buff[key]}</span>` : "";
+            return `<p>${label}: ${stats[key]}${buffStr}</p>`;
+          })
+          .join("");
+      }
+
       // Global variables to manage game state
       let currentScreen = "title";
       let selectedHeroes = [];
@@ -234,45 +286,11 @@
         currentScreen = screen;
       }
 
-
-      /**
-       * Helper function to generate a complete stats object.
-       * Even if a specific stat is 0 or undefined, we display it.
-       */
-          function getCompleteStats(hero) {
-            return {
-              attack: hero.attack || 0,
-              range: hero.range || 0,
-              agility: hero.agility || 0,
-              hp: hero.hp || 0,
-              heal: hero.heal || 0,
-              burn: hero.burn || 0,
-              sluj: hero.sluj || 0,
-              ghis: hero.ghis || 0,
-              trick: hero.trick || 0,
-              yeet: hero.yeet || 0,
-              swarm: hero.swarm || 0,
-              spicy: hero.spicy || 0,
-              armor: hero.armor || 0,
-              spore: hero.spore || 0,
-              chain: hero.chain || 0,
-              caprice: hero.caprice || 0,
-              fate: hero.fate || 0,
-              rage: hero.rage || 0,
-              bulk: hero.bulk || 0,
-              psych: hero.psych || 0,
-              ankh: hero.ankh || 0,
-              rise: hero.rise || 0,
-              dodge: hero.dodge || 0,
-              bomba: hero.bomba || 0
-            };
-          }
-
       /**
        * Update the hero display in the party selection screen.
        */
       async function updateHeroDisplay() {
-        const hero = allHeroes[heroIndex];
+        const hero = selectableHeroes[heroIndex];
         let display = `<p class="highlight">${hero.name} `;
     
           // Use the sprite image if available; otherwise, display the ASCII symbol.
@@ -306,34 +324,8 @@
           const reaction = await getGriotReaction();
           display += `<p>${reaction}</p>`;
         }
-        // Get complete stats for the hero, including the new psych stat
-        const stats = getCompleteStats(hero);
-        display += `<p>
-          Attack: ${stats.attack} | 
-          Range: ${stats.range} | 
-          Agility: ${stats.agility} | 
-          HP: ${stats.hp} | 
-          Heal: ${stats.heal} | 
-          Burn: ${stats.burn} | 
-          Slüj: ${stats.sluj} | 
-          Ghïs: ${stats.ghis} | 
-          Trick: ${stats.trick} | 
-          Yeet: ${stats.yeet} | 
-          Swarm: ${stats.swarm} | 
-          Spicy: ${stats.spicy} | 
-          Armor: ${stats.armor} | 
-          Spore: ${stats.spore} | 
-          Chain: ${stats.chain} | 
-          Caprice: ${stats.caprice} | 
-          Fate: ${stats.fate} | 
-          Rage: ${stats.rage} | 
-          Bulk: ${stats.bulk} |
-          Psych: ${stats.psych} |
-          Ankh: ${stats.ankh} |
-          Rise: ${stats.rise} |
-          Dodge: ${stats.dodge} |
-          Bomba: ${stats.bomba} |
-        </p>`;
+        // Render only non-zero stats
+        display += renderNonZeroStats(hero, null);
         // Indicate selection status
         display += `<p>${
           selectedHeroes.includes(heroIndex)
@@ -384,7 +376,7 @@
         }, 100); // Adjust timing as needed
 
         // Clone selected heroes so that changes do not affect base definitions
-        party = selectedHeroes.map((i) => Object.assign({}, allHeroes[i]));
+        party = selectedHeroes.map((i) => Object.assign({}, selectableHeroes[i]));
         // Sort party by agility descending for turn order
         party.sort((a, b) => b.agility - a.agility);
         initializeBattle();
@@ -398,44 +390,9 @@
         const hero = livingHeroes[modeUpIndex];
         // Use the imported getModeUpBuff method to determine buffs
         const buff = getModeUpBuff(hero, level);
-        // Display current stats with buff preview for each stat
-        const stats = getCompleteStats(hero);
-        const statEntry = (label, val, buffVal) =>
-          `<p>${label}: ${val} ${buffVal ? `<span class="stat-up">+${buffVal}</span>` : ""}</p>`;
-        const col1 = [
-          statEntry("HP", stats.hp, buff.hp),
-          statEntry("Attack", stats.attack, buff.attack),
-          statEntry("Range", stats.range, buff.range),
-          statEntry("Agility", stats.agility, buff.agility),
-          statEntry("Heal", stats.heal, buff.heal),
-          statEntry("Burn", stats.burn, buff.burn),
-          statEntry("Slüj", stats.sluj, buff.sluj),
-          statEntry("Ghïs", stats.ghis, buff.ghis),
-          statEntry("Trick", stats.trick, buff.trick),
-          statEntry("Yeet", stats.yeet, buff.yeet),
-          statEntry("Swarm", stats.swarm, buff.swarm),
-          statEntry("Spicy", stats.spicy, buff.spicy),
-        ].join("");
-        const col2 = [
-          statEntry("Armor", stats.armor, buff.armor),
-          statEntry("Spore", stats.spore, buff.spore),
-          statEntry("Chain", stats.chain, buff.chain),
-          statEntry("Caprice", stats.caprice, buff.caprice),
-          statEntry("Fate", stats.fate, buff.fate),
-          statEntry("Rage", stats.rage, buff.rage),
-          statEntry("Bulk", stats.bulk, buff.bulk),
-          statEntry("Psych", stats.psych, buff.psych),
-          statEntry("Ankh", stats.ankh, buff.ankh),
-          statEntry("Rise", stats.rise, buff.rise),
-          statEntry("Dodge", stats.dodge, buff.dodge),
-          statEntry("Bomba", stats.bomba, buff.bomba),
-        ].join("");
         document.getElementById("mode-up-hero-display").innerHTML =
           `<p class="highlight">${hero.name} (${hero.symbol})</p>` +
-          `<div id="stats-container">` +
-          `<div class="stat-column">${col1}</div>` +
-          `<div class="stat-column">${col2}</div>` +
-          `</div>`;
+          renderNonZeroStats(hero, buff);
       }
 
       /**
@@ -765,11 +722,11 @@
         },
         party: {
           ArrowLeft: () => {
-            heroIndex = (heroIndex - 1 + allHeroes.length) % allHeroes.length;
+            heroIndex = (heroIndex - 1 + selectableHeroes.length) % selectableHeroes.length;
             updateHeroDisplay();
           },
           ArrowRight: () => {
-            heroIndex = (heroIndex + 1) % allHeroes.length;
+            heroIndex = (heroIndex + 1) % selectableHeroes.length;
             updateHeroDisplay();
           },
           Space: () => {
