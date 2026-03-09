@@ -35,13 +35,26 @@
     <!-- Battle Screen -->
     <div id="game-container">
       <h1 id="level-title">Level Title</h1>
+      <button id="iso-toggle-btn" title="Toggle Isometric View" aria-label="Toggle Isometric View">⬡</button>
+      <button id="dpad-toggle-btn" title="Toggle D-Pad" aria-label="Toggle D-Pad">🕹</button>
       <div id="battlefield"></div>
+      <canvas id="iso-battlefield" style="display:none;"></canvas>
       <p id="status"></p>
       <div id="log"></div>
       <p>
         Use Arrow Keys to Move | Press Spacebar to Attack, then choose attack
         direction.
       </p>
+      <!-- On-screen D-pad for touch/mobile — toggled via #dpad-toggle-btn -->
+      <div id="mobile-dpad" aria-hidden="true">
+        <button class="dpad-btn" data-key="ArrowUp" aria-label="Move Up">▲</button>
+        <div class="dpad-row">
+          <button class="dpad-btn" data-key="ArrowLeft" aria-label="Move Left">◀</button>
+          <button class="dpad-btn dpad-action" data-key="Space" aria-label="Attack">⚔</button>
+          <button class="dpad-btn" data-key="ArrowRight" aria-label="Move Right">▶</button>
+        </div>
+        <button class="dpad-btn" data-key="ArrowDown" aria-label="Move Down">▼</button>
+      </div>
     </div>
 
     <!-- Victory Screen -->
@@ -147,6 +160,7 @@
       let enemies = [];
       let battleEngine = null;
       let cheatActive = false; // Prevent waiting cheat activation
+      let isometricMode = false; // Toggle between grid view and isometric canvas view
 
       // Cheat detection variables
       const cheatSequence = [
@@ -384,132 +398,44 @@
         const hero = livingHeroes[modeUpIndex];
         // Use the imported getModeUpBuff method to determine buffs
         const buff = getModeUpBuff(hero, level);
-        const lines = [];
-        lines.push(`<p class="highlight">${hero.name} (${hero.symbol})</p>`);
         // Display current stats with buff preview for each stat
         const stats = getCompleteStats(hero);
-        lines.push(
-          `<p>HP: ${stats.hp} ${
-            buff.hp ? `<span class="stat-up">+${buff.hp}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Attack: ${stats.attack} ${
-            buff.attack ? `<span class="stat-up">+${buff.attack}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Range: ${stats.range} ${
-            buff.range ? `<span class="stat-up">+${buff.range}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Agility: ${stats.agility} ${
-            buff.agility ? `<span class="stat-up">+${buff.agility}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Heal: ${stats.heal} ${
-            buff.heal ? `<span class="stat-up">+${buff.heal}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Burn: ${stats.burn} ${
-            buff.burn ? `<span class="stat-up">+${buff.burn}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Slüj: ${stats.sluj} ${
-            buff.sluj ? `<span class="stat-up">+${buff.sluj}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Ghïs: ${stats.ghis} ${
-            buff.ghis ? `<span class="stat-up">+${buff.ghis}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Trick: ${stats.trick} ${
-            buff.trick ? `<span class="stat-up">+${buff.trick}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Yeet: ${stats.yeet} ${
-            buff.yeet ? `<span class="stat-up">+${buff.yeet}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Swarm: ${stats.swarm} ${
-            buff.swarm ? `<span class="stat-up">+${buff.swarm}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Spicy: ${stats.spicy} ${
-            buff.spicy ? `<span class="stat-up">+${buff.spicy}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Armor: ${stats.armor} ${
-            buff.armor ? `<span class="stat-up">+${buff.armor}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Spore: ${stats.spore} ${
-            buff.spore ? `<span class="stat-up">+${buff.spore}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Chain: ${stats.chain} ${
-            buff.chain ? `<span class="stat-up">+${buff.chain}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Caprice: ${stats.caprice} ${
-            buff.caprice ? `<span class="stat-up">+${buff.caprice}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Fate: ${stats.fate} ${
-            buff.fate ? `<span class="stat-up">+${buff.fate}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Rage: ${stats.rage} ${
-            buff.rage ? `<span class="stat-up">+${buff.rage}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Bulk: ${stats.bulk} ${
-            buff.bulk ? `<span class="stat-up">+${buff.bulk}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Psych: ${stats.psych} ${
-            buff.psych ? `<span class="stat-up">+${buff.psych}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Ankh: ${stats.ankh} ${
-            buff.ankh ? `<span class="stat-up">+${buff.ankh}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Rise: ${stats.rise} ${
-            buff.rise ? `<span class="stat-up">+${buff.rise}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Dodge: ${stats.dodge} ${
-            buff.dodge ? `<span class="stat-up">+${buff.dodge}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Bomba: ${stats.bomba} ${
-            buff.bomba ? `<span class="stat-up">+${buff.bomba}</span>` : ""
-          }</p>`
-        );
+        const statEntry = (label, val, buffVal) =>
+          `<p>${label}: ${val} ${buffVal ? `<span class="stat-up">+${buffVal}</span>` : ""}</p>`;
+        const col1 = [
+          statEntry("HP", stats.hp, buff.hp),
+          statEntry("Attack", stats.attack, buff.attack),
+          statEntry("Range", stats.range, buff.range),
+          statEntry("Agility", stats.agility, buff.agility),
+          statEntry("Heal", stats.heal, buff.heal),
+          statEntry("Burn", stats.burn, buff.burn),
+          statEntry("Slüj", stats.sluj, buff.sluj),
+          statEntry("Ghïs", stats.ghis, buff.ghis),
+          statEntry("Trick", stats.trick, buff.trick),
+          statEntry("Yeet", stats.yeet, buff.yeet),
+          statEntry("Swarm", stats.swarm, buff.swarm),
+          statEntry("Spicy", stats.spicy, buff.spicy),
+        ].join("");
+        const col2 = [
+          statEntry("Armor", stats.armor, buff.armor),
+          statEntry("Spore", stats.spore, buff.spore),
+          statEntry("Chain", stats.chain, buff.chain),
+          statEntry("Caprice", stats.caprice, buff.caprice),
+          statEntry("Fate", stats.fate, buff.fate),
+          statEntry("Rage", stats.rage, buff.rage),
+          statEntry("Bulk", stats.bulk, buff.bulk),
+          statEntry("Psych", stats.psych, buff.psych),
+          statEntry("Ankh", stats.ankh, buff.ankh),
+          statEntry("Rise", stats.rise, buff.rise),
+          statEntry("Dodge", stats.dodge, buff.dodge),
+          statEntry("Bomba", stats.bomba, buff.bomba),
+        ].join("");
         document.getElementById("mode-up-hero-display").innerHTML =
-          lines.join("");
+          `<p class="highlight">${hero.name} (${hero.symbol})</p>` +
+          `<div id="stats-container">` +
+          `<div class="stat-column">${col1}</div>` +
+          `<div class="stat-column">${col2}</div>` +
+          `</div>`;
       }
 
       /**
@@ -560,11 +486,8 @@
       function initializeBattle() {
         const settings = getLevel(level);
         if (!settings) {
-          // If no settings found, show victory unless in special level sequences.
-          if (level < 99 || level > 101) {
-            showScreen("victory");
-            return;
-          }
+          showScreen("victory");
+          return;
         }
         const { rows, cols, wallHP, title, enemies: levelEnemies } = settings;
         document.getElementById("level-title").textContent = title;
@@ -653,8 +576,17 @@
        * Render the battlefield by drawing it from the battle engine.
        */
       function renderBattlefield() {
-        document.getElementById("battlefield").innerHTML =
-          battleEngine.drawBattlefield();
+        const gridDiv = document.getElementById("battlefield");
+        const isoCanvas = document.getElementById("iso-battlefield");
+        if (isometricMode) {
+          gridDiv.style.display = "none";
+          isoCanvas.style.display = "block";
+          battleEngine.drawIsometricBattlefield(isoCanvas);
+        } else {
+          isoCanvas.style.display = "none";
+          gridDiv.style.display = "";
+          gridDiv.innerHTML = battleEngine.drawBattlefield();
+        }
         document.getElementById("status").textContent =
           "Wall HP: " +
           battleEngine.wallHP +
@@ -982,6 +914,8 @@
       // Minimal mobile support: Map a simple touch tap to a key event based on touch location.
       if ("ontouchstart" in window) {
         document.addEventListener("touchend", function (e) {
+          // Let buttons and links handle their own click events on mobile (e.g. iso-toggle-btn).
+          if (e.target.closest("button, a, [role='button']")) return;
           e.preventDefault();
           const touch = e.changedTouches[0];
           const x = touch.clientX;
@@ -1015,6 +949,29 @@
       initializeGriot("fantasy_narrative.txt").then(() => {
         showScreen("title");
       });
+
+      // Toggle between grid view and isometric canvas view during battle.
+      document.getElementById("iso-toggle-btn").addEventListener("click", () => {
+        isometricMode = !isometricMode;
+        if (battleEngine) renderBattlefield();
+      });
+
+      // Toggle the on-screen D-pad visibility.
+      document.getElementById("dpad-toggle-btn").addEventListener("click", () => {
+        document.getElementById("mobile-dpad").classList.toggle("dpad-visible");
+      });
+
+      // Wire D-pad buttons: touchstart for immediate response on mobile, click as fallback.
+      document.querySelectorAll(".dpad-btn").forEach((btn) => {
+        const dispatchKey = () => {
+          const keyCode = btn.dataset.key;
+          const keyVal = keyCode === "Space" ? " " : keyCode;
+          document.dispatchEvent(new KeyboardEvent("keydown", { code: keyCode, key: keyVal, bubbles: true, cancelable: true }));
+        };
+        btn.addEventListener("touchstart", (e) => { e.preventDefault(); dispatchKey(); });
+        btn.addEventListener("click", dispatchKey);
+      });
+
     </script>
   </body>
 </html>
