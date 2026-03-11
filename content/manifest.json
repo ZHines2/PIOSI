@@ -1,0 +1,12 @@
+{
+  "version": "1.0.0",
+  "packs": ["core"],
+  "modes": {
+    "battle": true,
+    "modeUp": true,
+    "worldMap": false,
+    "summit": false,
+    "emanations": false
+  },
+  "coreLevels": 3
+}
