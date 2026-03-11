@@ -132,8 +132,6 @@
         recordInteraction,
       } from "./griot.js";
       import { BattleEngine } from "./battleEngine.js";
-      import { heroes as allHeroes } from "./heroes.js";
-      import { getLevel } from "./levels.js";
       import { getModeUpBuff, applyModeUp } from "./modeup.js";
       import {
         initWorldMap,
@@ -150,6 +148,15 @@
         playPreviousSong,
         togglePlayPause
       } from "./emanations.js";
+      import { loadContent } from "./contentLoader.js";
+      import { heroes as staticHeroes } from "./heroes.js";
+      import { getLevel as getStaticLevel } from "./levels.js";
+
+      // Content loaded from manifest + JSON packs (populated during init).
+      // Static imports are used as emergency fallback if loadContent() fails.
+      let allHeroes = staticHeroes;
+      let getLevel = getStaticLevel;
+      let loadedManifest = null;
 
       // Global variables to manage game state
       let currentScreen = "title";
@@ -526,20 +533,24 @@
 
      /**
        * Called when a level is completed and determines the next action.
-       * Levels 1 to 19 trigger the Mode Up window, and level 20 summons world map.
-       * Secret level (level 99) remains unchanged.
+       * In CORE mode (manifest.modes.worldMap = false), all levels trigger Mode Up;
+       * after the last loaded level the next initializeBattle call finds no level
+       * and shows the victory screen automatically.
+       * When worldMap mode is enabled, reaching level 20 opens the world map.
+       * Secret level (level 99) always goes straight to victory.
        */
       function onLevelComplete() {
-        if (level >= 1 && level <= 19) {
-          logMessage(`Level ${level} complete!`);
-          showModeUpWindow();
-        } else if (level === 20) {
-          logMessage("Level 20 complete! Entering the world map...");
-          showScreen("worldMap");
-        } else if (level === 99) {
+        const worldMapEnabled = loadedManifest ? loadedManifest.modes.worldMap : true;
+        if (level === 99) {
           logMessage("The veil of introspection lifts...");
           logMessage("You've broken through! The eternal wall falls!");
           showScreen("victory");
+        } else if (level === 20 && worldMapEnabled) {
+          logMessage("Level 20 complete! Entering the world map...");
+          showScreen("worldMap");
+        } else {
+          logMessage(`Level ${level} complete!`);
+          showModeUpWindow();
         }
 
 
@@ -688,6 +699,10 @@
        * Activate the world map screen.
        */
       function worldMapCheatCode() {
+          if (loadedManifest && !loadedManifest.modes.worldMap) {
+            console.log("World map is disabled in CORE mode.");
+            return;
+          }
           console.log("World Map cheat code detected! Opening THE BROADLANDS!");
           showScreen("worldMap");
       }
@@ -945,8 +960,20 @@
         });
       }
 
-      // Initialize griot narrative and show title screen when ready.
-      initializeGriot("fantasy_narrative.txt").then(() => {
+      // Initialize griot narrative and content packs, then show the title screen.
+      Promise.all([
+        initializeGriot("fantasy_narrative.txt"),
+        loadContent().then(({ manifest, heroes, getLevel: gl }) => {
+          loadedManifest = manifest;
+          allHeroes = heroes;
+          getLevel = gl;
+        }).catch(() => {
+          // Content loading failed; allHeroes/getLevel retain their defaults
+          // (empty array / null) so the game will fall back to static data
+          // via the contentLoader's internal fallback.
+          console.warn("Content loading failed; using static fallback data.");
+        })
+      ]).then(() => {
         showScreen("title");
       });
 
