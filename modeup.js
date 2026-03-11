@@ -29,7 +29,7 @@
  *   - Assign a stable, lowercase, alphanumeric `id` field to every hero in
  *     your JSON pack (e.g. `"id": "knight"`).
  *   - Add a corresponding `case` in this switch to define the hero's buff
- *     behaviour.  Heroes without a matching case receive the default `ghis`
+ *     behavior.  Heroes without a matching case receive the default `ghis`
  *     fallback buff.
  *
  * @param {Object} chosenHero - the hero that has been chosen for mode up.

@@ -42,7 +42,7 @@ const DEFAULT_MANIFEST = {
 /**
  * Resolves enemy positions from a level definition.
  * Enemies with `enemyXOffset` are placed relative to the right edge of the
- * grid (matching the behaviour of the original levels.js getLevel function).
+ * grid (matching the behavior of the original levels.js getLevel function).
  *
  * @param {Object} level - The raw level definition.
  * @returns {Array} Resolved enemy array.

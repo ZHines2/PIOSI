@@ -968,9 +968,9 @@
           allHeroes = heroes;
           getLevel = gl;
         }).catch(() => {
-          // Content loading failed; allHeroes/getLevel retain their defaults
-          // (empty array / null) so the game will fall back to static data
-          // via the contentLoader's internal fallback.
+          // Content loading failed; allHeroes and getLevel retain their static
+          // import defaults (staticHeroes / getStaticLevel) so the game still
+          // runs with the built-in data.
           console.warn("Content loading failed; using static fallback data.");
         })
       ]).then(() => {
