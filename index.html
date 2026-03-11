@@ -37,6 +37,14 @@
       <h1 id="level-title">Level Title</h1>
       <button id="iso-toggle-btn" title="Toggle Isometric View" aria-label="Toggle Isometric View">⬡</button>
       <button id="dpad-toggle-btn" title="Toggle D-Pad" aria-label="Toggle D-Pad">🕹</button>
+      <div id="battle-hud">
+        <div id="hud-top"></div>
+        <div id="hud-party"></div>
+        <div id="hud-narrative">
+          <div class="hud-panel-title">LAST EVENTS</div>
+          <div id="hud-narrative-lines"></div>
+        </div>
+      </div>
       <div id="battlefield"></div>
       <canvas id="iso-battlefield" style="display:none;"></canvas>
       <p id="status"></p>
@@ -606,15 +614,71 @@
           "'s Turn (Moves Left: " +
           battleEngine.movePoints +
           ")";
+        updateBattleHUD();
+      }
+
+      /**
+       * Update the persistent HUD panels with current battle state.
+       */
+      function updateBattleHUD() {
+        if (!battleEngine) return;
+        const hero = party[battleEngine.currentUnit];
+        const mode = battleEngine.awaitingAttackDirection ? "⚔ ATTACK — choose direction" : "↕ MOVE";
+
+        // Top strip
+        const topDiv = document.getElementById("hud-top");
+        if (topDiv) {
+          topDiv.innerHTML =
+            `<span class="hud-kv"><b>HERO:</b> ${hero.symbol} ${hero.name}</span>` +
+            `<span class="hud-kv"><b>MOVES:</b> ${battleEngine.movePoints}</span>` +
+            `<span class="hud-kv"><b>MODE:</b> ${mode}</span>` +
+            `<span class="hud-kv"><b>WALL HP:</b> ${battleEngine.wallHP}</span>` +
+            `<span class="hud-kv"><b>ENEMIES:</b> ${battleEngine.enemies.length}</span>`;
+        }
+
+        // Party panel
+        const partyDiv = document.getElementById("hud-party");
+        if (partyDiv) {
+          partyDiv.innerHTML = '<div class="hud-panel-title">PARTY</div>' +
+            party.map((h, i) => {
+              const isActive = i === battleEngine.currentUnit && !h.persistentDeath;
+              const isDead = !!h.persistentDeath;
+              const cls = isDead ? "hud-hero hud-hero-dead" : isActive ? "hud-hero hud-hero-active" : "hud-hero";
+              const statusEffectsText = h.statusEffects ? Object.keys(h.statusEffects).join(" ") : "";
+              return `<div class="${cls}">` +
+                `<div class="hud-hero-name">${h.symbol} ${h.name}</div>` +
+                `<div class="hud-hero-stats">` +
+                `<span>HP: ${h.hp}</span>` +
+                (h.armor ? `<span>ARM: ${h.armor}</span>` : "") +
+                `</div>` +
+                (statusEffectsText ? `<div class="hud-hero-fx">${statusEffectsText}</div>` : "") +
+                `</div>`;
+            }).join("");
+        }
       }
 
       /**
        * Log messages to the game log area.
        */
+      const _pinnedLines = [];
+      const _PINNED_MAX = 3;
+      // Matches high-signal battle events worth pinning in the narrative panel.
+      const _IMPORTANT_RE = /turn begins|'s turn|wall collapses|wall hp|level \d|complete!|game over|enters the field|is defeated|is dead|now it's|says:/i;
+
       function logMessage(message) {
         const logDiv = document.getElementById("log");
         logDiv.innerHTML += `<p>${message}</p>`;
         logDiv.scrollTop = logDiv.scrollHeight;
+        if (_IMPORTANT_RE.test(message)) {
+          _pinnedLines.push(message);
+          if (_pinnedLines.length > _PINNED_MAX) _pinnedLines.shift();
+          const linesDiv = document.getElementById("hud-narrative-lines");
+          if (linesDiv) {
+            linesDiv.innerHTML = _pinnedLines
+              .map(l => `<div class="hud-pin-line">${l}</div>`)
+              .join("");
+          }
+        }
       }
 
       /**
@@ -657,6 +721,9 @@
         heroIndex = 0;
         cheatActive = false;
         document.getElementById("log").innerHTML = "";
+        _pinnedLines.length = 0;
+        const linesDiv = document.getElementById("hud-narrative-lines");
+        if (linesDiv) linesDiv.innerHTML = "";
         document.getElementById("game-over").style.display = "none";
 
         // Stop DarkAnoid music
