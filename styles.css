@@ -474,3 +474,123 @@ button:active {
   background: rgba(220, 60, 60, 0.5);
 }
 
+/* ======================================================
+   BATTLE HUD — segmented info panels
+   ====================================================== */
+
+#battle-hud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+/* Top strip: turn/objective info (full width) */
+#hud-top {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  padding: 6px 10px;
+  border: 2px solid #fff;
+  background: #0f0f0f;
+  box-sizing: border-box;
+  font-size: 0.82rem;
+  letter-spacing: 0.06em;
+}
+
+.hud-kv {
+  white-space: nowrap;
+}
+
+.hud-kv b {
+  letter-spacing: 0.1em;
+  margin-right: 2px;
+}
+
+/* Left panel: party status */
+#hud-party {
+  flex: 1 1 200px;
+  max-width: 280px;
+  border: 2px solid #fff;
+  background: #0f0f0f;
+  text-align: left;
+  font-size: 0.8rem;
+}
+
+/* Right panel: pinned narrative */
+#hud-narrative {
+  flex: 1 1 200px;
+  max-width: 280px;
+  border: 2px solid #fff;
+  background: #0f0f0f;
+  text-align: left;
+  font-size: 0.8rem;
+}
+
+.hud-panel-title {
+  padding: 4px 8px;
+  border-bottom: 2px solid #fff;
+  background: #111;
+  letter-spacing: 0.12em;
+  font-size: 0.78rem;
+}
+
+#hud-narrative-lines {
+  padding: 6px 8px;
+}
+
+.hud-pin-line {
+  padding: 3px 0;
+  border-bottom: 1px dashed #444;
+  line-height: 1.3;
+}
+
+.hud-pin-line:last-child {
+  border-bottom: none;
+}
+
+/* Party hero rows */
+.hud-hero {
+  padding: 5px 8px;
+  border-bottom: 1px solid #333;
+}
+
+.hud-hero:last-child {
+  border-bottom: none;
+}
+
+.hud-hero-name {
+  font-weight: bold;
+  letter-spacing: 0.05em;
+}
+
+.hud-hero-active .hud-hero-name {
+  color: #6699ff;
+}
+
+.hud-hero-dead .hud-hero-name {
+  color: #666;
+  text-decoration: line-through;
+}
+
+.hud-hero-stats {
+  display: flex;
+  gap: 8px;
+  font-size: 0.75rem;
+  opacity: 0.9;
+}
+
+.hud-hero-fx {
+  font-size: 0.72rem;
+  color: #f90;
+  margin-top: 2px;
+}
+
+/* Hide HUD when game-container is not active */
+#game-container:not([style*="block"]) #battle-hud {
+  display: none;
+}
+
