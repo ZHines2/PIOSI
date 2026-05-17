@@ -7,7 +7,8 @@
   "scripts": {
     "start": "parcel src/index.html --open",
     "build": "parcel build src/index.html",
-    "deploy": "gh-pages -d dist"
+    "deploy": "gh-pages -d dist",
+    "test": "node --test tests/*.test.js"
   },
   "author": "Your Name",
   "license": "MIT",
