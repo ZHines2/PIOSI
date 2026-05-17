@@ -1,196 +1,173 @@
-# CLAUDE.md — PIOSI
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+---
 
 > **Project**: PIOSI — "THE SAGAS CONTINUE"
 > **Stack**: Vanilla JS (ES modules), HTML, CSS. No framework, no build step at runtime.
 > **Deployment**: Self-contained web app. Tauri-wrapped for desktop shipping.
-> **Active branch**: `1.0-shippable`
-
-This file gives Claude the context, priorities, and house rules for working on PIOSI. **Read it before generating code, refactors, or new content.**
 
 ---
 
-## 1. What PIOSI is
+## Commands
 
-PIOSI is a turn-based, grid-based tactics/RPG game with multiple modes (Battle, World Map, Summit, Emanations, Mode Up). Content (heroes, levels, enemies) is **data-driven via JSON packs**, allowing the engine to ship once and be extended over time by replacing or adding content files.
+```bash
+# Run the game locally (double-click or from terminal)
+play.bat                        # starts Python HTTP server + opens browser
 
-The CORE build philosophy is the project's North Star:
+# Equivalent manual command
+python -m http.server 8000      # then open http://localhost:8000
 
-> **Ship the engine once. Extend the game forever through content drops.**
+# Run all regression tests (Node 18+ required, no install needed)
+npm test                        # node --test tests/*.test.js
 
----
+# Run a single test file
+node --test tests/battle.test.js
 
-## 2. Core values (in priority order)
-
-When these conflict, the higher-priority value wins. State the trade-off explicitly when overriding a lower value.
-
-1. **Zero-build runtime.** The game loads `index.html` directly. No bundler, no transpilation, no runtime npm dependencies. New features must preserve this property.
-2. **Data/code separation.** New content (heroes, levels, enemies, items) goes in JSON content packs under `content/`. The engine stays content-agnostic.
-3. **Graceful degradation.** If `fetch()` for content fails (e.g. `file://` protocol), the game falls back to static data in `heroes.js` / `levels.js`. Preserve this path on any content-loading change.
-4. **Mode toggleability.** Top-level systems are gated by `content/manifest.json` → `modes`. New systems get a flag and default off in CORE.
-5. **ID stability.** Anything keyed by hero (Mode Up buffs, future save data) prefers a stable lowercase `id`, with `name` as a fallback.
-6. **Determinism for turn logic.** Same inputs → same outputs. Any RNG goes through a single seedable source, never raw `Math.random()`.
-7. **Readability over abstraction.** Vanilla JS, small contributor base, no types. Plain functions and clear names beat clever patterns.
-8. **Modularity at the file level.** One concern per `.js` file. New systems get their own file rather than bloating existing ones.
-
----
-
-## 3. Architecture map
-
-```
-PIOSI/
-├── index.html              # Entry point. Loads scripts, mounts game.
-├── styles.css              # All styling.
-├── package.json            # Partially stale; see §8.
-│
-├── content/                # JSON content packs (the extensibility surface)
-│   └── manifest.json       # Enabled packs + mode toggles + coreLevels
-│
-├── docs/                   # Author-facing guides
-│   ├── level-creation.md
-│   ├── hero-manifestation-guide.md
-│   └── players-manual.md
-│
-├── PIOSI Characters/       # Character sprite PNGs
-│
-└── *.js                    # Engine modules at root:
-    ├── contentLoader.js    # Reads manifest, fetches packs, falls back to static data
-    ├── battleEngine.js     # Turn-based grid combat
-    ├── heroes.js           # Static hero fallback data
-    ├── levels.js           # Static level fallback data
-    ├── modeup.js           # Hero-specific level-up buffs (switch on hero.id)
-    ├── applyKnockback.js   # Movement / knockback resolution
-    ├── worldMap.js         # World map screen (mode-gated)
-    ├── summitMode.js       # Summit mode (world-map-gated)
-    ├── emanations.js       # Emanations mode (world-map-gated)
-    ├── griot.js            # Narrative / storyteller layer
-    └── sluj.js             # (see file for current responsibility)
+# Run tests matching a name pattern
+node --test --test-name-pattern "moveUnit" tests/battle.test.js
 ```
 
-### Module responsibility rules
-- `contentLoader.js` owns content I/O. Other modules consume the loaded data; they do not fetch.
-- `battleEngine.js` is the combat hot path. Keep it data-driven; do **not** embed hero/enemy-specific logic here.
-- `modeup.js` uses a `switch(hero.id)` dispatch. This is **intentional**. Do not refactor it into a registry/strategy pattern without asking.
-- Mode files (`worldMap.js`, `summitMode.js`, `emanations.js`) respect their flag in `manifest.json → modes` and no-op if disabled.
+No build step exists or should be added. `package.json` references parcel/gh-pages — treat those as historical noise; the game runs directly from `index.html` at root.
 
 ---
 
-## 4. Recipes — "when adding X, do Y"
+## Architecture
+
+PIOSI is a turn-based grid tactics game. All game logic runs in a `<script type="module">` block inside `index.html`. There is no bundler.
+
+### Screen flow
+
+```
+title → party (hero select) → battle → modeUp → battle → ... → victory
+                                              ↘ worldMap → summitMode
+                                                         → emanationsMode
+```
+
+`index.html` owns the screen state machine (`showScreen()`), the keyboard router (`keyActions` map), and all DOM wiring. It imports from the engine modules below.
+
+### Engine modules (root `*.js` files)
+
+| File | Responsibility |
+|---|---|
+| `contentLoader.js` | Fetch `manifest.json`, load hero/level JSON packs, fall back to static data |
+| `battleEngine.js` | Turn-based grid combat: movement, attack, status effects, turn rotation |
+| `applyKnockback.js` | Knockback (yeet) resolution — extracted from battleEngine for testability |
+| `sluj.js` | Slüj DoT status effect tick logic |
+| `modeup.js` | Hero-specific level-up buffs via `switch(hero.id)` |
+| `heroes.js` | Static hero fallback data (used when JSON fetch fails) |
+| `levels.js` | Static level fallback data (same) |
+| `worldMap.js` | World map screen — mode-gated by `manifest.modes.worldMap` |
+| `summitMode.js` | Summit mode — gated by `manifest.modes.summit` |
+| `emanations.js` | Music player / visualizer mode — gated by `manifest.modes.emanations` |
+| `griot.js` | Narrative layer; fetches jokes, tarot, bacon ipsum etc. for specific heroes |
+
+### Content system
+
+```
+content/
+  manifest.json          # enabled packs + mode flags + coreLevels count
+  heroes.core.json       # hero definitions for the core pack
+  levels.core.json       # level definitions for the core pack
+```
+
+`loadContent()` in `contentLoader.js` reads the manifest, fetches each pack listed under `packs`, merges them, and returns `{ manifest, heroes, getLevel }`. If any fetch fails (e.g. `file://` protocol), the return falls back to `heroes.js` / `levels.js` static data. This fallback path must be preserved on any content-loading change.
+
+Enemies in JSON use either explicit `x`/`y` or `enemyXOffset` (placed at `cols - enemyXOffset`, mid-height). `resolveEnemies()` in `contentLoader.js` normalizes this.
+
+### BattleEngine data contract
+
+`BattleEngine` is constructed with `(party, enemies, rows, cols, wallHP, logCallback, onLevelComplete, onGameOver)`. It is fully DOM-free and can be exercised in Node tests. Key internals:
+
+- `battlefield[y][x]` — 2D char array; `'.'` = empty, `'ᚙ'` / `'█'` = wall, `'ౚ'` = vittle, `'ඉ'` = mushroom
+- `currentUnit` — index into `party[]`; advances past `persistentDeath` heroes
+- `movePoints` — remaining moves for current hero (reset to `hero.agility` each turn)
+- `awaitingAttackDirection` — set `true` by Space, cleared after attack resolves
+- `getLiveHeroes()` — heroes without `persistentDeath`
+- `handleHeroDeath(hero)` — checks `rise` for resurrection, otherwise sets `PersistentDeath`
+
+All special abilities (`burn`, `sluj`, `yeet`, `chain`, `bomba`, `swarm`, `trick`, `psych`, `heal`, `rage`, `armor`, `dodge`) are stat-driven; the engine reads properties off entity objects and applies effects — no hero names or enemy types are hardcoded in the engine.
+
+### Turn structure
+
+1. Hero acts (`moveUnit` or `attackInDirection`) until `movePoints === 0`
+2. `nextTurn()`: apply status effects → apply swarm → advance `currentUnit` → if wrapped, run `enemyTurn()`
+3. Enemy turn: each enemy moves `agility` steps toward nearest live hero (Manhattan distance), attacks adjacent heroes, ticks slüj
+4. After enemy turn, check live hero count; game over if zero
+
+---
+
+## Core values (priority order)
+
+1. **Zero-build runtime** — no bundler, no transpilation, no runtime npm deps
+2. **Data/code separation** — new content goes in `content/*.json`, not in engine modules
+3. **Graceful degradation** — `fetch → fallback` in `contentLoader.js` must be preserved
+4. **Mode toggleability** — new systems get a `manifest.modes` flag, default `false`
+5. **ID stability** — hero keys use `hero.id ?? hero.name`; critical for Mode Up and future saves
+6. **Determinism** — RNG must be seedable; do not call `Math.random()` directly in turn logic
+7. **Readability** — plain functions beat clever patterns; vanilla JS, small team
+8. **File-level modularity** — one concern per `.js` file
+
+---
+
+## Recipes
 
 ### Adding a hero
-1. Add an entry to `content/heroes.<pack>.json` (or create a new pack).
-2. Add the pack name to `content/manifest.json` → `packs`.
-3. Add a `case "<id>":` block to `modeup.js` defining the level-up buff. Heroes without a case get the default `ghis` fallback — **this is by design**.
-4. Drop the sprite in `PIOSI Characters/` and reference its path in the hero JSON.
-5. Use a **stable lowercase `id`**. Mode Up and (future) save systems key off `id` first, `name` second.
+1. Add entry to `content/heroes.<pack>.json`, add pack to `manifest.json → packs`
+2. Add `case "<id>":` to `modeup.js` — heroes without a case get the `ghis` default (intentional)
+3. Drop sprite in `PIOSI Characters/`, reference path in JSON
+4. Use a stable lowercase `id` field
 
 ### Adding a level
-1. Add an entry to `content/levels.<pack>.json`.
-2. Enemies use `enemyXOffset` (placed at `cols - enemyXOffset` from the left) or explicit `x`/`y` coordinates.
-3. Add the pack to `manifest.json`.
-4. If the level should be reachable before victory transition, update `manifest.json → coreLevels`.
-5. Do **not** edit `levels.js` — that file is the fallback for `file://` loads only. New levels go in JSON.
+1. Add entry to `content/levels.<pack>.json`; use `enemyXOffset` or explicit `x`/`y`
+2. Add pack to `manifest.json`, update `coreLevels` if needed
+3. Do **not** edit `levels.js` — static fallback only
 
-### Adding a new mode / system
-1. Create a new `.js` module at root. One concern, one file.
-2. Add a flag to `manifest.json → modes` and default it to `false`.
-3. The mode reads its own flag and no-ops if disabled.
-4. If the mode adds content types (new entity kinds), extend the content pack schema **additively** — never break existing packs.
-5. Document the mode in `docs/` if user-facing.
+### Adding a mode
+1. New `.js` file at root; reads its own `manifest.modes.<flag>` and no-ops if false
+2. Add flag to `manifest.json → modes`, default `false`
+3. Document in `docs/` if user-facing
 
 ### Modifying the engine
-- Ask first: "Could this be a content-pack change instead?" If yes, do that.
-- Engine changes stay content-agnostic. No hero names, level numbers, or enemy types hardcoded in `battleEngine.js` / `applyKnockback.js`.
-- Preserve the `fetch → fallback` pattern in `contentLoader.js`.
-
-### Adding randomness
-- Use the project's seedable RNG. If one doesn't exist, create one in a new `rng.js` module and route all randomness through it.
-- Do not call `Math.random()` directly in game logic.
-- Combat-affecting randomness should be seedable per encounter for replay / debug determinism.
+- Ask: "Can this be a content-pack change instead?" If yes, do that.
+- `battleEngine.js` and `applyKnockback.js` must remain content-agnostic (no hero names, level numbers, enemy type checks)
+- `modeup.js`'s `switch/case` is intentional — do not refactor to registry/strategy without asking
 
 ---
 
-## 5. Tensions and anti-patterns
+## Anti-patterns
 
-### Tensions where the project's values win
-
-| Tension | Default resolution |
-|---|---|
-| Adding a runtime dependency vs. writing 30 lines | Write the 30 lines. |
-| Introducing a bundler vs. one more `<script>` tag | One more `<script>` tag. |
-| DRY refactor of `modeup.js` vs. flat switch/case | Keep the flat switch. |
-| Engine flexibility vs. content-pack-only extensibility | Content pack. |
-| Always-on feature vs. flag-gated feature | Flag-gated, default off in CORE. |
-| Renaming a content field vs. additive change | Additive. If you must rename, ship a fallback read for the old name. |
-
-### Anti-patterns Claude should not introduce
-- New `npm install` dependencies pulled in at runtime.
-- A build step (webpack, vite, parcel, esbuild) without an explicit ask. *(See §8 — `package.json` currently references parcel; this is stale, not aspirational.)*
-- Hero or level data inlined into engine modules.
-- Direct `Math.random()` in turn logic.
-- Silent failures on content load. Log a `console.warn` when falling back so authors can debug their packs.
-- TypeScript, JSX, or other syntax that requires transpilation.
-- Frameworks (React, Vue, Svelte, etc.). PIOSI is vanilla and stays vanilla.
-- Refactoring `modeup.js`'s switch/case into a registry pattern without being asked.
+- Runtime `npm install` dependencies
+- A build step without an explicit ask
+- Hero/level data inlined into engine modules
+- `Math.random()` in turn logic
+- Silent content-load failures (log a `console.warn` on fallback)
+- TypeScript, JSX, or any transpilation-required syntax
+- Frameworks (React, Vue, Svelte, etc.)
 
 ---
 
-## 6. Quality dimensions (prioritized for PIOSI)
+## Testing
 
-**Primary** — always weigh:
-- **Data/code separation** — engine vs. content cleanliness
-- **Zero-build shippability** — preserve the no-bundler property
-- **Graceful degradation** — fetch-fail fallback paths
-- **Readability** — vanilla JS, small contributor base
-- **Mode toggleability** — manifest-flag hygiene
-- **ID stability** — for save/persistence forward compat
-- **Determinism** — turn-based logic, seeded RNG
+```bash
+npm test   # runs tests/battle.test.js via Node built-in test runner — no install needed
+```
 
-**Secondary** — worth optimizing, not blocking:
-- **Modularity** — one concern per file
-- **Schema additivity** — content JSON forward/backward compat
-- **Documentation** — keep `docs/` in sync with engine changes
-- **Debuggability** — clear console logging on content load failures
+Tests cover: movement, attack ray, knockback, chain damage, burn/slüj DoT, swarm, hero death/resurrection, armor, rage, enemy AI, turn rotation, dodge formula, chain formula, and constructor initialization.
 
-**Deprioritized** — don't optimize prematurely:
-- **Test coverage** — no harness exists; introducing one is fine but not a blocker
-- **Frame-budget micro-optimization** — turn-based, not realtime
-- **Heavy abstraction** — interfaces, DI, factories. Plain functions win.
-- **Type safety** — no TS, no JSDoc enforcement currently
+`BattleEngine` is DOM-free and fully testable in Node. Tests stub `shortPause` to `() => Promise.resolve()` and clear random vittle/mushroom placements after construction for determinism. When testing `attackInDirection` for status-effect application, stub `engine.nextTurn = () => {}` to prevent the post-attack turn from ticking durations before assertions.
+
+Manual smoke test before merging to `1.0-shippable`: open `index.html`, complete one battle, confirm Mode Up triggers, check world map (if enabled in manifest).
 
 ---
 
-## 7. Testing & quality posture
+## Known issues
 
-- No test harness currently exists. Don't block features on adding one.
-- If introducing tests, prefer: a single Node script that requires no install (Node's built-in `test` runner), parses content JSON, validates schemas, runs pure-function unit tests on engine modules that don't touch the DOM.
-- Manual smoke test before commits to `1.0-shippable`: open `index.html`, play one battle, check the world map (if enabled), confirm Mode Up triggers.
-- Validate any content-pack changes by loading the game and watching the console for fallback warnings.
-
----
-
-## 8. Known issues & aspirational improvements
-
-Flagged here so Claude doesn't trip on them, and can propose fixes when relevant:
-
-1. **`package.json` is stale.** It references `parcel`, a `src/` directory, and `gh-pages` deploy — but the actual repo runs from root with no build step, matching the README. **The README is the source of truth.** Either clean up `package.json` (recommended) or migrate to the `src/` layout it implies. Until resolved, treat parcel/gh-pages references as historical noise.
-2. **Content schemas are example-driven, not specified.** Hero/level/enemy fields are inferred from README examples. A `content/SCHEMA.md` (or JSON Schema files) would cut ambiguity for less-common fields like `enemyXOffset`, `wallHP`, `armor`.
-3. **Asset organization.** MP3s, JPGs, RTF, and stray files (`IMG_0905.JPG`) sit at repo root alongside code. An `assets/` or `audio/` directory would clean this up. Don't move mid-feature, but worthwhile as a focused cleanup pass.
-4. **`fantasy_narrative.txt` lives outside the content pack system.** Either fold it into `content/` (perhaps as `content/narrative.<pack>.json`) or document why it lives at root.
-5. **No save versioning.** If save/load exists or is coming, add a `saveVersion` field from day one. Migrations are cheap to add early, painful to retrofit.
-6. **Content-load failures are silent.** Add a `console.warn("Pack '<name>' failed to load: <reason>, falling back to static data")` in `contentLoader.js` so authors can debug bad packs.
-7. **No debug flag in manifest.** Adding `"debug": false` under `manifest.json` would let content authors flip verbose logging without code changes.
-8. **No seeded RNG module.** If/when added, route all randomness through it for replay and debug determinism.
-
----
-
-## 9. Working with Claude on this codebase
-
-- **Default to small, surgical changes** over sweeping refactors.
-- **Confirm intent before introducing a new dependency, build step, or framework.** These are the one-way doors for this project.
-- **Read the README and this file before proposing structural changes** — both reflect deliberate decisions.
-- **Cite the recipes in §4 when asked to add content.** They are the project's preferred shape.
-- **When unsure whether something belongs in engine or content, ask.** The default leans content.
-
----
-
-*Last updated: alongside `1.0-shippable`. Update this file when project values or architecture shift.*
+1. **`package.json` stale** — references `parcel`, `src/`, `gh-pages`. README is source of truth. Clean up or ignore.
+2. **No seeded RNG** — `Math.random()` used throughout turn logic. Create `rng.js` when adding replay/determinism.
+3. **Asset sprawl** — MP3s, JPGs, RTF at repo root. Consolidate into `assets/` in a focused cleanup pass; don't move mid-feature.
+4. **`fantasy_narrative.txt` at root** — fold into `content/` or document why it lives outside the pack system.
+5. **No save versioning** — add `saveVersion` field before implementing any save/load.
+6. **Content schemas informal** — fields inferred from README examples; a `content/SCHEMA.md` would help.
+7. **No debug flag** — `manifest.json → "debug": false` would enable verbose logging without code changes.
