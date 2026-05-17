@@ -5,7 +5,28 @@ Format: **What changed**, **Why**, **What it affects**.
 
 ---
 
-## [Unreleased] — 2026-05-17
+## [Unreleased] — 2026-05-17 (continued)
+
+### Asset and directory reorganization
+
+**What:** Moved all loose files from the project root into organized subdirectories and added a `README.md` to every folder:
+
+```
+assets/
+  audio/        ← all 8 MP3 tracks (was root)
+  characters/   ← all 25 hero PNGs (was "PIOSI Characters/")
+  images/       ← loose artwork and reference images (was root)
+content/
+  fantasy_narrative.txt  ← Griot training corpus (was root)
+```
+
+Updated all references: `index.html` audio `src` attributes, `emanations.js` song array, `heroes.js` sprite paths, `content/heroes.core.json` sprite paths, `griot.js` default corpus URL.
+
+**Why:** Audio files, images, and an RTF document were scattered at the project root alongside engine code. The character sprite folder had a space in its name (`PIOSI Characters/`) which is fragile in shell contexts. Consolidating under `assets/` makes the root readable and aligns with the CLAUDE.md known-issue that flagged this cleanup.
+
+**Affects:** `index.html`, `emanations.js`, `heroes.js`, `content/heroes.core.json`, `griot.js` (path strings only — no logic changes). All 97 regression tests continue to pass.
+
+---
 
 ### Codebase modularization (refactor-SIX branch)
 

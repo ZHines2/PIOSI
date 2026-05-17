@@ -121,10 +121,10 @@
     </div>
 
     <!-- Audio elements -->
-    <audio id="background-music" src="DarkAnoid.mp3" loop></audio>
-    <audio id="hero-select-music" src="WoodenPath.mp3" loop></audio>
-    <audio id="level-5-music" src="5GiMaxVision.mp3" loop></audio>
-    <audio id="level-6-music" src="ineedsome.mp3" loop></audio>
+    <audio id="background-music" src="assets/audio/DarkAnoid.mp3" loop></audio>
+    <audio id="hero-select-music" src="assets/audio/WoodenPath.mp3" loop></audio>
+    <audio id="level-5-music" src="assets/audio/5GiMaxVision.mp3" loop></audio>
+    <audio id="level-6-music" src="assets/audio/ineedsome.mp3" loop></audio>
 
     <script type="module">
       import { state } from './state.js';
@@ -134,7 +134,7 @@
       import { initInputHandler } from './inputHandler.js';
 
       Promise.all([
-        initializeGriot('fantasy_narrative.txt'),
+        initializeGriot('content/fantasy_narrative.txt'),
         loadContent().then(({ manifest, heroes, getLevel }) => {
           state.loadedManifest = manifest;
           state.allHeroes = heroes;

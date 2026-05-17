@@ -8,14 +8,14 @@
 let currentSongIndex = 0;
 let isPlaying = false;
 const songs = [
-  'DarkAnoid.mp3', 
-  'WoodenPath.mp3', 
-  '5GiMaxVision.mp3', 
-  'ineedsome.mp3', 
-  'SouthernBelle.mp3', 
-  'whaviors.mp3', 
-  'afrojapanesetwilight.mp3', 
-  'science.mp3'
+  'assets/audio/DarkAnoid.mp3',
+  'assets/audio/WoodenPath.mp3',
+  'assets/audio/5GiMaxVision.mp3',
+  'assets/audio/ineedsome.mp3',
+  'assets/audio/SouthernBelle.mp3',
+  'assets/audio/whaviors.mp3',
+  'assets/audio/afrojapanesetwilight.mp3',
+  'assets/audio/science.mp3',
 ];
 const audioElement = document.getElementById('emanations-audio');
 let uiElement = null;  // Container for instructions and song info
