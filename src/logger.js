@@ -10,7 +10,17 @@ const _IMPORTANT_RE = /turn begins|'s turn|wall collapses|wall hp|level \d|compl
 
 export function logMessage(message) {
   const logDiv = document.getElementById('log');
-  logDiv.innerHTML += `<p>${message}</p>`;
+  const line = document.createElement('p');
+  line.textContent = message;
+  const enemyNames = state.battleEngine ? state.battleEngine.enemies.map(e => e.name) : [];
+  const isEnemyMsg = message === 'Enemy turn begins.' || message === 'Enemy turn completed.' ||
+    enemyNames.some(n =>
+      message.startsWith(`${n} `) || message.startsWith(`${n}'`) ||
+      message.includes(`${n} attacks`) || message.includes(`${n} says:`) || message.includes(`${n} dodges`)
+    );
+  if (isEnemyMsg) line.className = 'enemy-log-entry';
+  logDiv.appendChild(line);
+  while (logDiv.children.length > 220) logDiv.removeChild(logDiv.firstChild);
   logDiv.scrollTop = logDiv.scrollHeight;
   if (_IMPORTANT_RE.test(message)) {
     _pinnedLines.push(message);

@@ -16,4 +16,9 @@ export const state = {
   loadedManifest: null,
   allHeroes: staticHeroes,
   getLevel: getStaticLevel,
+  uiOptions: {
+    showTimeline: true,
+    showIntent: true,
+    showReadability: true,
+  },
 };

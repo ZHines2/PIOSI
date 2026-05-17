@@ -30,7 +30,7 @@ export function getCompleteStats(hero) {
 }
 
 export function renderBattlefield() {
-  const { battleEngine, party, isometricMode } = state;
+  const { battleEngine, party, isometricMode, uiOptions } = state;
   const gridDiv = document.getElementById('battlefield');
   const isoCanvas = document.getElementById('iso-battlefield');
   if (isometricMode) {
@@ -40,13 +40,16 @@ export function renderBattlefield() {
   } else {
     isoCanvas.style.display = 'none';
     gridDiv.style.display = '';
-    gridDiv.innerHTML = battleEngine.drawBattlefield();
+    gridDiv.innerHTML = battleEngine.drawBattlefield(uiOptions.showReadability);
   }
   document.getElementById('status').textContent =
     'Wall HP: ' + battleEngine.wallHP + ' | ' +
     party[battleEngine.currentUnit].name +
     "'s Turn (Moves Left: " + battleEngine.movePoints + ')';
   updateBattleHUD();
+  renderPartyCards();
+  renderTurnTimeline();
+  renderEnemyIntent();
 }
 
 export function updateBattleHUD() {
@@ -80,4 +83,57 @@ export function updateBattleHUD() {
           '</div>';
       }).join('');
   }
+}
+
+export function renderPartyCards() {
+  const { battleEngine, party } = state;
+  const cardsEl = document.getElementById('party-cards');
+  if (!cardsEl || !battleEngine || !party.length) return;
+
+  cardsEl.innerHTML = party.map((hero, index) => {
+    const stats = getCompleteStats(hero);
+    const chips = Object.entries(stats)
+      .filter(([, v]) => typeof v === 'number' && v > 0)
+      .map(([k, v]) => `<span class="stat-chip">${k.charAt(0).toUpperCase() + k.slice(1)}: ${v}</span>`)
+      .join('');
+    const isActive = index === battleEngine.currentUnit && !hero.persistentDeath;
+    const isDead = hero.hp <= 0 || !!hero.persistentDeath;
+    return `<article class="party-card${isActive ? ' active-turn' : ''}${isDead ? ' defeated' : ''}">
+      <div class="party-card-header">
+        ${hero.sprite
+          ? `<img class="party-sprite" src="${hero.sprite}" alt="${hero.name}">`
+          : `<div class="party-symbol">${hero.symbol}</div>`}
+        <h3>${hero.name}</h3>
+      </div>
+      <div class="party-card-stats">${chips || '<span class="stat-chip">No stats</span>'}</div>
+    </article>`;
+  }).join('');
+}
+
+export function renderTurnTimeline() {
+  const { battleEngine, uiOptions } = state;
+  const el = document.getElementById('turn-timeline');
+  if (!el || !battleEngine) return;
+  if (!uiOptions.showTimeline) { el.style.display = 'none'; return; }
+  el.style.display = '';
+  const items = battleEngine.getTurnTimeline(10);
+  el.innerHTML = '<h3 class="panel-title">Turn Order</h3><div class="timeline-list">' +
+    items.map(item => `<div class="timeline-item${item.active ? ' active' : ''}">${item.label}</div>`).join('') +
+    '</div>';
+}
+
+export function renderEnemyIntent() {
+  const { battleEngine, uiOptions } = state;
+  const el = document.getElementById('enemy-intent');
+  if (!el || !battleEngine) return;
+  if (!uiOptions.showIntent) { el.style.display = 'none'; return; }
+  el.style.display = '';
+  const intents = battleEngine.getEnemyIntentPreview(8);
+  el.innerHTML = '<h3 class="panel-title">Enemy Intent</h3><div class="intent-list">' +
+    (intents.length
+      ? intents.map(i =>
+          `<div class="intent-item threat-${i.threatClass}"><strong>${i.enemy}</strong> → ${i.target} <em>(${i.note})</em></div>`
+        ).join('')
+      : '<div class="intent-item">No immediate threats.</div>') +
+    '</div>';
 }

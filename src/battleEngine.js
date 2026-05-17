@@ -22,7 +22,7 @@ export class PersistentDeath {
 }
 
 export class BattleEngine {
-  constructor(party, enemies, fieldRows, fieldCols, wallHP, logCallback, onLevelComplete, onGameOver) {
+  constructor(party, enemies, fieldRows, fieldCols, wallHP, logCallback, onLevelComplete, onGameOver, levelLayout = null) {
     // Keep all heroes in the party array.
     // NOTE: Heroes with persistent death will no longer be referenced in the battlefield.
     this.party = party;
@@ -33,6 +33,7 @@ export class BattleEngine {
     this.logCallback = logCallback;
     this.onLevelComplete = onLevelComplete;
     this.onGameOver = onGameOver;
+    this.levelLayout = levelLayout;
 
     // Advance past any heroes that are already persistently dead at battle start.
     this.currentUnit = 0;
@@ -75,6 +76,7 @@ export class BattleEngine {
 
   initializeBattlefield() {
     const field = Array.from({ length: this.rows }, () => Array(this.cols).fill('.'));
+    this.applyLevelLayout(field);
     this.placeHeroes(field);
     this.placeEnemies(field);
     this.createWall(field);
@@ -114,6 +116,54 @@ export class BattleEngine {
       }
     });
     return field;
+  }
+
+  applyLevelLayout(field) {
+    if (!Array.isArray(this.levelLayout)) return;
+    for (let y = 0; y < this.levelLayout.length; y++) {
+      if (!Array.isArray(this.levelLayout[y])) continue;
+      for (let x = 0; x < this.levelLayout[y].length; x++) {
+        const cell = this.levelLayout[y][x];
+        if (cell && cell.type === 'wall') field[y][x] = '#';
+      }
+    }
+  }
+
+  manhattanDistance(x1, y1, x2, y2) {
+    return Math.abs(x1 - x2) + Math.abs(y1 - y2);
+  }
+
+  getTurnTimeline(maxEntries = 10) {
+    const timeline = [];
+    for (let offset = 0; offset < this.party.length; offset++) {
+      const idx = (this.currentUnit + offset) % this.party.length;
+      const hero = this.party[idx];
+      if (!hero || hero.persistentDeath || hero.hp <= 0) continue;
+      timeline.push({ label: `${hero.symbol} ${hero.name}`, active: idx === this.currentUnit });
+      if (timeline.length >= Math.max(1, maxEntries - 1)) break;
+    }
+    timeline.push({ label: `Enemy Wave (${this.enemies.length})`, active: false });
+    return timeline.slice(0, maxEntries);
+  }
+
+  getEnemyIntentPreview(maxEntries = 8) {
+    const liveHeroes = this.getLiveHeroes();
+    if (!liveHeroes.length || !this.enemies.length) return [];
+    const intents = this.enemies.slice(0, maxEntries).map(enemy => {
+      const target = this.findClosestHero(enemy);
+      if (!target) return { enemy: enemy.name, target: 'No target', note: 'idle', threatClass: 'low' };
+      const distance = this.manhattanDistance(enemy.x, enemy.y, target.x, target.y);
+      const canAttackNow = distance <= 1;
+      const canThreatenThisTurn = distance - (enemy.agility || 1) <= 1;
+      let note = 'repositioning';
+      let threatClass = 'low';
+      if (canAttackNow) { note = `attack now (~${enemy.attack} dmg)`; threatClass = 'high'; }
+      else if (canThreatenThisTurn) { note = 'can engage this turn'; threatClass = 'med'; }
+      return { enemy: enemy.name, target: target.name, note, threatClass };
+    });
+    const rank = { high: 0, med: 1, low: 2 };
+    intents.sort((a, b) => rank[a.threatClass] - rank[b.threatClass]);
+    return intents;
   }
 
   placeHeroes(field) {
@@ -175,17 +225,37 @@ export class BattleEngine {
     }
   }
 
-  drawBattlefield() {
+  drawBattlefield(showReadability = true) {
+    const activeHero = this.party[this.currentUnit] && !this.party[this.currentUnit].persistentDeath
+      ? this.party[this.currentUnit] : null;
+
+    const moveHints = new Set();
+    const attackHints = new Set();
+    if (showReadability && activeHero) {
+      for (let y = 0; y < this.rows; y++) {
+        for (let x = 0; x < this.cols; x++) {
+          const dist = this.manhattanDistance(activeHero.x, activeHero.y, x, y);
+          if (dist === 0) continue;
+          if (this.awaitingAttackDirection) {
+            if (dist <= activeHero.range) attackHints.add(`${x},${y}`);
+          } else if (dist <= this.movePoints && this.isCellPassable(x, y)) {
+            moveHints.add(`${x},${y}`);
+          }
+        }
+      }
+    }
+
     let html = '';
     for (let y = 0; y < this.rows; y++) {
       html += '<div class="row">';
       for (let x = 0; x < this.cols; x++) {
+        const key = `${x},${y}`;
         const cellContent = this.battlefield[y][x];
         let cellClass = '';
         if (cellContent === 'ౚ' || cellContent === 'ඉ') cellClass += ' healing-item';
         if (this.enemies.some(enemy => enemy.symbol === cellContent)) cellClass += ' enemy';
-        // Use the active hero from the party (if not dead) for highlighting.
-        const activeHero = this.party[this.currentUnit] && !this.party[this.currentUnit].persistentDeath ? this.party[this.currentUnit] : null;
+        if (moveHints.has(key)) cellClass += ' move-hint';
+        if (attackHints.has(key)) cellClass += ' attack-hint';
         if (activeHero && activeHero.x === x && activeHero.y === y) {
           cellClass += this.awaitingAttackDirection ? ' attack-mode' : ' active';
         }
@@ -219,7 +289,7 @@ export class BattleEngine {
     }
     const newX = unit.x + dx, newY = unit.y + dy;
     if (!this.isWithinBounds(newX, newY)) return;
-    if (this.battlefield[newY][newX] === 'ᚙ' || this.battlefield[newY][newX] === '█') {
+    if (this.battlefield[newY][newX] === 'ᚙ' || this.battlefield[newY][newX] === '█' || this.battlefield[newY][newX] === '#') {
       this.wallHP -= unit.attack;
       this.logCallback(`${unit.name} attacks the wall for ${unit.attack} damage! (Wall HP: ${this.wallHP})`);
       if (this.wallHP <= 0 && !this.transitioningLevel) {
@@ -367,7 +437,7 @@ export class BattleEngine {
         this.nextTurn();
         return;
       }
-      if (this.battlefield[targetY][targetX] === 'ᚙ' || this.battlefield[targetY][targetX] === '█') {
+      if (this.battlefield[targetY][targetX] === 'ᚙ' || this.battlefield[targetY][targetX] === '█' || this.battlefield[targetY][targetX] === '#') {
         this.wallHP -= unit.attack;
         this.logCallback(`${unit.name} attacks the wall for ${unit.attack} damage! (Wall HP: ${this.wallHP})`);
         this.awaitingAttackDirection = false;

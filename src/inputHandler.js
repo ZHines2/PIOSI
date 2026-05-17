@@ -1,6 +1,6 @@
 import { state } from './state.js';
 import { logMessage, recordAttack } from './logger.js';
-import { renderBattlefield } from './renderer.js';
+import { renderBattlefield, renderTurnTimeline, renderEnemyIntent } from './renderer.js';
 import { showScreen } from './screenManager.js';
 import { updateHeroDisplay, selectHero } from './partySelectUI.js';
 import { updateModeUpHeroDisplay } from './modeUpUI.js';
@@ -158,10 +158,45 @@ export function initInputHandler() {
     });
   }
 
-  document.getElementById('iso-toggle-btn').addEventListener('click', () => {
-    state.isometricMode = !state.isometricMode;
-    if (state.battleEngine) renderBattlefield();
-  });
+  // Options panel toggle
+  const optionsBtn = document.getElementById('options-toggle-btn');
+  const optionsPanel = document.getElementById('options-panel');
+  if (optionsBtn && optionsPanel) {
+    optionsBtn.addEventListener('click', () => optionsPanel.classList.toggle('hidden'));
+  }
+
+  const optIso = document.getElementById('opt-isometric');
+  if (optIso) {
+    optIso.checked = state.isometricMode;
+    optIso.addEventListener('change', () => {
+      state.isometricMode = optIso.checked;
+      if (state.battleEngine && state.currentScreen === 'battle') renderBattlefield();
+    });
+  }
+
+  const optTimeline = document.getElementById('opt-timeline');
+  if (optTimeline) {
+    optTimeline.addEventListener('change', () => {
+      state.uiOptions.showTimeline = optTimeline.checked;
+      renderTurnTimeline();
+    });
+  }
+
+  const optIntent = document.getElementById('opt-intent');
+  if (optIntent) {
+    optIntent.addEventListener('change', () => {
+      state.uiOptions.showIntent = optIntent.checked;
+      renderEnemyIntent();
+    });
+  }
+
+  const optReadability = document.getElementById('opt-readability');
+  if (optReadability) {
+    optReadability.addEventListener('change', () => {
+      state.uiOptions.showReadability = optReadability.checked;
+      if (state.battleEngine && state.currentScreen === 'battle') renderBattlefield();
+    });
+  }
 
   document.getElementById('dpad-toggle-btn').addEventListener('click', () => {
     document.getElementById('mobile-dpad').classList.toggle('dpad-visible');

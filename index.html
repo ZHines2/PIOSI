@@ -35,7 +35,15 @@
     <!-- Battle Screen -->
     <div id="game-container">
       <h1 id="level-title">Level Title</h1>
-      <button id="iso-toggle-btn" title="Toggle Isometric View" aria-label="Toggle Isometric View">⬡</button>
+      <div id="battle-options-wrap">
+        <button id="options-toggle-btn" title="Battle Options" aria-label="Battle Options">⚙ Options</button>
+        <div id="options-panel" class="hidden">
+          <label><input id="opt-isometric" type="checkbox" /> Isometric View</label>
+          <label><input id="opt-timeline" type="checkbox" checked /> Turn Order</label>
+          <label><input id="opt-intent" type="checkbox" checked /> Enemy Intent</label>
+          <label><input id="opt-readability" type="checkbox" checked /> Move Hints</label>
+        </div>
+      </div>
       <button id="dpad-toggle-btn" title="Toggle D-Pad" aria-label="Toggle D-Pad">🕹</button>
       <div id="battle-hud">
         <div id="hud-top"></div>
@@ -47,6 +55,9 @@
       </div>
       <div id="battlefield"></div>
       <canvas id="iso-battlefield" style="display:none;"></canvas>
+      <div id="party-cards"></div>
+      <div id="turn-timeline" class="battle-info-panel"></div>
+      <div id="enemy-intent" class="battle-info-panel"></div>
       <p id="status"></p>
       <div id="log"></div>
       <p>

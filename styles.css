@@ -594,3 +594,205 @@ button:active {
   display: none;
 }
 
+
+/* ── Battle Options Panel ────────────────────────────────── */
+#battle-options-wrap {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 50;
+  text-align: right;
+}
+
+#options-toggle-btn {
+  padding: 6px 12px;
+  border: 1px solid #8bb7df;
+  background: linear-gradient(180deg, #17344f, #102235);
+  color: #e5f3ff;
+  font-family: 'Sono', monospace;
+  font-size: 0.85rem;
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+#options-toggle-btn:hover { filter: brightness(1.15); }
+
+#options-panel {
+  margin-top: 6px;
+  background: #102235;
+  border: 1px solid #2a4f6e;
+  border-radius: 6px;
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+}
+
+#options-panel label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: #cce6ff;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+#options-panel.hidden { display: none; }
+
+/* ── Move / Attack Hint Cells ────────────────────────────── */
+.cell.move-hint {
+  background-color: rgba(60, 140, 255, 0.18);
+  border-color: rgba(60, 140, 255, 0.5);
+}
+
+.cell.attack-hint {
+  background-color: rgba(255, 80, 80, 0.15);
+  border-color: rgba(255, 80, 80, 0.45);
+}
+
+/* ── Party Cards ─────────────────────────────────────────── */
+#party-cards {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin: 10px auto;
+  max-width: 860px;
+}
+
+.party-card {
+  background: linear-gradient(160deg, #1a2e40, #111c28);
+  border: 1px solid #2a4f6e;
+  border-radius: 10px;
+  padding: 10px 14px;
+  min-width: 180px;
+  max-width: 220px;
+  flex: 1 1 180px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.party-card.active-turn {
+  border-color: #5bc4ff;
+  box-shadow: 0 0 12px rgba(91, 196, 255, 0.35);
+}
+
+.party-card.defeated {
+  opacity: 0.4;
+  filter: grayscale(0.6);
+}
+
+.party-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.party-card-header h3 {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #cce6ff;
+}
+
+.party-sprite {
+  height: 36px;
+  width: auto;
+  image-rendering: pixelated;
+}
+
+.party-symbol {
+  font-size: 1.4rem;
+  line-height: 1;
+}
+
+.party-card-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.stat-chip {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-size: 0.7rem;
+  color: #b8d8f0;
+  white-space: nowrap;
+}
+
+/* ── Turn Timeline & Enemy Intent Panels ─────────────────── */
+.battle-info-panel {
+  margin: 6px auto;
+  max-width: 600px;
+  background: #0f1e2b;
+  border: 1px solid #2a4f6e;
+  border-radius: 8px;
+  padding: 8px 14px;
+  text-align: left;
+  font-size: 0.82rem;
+}
+
+.panel-title {
+  margin: 0 0 6px;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #5bc4ff;
+}
+
+.timeline-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.timeline-item {
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.06);
+  color: #9bbfd4;
+  font-size: 0.78rem;
+}
+
+.timeline-item.active {
+  background: #1a4a6a;
+  color: #5bc4ff;
+  font-weight: bold;
+}
+
+.intent-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.intent-item {
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 0.78rem;
+  color: #9bbfd4;
+}
+
+.intent-item.threat-high {
+  background: rgba(220, 50, 50, 0.18);
+  color: #ff9090;
+}
+
+.intent-item.threat-med {
+  background: rgba(220, 160, 40, 0.15);
+  color: #ffd580;
+}
+
+.intent-item.threat-low {
+  background: rgba(60, 140, 60, 0.12);
+  color: #90d090;
+}
+
+/* ── Enemy Log Entries ───────────────────────────────────── */
+#log .enemy-log-entry {
+  color: #ff9090;
+  opacity: 0.85;
+}

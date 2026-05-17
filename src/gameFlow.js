@@ -14,13 +14,14 @@ export function initializeBattle() {
     showScreen('victory');
     return;
   }
-  const { rows, cols, wallHP, title, enemies: levelEnemies } = settings;
+  const { rows, cols, wallHP, title, enemies: levelEnemies, layout } = settings;
   document.getElementById('level-title').textContent = title;
   state.enemies = levelEnemies;
   state.battleEngine = new BattleEngine(
     state.party, state.enemies,
     rows, cols, wallHP,
-    logMessage, onLevelComplete, onGameOver
+    logMessage, onLevelComplete, onGameOver,
+    layout || null
   );
   renderBattlefield();
 
