@@ -8,7 +8,7 @@ const recentInteractions = [];
 const MAX_INTERACTIONS = 10;
 
 // Loads the initial corpus from a URL or file path.
-export async function loadTrainingCorpus(corpusUrl = "fantasy_narrative.txt") {
+export async function loadTrainingCorpus(corpusUrl = "content/fantasy_narrative.txt") {
   try {
     const response = await fetch(corpusUrl);
     trainingCorpus = await response.text();

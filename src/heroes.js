@@ -10,7 +10,7 @@ export const heroes = [
   {
     name: "Knight",
     symbol: "♞",
-    sprite: "PIOSI Characters/Knight.png",
+    sprite: "assets/characters/Knight.png",
     attack: 4,
     range: 1,
     agility: 4,
@@ -19,7 +19,7 @@ export const heroes = [
   {
     name: "Archer",
     symbol: "⚔",
-    sprite: "PIOSI Characters/Archer.png",
+    sprite: "assets/characters/Archer.png",
     attack: 3,
     range: 5,
     agility: 4,
@@ -28,7 +28,7 @@ export const heroes = [
   {
     name: "Wizard",
     symbol: "✡",
-    sprite: "PIOSI Characters/Wizard.png",
+    sprite: "assets/characters/Wizard.png",
     attack: 2,
     range: 7,
     agility: 2,
@@ -38,7 +38,7 @@ export const heroes = [
   {
     name: "Berserker",
     symbol: "⚒",
-    sprite: "PIOSI Characters/Berserker.png",
+    sprite: "assets/characters/Berserker.png",
     attack: 6,
     range: 1,
     agility: 3,
@@ -48,7 +48,7 @@ export const heroes = [
   {
     name: "Rogue",
     symbol: "☠",
-    sprite: "PIOSI Characters/Rogue.png",
+    sprite: "assets/characters/Rogue.png",
     attack: 4,
     range: 2,
     agility: 6,
@@ -57,7 +57,7 @@ export const heroes = [
   {
     name: "Cleric",
     symbol: "✝",
-    sprite: "PIOSI Characters/Cleric.png",
+    sprite: "assets/characters/Cleric.png",
     attack: 2,
     range: 1,
     agility: 3,
@@ -67,7 +67,7 @@ export const heroes = [
   {
     name: "Jester",
     symbol: "♣",
-    sprite: "PIOSI Characters/Jester.png",
+    sprite: "assets/characters/Jester.png",
     attack: 3,
     range: 2,
     agility: 5,
@@ -78,7 +78,7 @@ export const heroes = [
   {  
     name: "Meatwalker",
     symbol: "₻",
-    sprite: "PIOSI Characters/Meatwalker.png",
+    sprite: "assets/characters/Meatwalker.png",
     attack: 7,
     range: 1,
     agility: 2,
@@ -90,7 +90,7 @@ export const heroes = [
   {
     name: "Soothscribe",
     symbol: "☄",
-    sprite: "PIOSI Characters/Soothscribe.png",
+    sprite: "assets/characters/Soothscribe.png",
     attack: 2,
     range: 6,
     agility: 3,
@@ -101,7 +101,7 @@ export const heroes = [
   {
     name: "Nonsequiteur",
     symbol: "∄",
-    sprite: "PIOSI Characters/Nonsequiteur.png",
+    sprite: "assets/characters/Nonsequiteur.png",
     attack: 3,
     range: 3,
     agility: 3,
@@ -112,7 +112,7 @@ export const heroes = [
   {
     name: "Griot",
     symbol: "℣",
-    sprite: "PIOSI Characters/Griot.png",
+    sprite: "assets/characters/Griot.png",
     attack: 1,
     range: 1,
     agility: 1,
@@ -122,7 +122,7 @@ export const heroes = [
   {
     name: "Torcher",
     symbol: "⚶",
-    sprite: "PIOSI Characters/Torcher.png",
+    sprite: "assets/characters/Torcher.png",
     attack: 4,
     range: 2,
     agility: 3,
@@ -133,7 +133,7 @@ export const heroes = [
   {
     name: "Slüjier",
     symbol: "🜜",
-    sprite: "PIOSI Characters/Slujier.png",
+    sprite: "assets/characters/Slujier.png",
     attack: 5,
     range: 1,
     agility: 4,
@@ -144,7 +144,7 @@ export const heroes = [
   {
     name: "Shrink",
     symbol: "☊",
-    sprite: "PIOSI Characters/Shrink.png",
+    sprite: "assets/characters/Shrink.png",
     attack: 2,
     range: 1,
     agility: 3,
@@ -155,7 +155,7 @@ export const heroes = [
   {
     name: "Sycophant",
     symbol: "♟",
-    sprite: "PIOSI Characters/Sycophant.png",
+    sprite: "assets/characters/Sycophant.png",
     attack: 0,
     range: 0,
     agility: 2,
@@ -165,7 +165,7 @@ export const heroes = [
   {
     name: "Yeetrian",
     symbol: "⛓",
-    sprite: "PIOSI Characters/Yeetrian.png",
+    sprite: "assets/characters/Yeetrian.png",
     attack: 3,
     range: 2,
     agility: 4,
@@ -176,7 +176,7 @@ export const heroes = [
   {
     name: "Mellitron",
     symbol: "丰",
-    sprite: "PIOSI Characters/Mellitron.png",
+    sprite: "assets/characters/Mellitron.png",
     attack: 1,
     range: 3,
     agility: 5,
@@ -187,7 +187,7 @@ export const heroes = [
   {
     name: "Gastronomer",
     symbol: "𑍐",
-    sprite: "PIOSI Characters/Gastronomer.png",
+    sprite: "assets/characters/Gastronomer.png",
     attack: 2,
     range: 1,
     agility: 3,
@@ -199,7 +199,7 @@ export const heroes = [
   {
     name: "Palisade",
     symbol: "ᱟ",
-    sprite: "PIOSI Characters/Palisade.png",
+    sprite: "assets/characters/Palisade.png",
     attack: 3,
     range: 1,
     agility: 2,
@@ -211,7 +211,7 @@ export const heroes = [
   {
     name: "Mycelian",
     symbol: "ৡ",
-    sprite: "PIOSI Characters/Mycelian.png",
+    sprite: "assets/characters/Mycelian.png",
     attack: 2,
     range: 1,
     agility: 3,
@@ -222,7 +222,7 @@ export const heroes = [
   {
     name: "Pæg",
     symbol: "ꚤ",
-    sprite: "PIOSI Characters/Paeg.png",
+    sprite: "assets/characters/Paeg.png",
     attack: 1,
     range: 1,
     agility: 1,  
@@ -242,7 +242,7 @@ export const heroes = [
   {
     name: "Kemetic",
     symbol: "𓋇",
-    sprite: "PIOSI Characters/Kemetic.png",
+    sprite: "assets/characters/Kemetic.png",
     attack: 5,
     range: 5,
     agility: 5,
@@ -254,7 +254,7 @@ export const heroes = [
   {
     name: "Greenjay",
     symbol: "࿈",
-    sprite: "PIOSI Characters/Greenjay.png",
+    sprite: "assets/characters/Greenjay.png",
     attack: 5,
     range: 2,
     agility: 4,
@@ -265,7 +265,7 @@ export const heroes = [
   {
     name: "Sysiphuge",
     symbol: "₾",
-    sprite: "PIOSI Characters/Sysiphuge.png",
+    sprite: "assets/characters/Sysiphuge.png",
     attack: 4,
     range: 1,
     agility: 4,
@@ -276,7 +276,7 @@ export const heroes = [
   {
     name: "Bombador",
     symbol: "❦",
-    sprite: "PIOSI Characters/Bombador.png",
+    sprite: "assets/characters/Bombador.png",
     attack: 2,
     range: 1,
     agility: 6,
