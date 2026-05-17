@@ -44,6 +44,16 @@ All JavaScript engine and UI modules. Loaded as ES modules from `index.html` via
 | `gameFlow.js` | `startGame`, `initializeBattle`, `onLevelComplete`, `onGameOver`, `restartGame`, cheat codes, mode launchers |
 | `inputHandler.js` | Keyboard router, cheat detection, touch handler, D-pad and iso-toggle wiring |
 
+## Design guidance
+
+**Each module should have one job that's hard to split.** If you find yourself thinking "I'll just add this to `gameFlow.js`," that's a signal to ask whether a new focused file belongs. The current split — engine, data, UI, modes, application — is the result of finding the natural seams in the codebase. Honor those seams. *(John Romero)*
+
+**The engine is the most protected surface.** `battleEngine.js` and `applyKnockback.js` are DOM-free, content-agnostic, and fully testable. Every change to these files has the highest blast radius. Apply the most scrutiny here. If a mechanic can be implemented in a content-pack rather than the engine, it should be. *(Yu Suzuki, Warren Spector)*
+
+**State flows in one direction.** `state.js` is written to by the application layer and read by the UI layer. Modules that reach up into `state.js` from the engine layer are a sign that something belongs in the application layer instead. When a module's import list starts including `state.js`, ask whether the data should be passed as a parameter instead. *(Jesse James Garrett)*
+
+**The UI layer's job is translation, not decisions.** `renderer.js`, `partySelectUI.js`, and `modeUpUI.js` translate state into DOM; they should not contain game logic. If a UI module is making decisions about game outcomes, the logic has leaked into the wrong layer. *(Don Norman)*
+
 ## Import rules
 
 - `battleEngine.js` and `applyKnockback.js` must stay content-agnostic — no hero names, level IDs, or enemy types hardcoded.

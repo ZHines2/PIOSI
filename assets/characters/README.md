@@ -451,6 +451,18 @@ Pæg carries every special stat simultaneously — Burn, Slüj, Heal, Yeet, Swar
 
 ---
 
+## Hero design philosophy
+
+Before adding a new hero, run it through these questions:
+
+**Does this hero do something no one else does?** The roster should be a collection of distinct mechanical identities. If the new hero's defining ability overlaps significantly with an existing one, either differentiate it further or reconsider whether the roster needs it. The design space between Torcher (fixed-duration DoT) and Slüjier (stacking DoT) is intentionally narrow but distinct. *(Warren Spector)*
+
+**Is the Mode Up outcome compelling?** Every hero is chosen twice — once at party select and once at the Mode Up screen. A hero with a great combat identity but a weak Mode Up will always lose out to one where both moments feel good. The Mode Up should amplify the hero's identity, not just add generic stats. *(Miyamoto, Peter Molyneux)*
+
+**Can the sprite communicate the mechanical identity?** A player who has never read this README should be able to look at the party select screen and form a rough sense of each hero's personality from the sprite alone. Aggression, fragility, speed, support — these should be readable in the visual. *(Jordan Mechner, Aarron Walter)*
+
+**What does this hero teach the player?** The best additions expand the player's understanding of the game's systems. Pæg teaches how all stats interact simultaneously. Sycophant teaches how compounding buffs work over time. Kemetic teaches that death can be a strategic choice. A new hero that doesn't reveal something new about the engine's depth is just roster bloat. *(Ken Levine, Yu Suzuki)*
+
 ## Adding a new hero
 
 See [`docs/hero-manifestation-guide.md`](../../docs/hero-manifestation-guide.md) for the full authoring guide. The short version:

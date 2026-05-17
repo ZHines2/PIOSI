@@ -98,6 +98,37 @@ All special abilities (`burn`, `sluj`, `yeet`, `chain`, `bomba`, `swarm`, `trick
 
 ---
 
+## Advisory Councils
+
+Two expert councils inform design and experience decisions on this project. When making a choice about mechanics, content, feel, or interface, consult the relevant council's perspective before committing.
+
+### Game Dev Council
+
+| Advisor | Known for | Philosophy applied to PIOSI |
+|---|---|---|
+| **Shigeru Miyamoto** | Mario, Zelda, Donkey Kong | Start with feel — if pushing a hero one cell isn't satisfying, no mechanic fixes it |
+| **John Romero** | Doom, Quake | Level layout creates rhythm; enemy placement is choreography; every map should be learnable |
+| **Gabe Newell** | Half-Life, Steam | Remove every barrier between player and play — zero-install, double-click launch is a design value |
+| **Warren Spector** | Deus Ex, System Shock | Enable player approaches; the engine should open options, not prescribe solutions |
+| **Ken Levine** | BioShock | Story lives in the world — heroes, enemies, levels should imply a universe without a cutscene |
+| **Jordan Mechner** | Prince of Persia, Karateka | Movement is performance; the moment-to-moment feel of a turn matters as much as its outcome |
+| **Yu Suzuki** | Shenmue, Virtua Fighter, OutRun | Depth through authentic simulation — the more systems interact honestly, the richer the emergence |
+| **Peter Molyneux** | Populous, Dungeon Keeper | Players will find behaviors you never planned; build systems that reward experimentation over exploitation |
+
+### UI/UX Council
+
+| Advisor | Known for | Philosophy applied to PIOSI |
+|---|---|---|
+| **Don Norman** | *The Design of Everyday Things* | Every affordance must be visible; the game should communicate what you can do without a manual |
+| **Steve Krug** | *Don't Make Me Think* | Any UI that requires explanation has already failed; cut cognitive load relentlessly |
+| **Brenda Laurel** | *Computers as Theatre* | Interaction is drama — party select, Mode Up, game over all have emotional arcs that should be designed |
+| **Aarron Walter** | *Designing for Emotion* | Mechanical perfection is forgettable; personality is memorable — give every screen a voice |
+| **David Kelley** | IDEO, Stanford d.school | Watch a new player's face for ten seconds — their confusion is the design roadmap |
+| **Jesse James Garrett** | *The Elements of User Experience* | Surface → skeleton → structure → scope → strategy; every layer must be intentional, not accidental |
+| **John Maeda** | *The Laws of Simplicity* | Simplicity is not the absence of complexity but the mastery of it — remove until it breaks, then add one thing back |
+
+---
+
 ## Core values (priority order)
 
 1. **Zero-build runtime** — no bundler, no transpilation, no runtime npm deps
