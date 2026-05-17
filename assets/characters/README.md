@@ -25,7 +25,7 @@ Heroes built to absorb damage and hit hard at close range.
 ---
 
 ### Knight  `♞`
-![Knight](Knight.png)
+<img src="Knight.png" alt="Knight" height="160">
 
 **ATK 4 | RNG 1 | AGI 4 | HP 18**
 
@@ -38,7 +38,7 @@ The baseline warrior. High health, solid attack, enough agility to stay mobile. 
 ---
 
 ### Berserker  `⚒`
-![Berserker](Berserker.png)
+<img src="Berserker.png" alt="Berserker" height="160">
 
 **ATK 6 | RNG 1 | AGI 3 | HP 20 | Rage 1**
 
@@ -53,7 +53,7 @@ The highest base attack in the game. Slow, but doesn't need to be fast — it on
 ---
 
 ### Meatwalker  `₻`
-![Meatwalker](Meatwalker.png)
+<img src="Meatwalker.png" alt="Meatwalker" height="160">
 
 **ATK 7 | RNG 1 | AGI 2 | HP 22 | Heal 1 | Bulk 1**
 
@@ -68,7 +68,7 @@ The heaviest hitter in the roster. Moves like a glacier but swings like a wrecki
 ---
 
 ### Palisade  `ᱟ`
-![Palisade](Palisade.png)
+<img src="Palisade.png" alt="Palisade" height="160">
 
 **ATK 3 | RNG 1 | AGI 2 | HP 20 | Armor 5**
 
@@ -83,7 +83,7 @@ The tank. Armor absorbs incoming damage before HP takes a scratch. At Armor 5, P
 ---
 
 ### Slüjier  `🜜`
-![Slüjier](Slujier.png)
+<img src="Slujier.png" alt="Slüjier" height="160">
 
 **ATK 5 | RNG 1 | AGI 4 | HP 16 | Sluj 1**
 
@@ -98,7 +98,7 @@ Fast melee with a toxic signature. Every hit applies a stacking damage-over-time
 ---
 
 ### Greenjay  `࿈`
-![Greenjay](Greenjay.png)
+<img src="Greenjay.png" alt="Greenjay" height="160">
 
 **ATK 5 | RNG 2 | AGI 4 | HP 30 | Rise 5**
 
@@ -119,7 +119,7 @@ Heroes with long attack rays who prefer distance.
 ---
 
 ### Archer  `⚔`
-![Archer](Archer.png)
+<img src="Archer.png" alt="Archer" height="160">
 
 **ATK 3 | RNG 5 | AGI 4 | HP 12**
 
@@ -132,7 +132,7 @@ Long range, fast, fragile. The Archer can threaten enemies across most of the ba
 ---
 
 ### Wizard  `✡`
-![Wizard](Wizard.png)
+<img src="Wizard.png" alt="Wizard" height="160">
 
 **ATK 2 | RNG 7 | AGI 2 | HP 10 | Chain 5**
 
@@ -147,7 +147,7 @@ The longest range in the game — nearly the full map width. Low attack and terr
 ---
 
 ### Soothscribe  `☄`
-![Soothscribe](Soothscribe.png)
+<img src="Soothscribe.png" alt="Soothscribe" height="160">
 
 **ATK 2 | RNG 6 | AGI 3 | HP 11 | Fate 1**
 
@@ -168,7 +168,7 @@ Mobile heroes who hit from unexpected angles.
 ---
 
 ### Rogue  `☠`
-![Rogue](Rogue.png)
+<img src="Rogue.png" alt="Rogue" height="160">
 
 **ATK 4 | RNG 2 | AGI 6 | HP 12**
 
@@ -181,7 +181,7 @@ The fastest hero. Six move points per turn means the Rogue can cross the map, la
 ---
 
 ### Yeetrian  `⛓`
-![Yeetrian](Yeetrian.png)
+<img src="Yeetrian.png" alt="Yeetrian" height="160">
 
 **ATK 3 | RNG 2 | AGI 4 | HP 14 | Yeet 1**
 
@@ -196,7 +196,7 @@ Crowd control specialist. Yeetrian doesn't just damage enemies — it sends them
 ---
 
 ### Bombador  `❦`
-![Bombador](Bombador.png)
+<img src="Bombador.png" alt="Bombador" height="160">
 
 **ATK 2 | RNG 1 | AGI 6 | HP 20 | Bomba 5**
 
@@ -211,7 +211,7 @@ A reaction fighter. Bombador's own attacks are modest — the power comes from b
 ---
 
 ### Sysiphuge  `₾`
-![Sysiphuge](Sysiphuge.png)
+<img src="Sysiphuge.png" alt="Sysiphuge" height="160">
 
 **ATK 4 | RNG 1 | AGI 4 | HP 16 | Dodge 4**
 
@@ -232,7 +232,7 @@ Heroes who strengthen allies, manipulate enemies, or provide unique battlefield 
 ---
 
 ### Cleric  `✝`
-![Cleric](Cleric.png)
+<img src="Cleric.png" alt="Cleric" height="160">
 
 **ATK 2 | RNG 1 | AGI 3 | HP 12 | Heal 4**
 
@@ -247,7 +247,7 @@ The party's healer. Low attack, but attacking in the direction of a wounded ally
 ---
 
 ### Shrink  `☊`
-![Shrink](Shrink.png)
+<img src="Shrink.png" alt="Shrink" height="160">
 
 **ATK 2 | RNG 1 | AGI 3 | HP 12 | Psych 1**
 
@@ -262,7 +262,7 @@ Psychological support. Low individual combat output, but each Shrink attack buff
 ---
 
 ### Mellitron  `丰`
-![Mellitron](Mellitron.png)
+<img src="Mellitron.png" alt="Mellitron" height="160">
 
 **ATK 1 | RNG 3 | AGI 5 | HP 18 | Swarm 2**
 
@@ -277,7 +277,7 @@ Passive area damage. Mellitron's direct attack is negligible, but the Swarm stat
 ---
 
 ### Gastronomer  `𑍐`
-![Gastronomer](Gastronomer.png)
+<img src="Gastronomer.png" alt="Gastronomer" height="160">
 
 **ATK 2 | RNG 1 | AGI 3 | HP 15 | Spicy 1**
 
@@ -292,7 +292,7 @@ Forager. The Gastronomer doesn't fight particularly well, but turns battlefield 
 ---
 
 ### Mycelian  `ৡ`
-![Mycelian](Mycelian.png)
+<img src="Mycelian.png" alt="Mycelian" height="160">
 
 **ATK 2 | RNG 1 | AGI 3 | HP 15 | Spore 1**
 
@@ -313,7 +313,7 @@ Unusual heroes with unorthodox mechanics or exceptional design space.
 ---
 
 ### Jester  `♣`
-![Jester](Jester.png)
+<img src="Jester.png" alt="Jester" height="160">
 
 **ATK 3 | RNG 2 | AGI 5 | HP 10 | Trick 1**
 
@@ -330,7 +330,7 @@ Chaotic debuffer. The Jester attacks enemies' stats directly, reducing their eff
 ---
 
 ### Torcher  `⚶`
-![Torcher](Torcher.png)
+<img src="Torcher.png" alt="Torcher" height="160">
 
 **ATK 4 | RNG 2 | AGI 3 | HP 14 | Burn 1**
 
@@ -345,7 +345,7 @@ Fire damage specialist. Solid direct attack plus a DoT that activates passively 
 ---
 
 ### Kemetic  `𓋇`
-![Kemetic](Kemetic.png)
+<img src="Kemetic.png" alt="Kemetic" height="160">
 
 **ATK 5 | RNG 5 | AGI 5 | HP 25 | Ankh 5**
 
@@ -360,7 +360,7 @@ The most balanced elite hero. High stats across every dimension — but the Ankh
 ---
 
 ### Nonsequiteur  `∄`
-![Nonsequiteur](Nonsequiteur.png)
+<img src="Nonsequiteur.png" alt="Nonsequiteur" height="160">
 
 **ATK 3 | RNG 3 | AGI 3 | HP 10 | Caprice 1**
 
@@ -377,7 +377,7 @@ Unpredictable wildcard. Average stats in every column with a signature built aro
 ---
 
 ### Sycophant  `♟`
-![Sycophant](Sycophant.png)
+<img src="Sycophant.png" alt="Sycophant" height="160">
 
 **ATK 0 | RNG 0 | AGI 2 | HP 15**
 
@@ -390,7 +390,7 @@ Starts with nothing. Literally — zero attack, zero range. The Sycophant cannot
 ---
 
 ### Griot  `℣`
-![Griot](Griot.png)
+<img src="Griot.png" alt="Griot" height="160">
 
 **ATK 1 | RNG 1 | AGI 1 | HP 10**
 
@@ -405,7 +405,7 @@ The weakest combatant on paper. The Griot reacts to the history of the battle �
 ---
 
 ### Pæg  `ꚤ`
-![Pæg](Paeg.png)
+<img src="Paeg.png" alt="Pæg" height="160">
 
 **ATK 1 | RNG 1 | AGI 1 | HP 1 | Every special stat: 1**
 
@@ -423,31 +423,31 @@ Pæg carries every special stat simultaneously — Burn, Slüj, Heal, Yeet, Swar
 
 | | Hero | ATK | RNG | AGI | HP | Signature |
 |---|---|---|---|---|---|---|
-| ![Knight](Knight.png) | Knight | 4 | 1 | 4 | 18 | — |
-| ![Archer](Archer.png) | Archer | 3 | 5 | 4 | 12 | — |
-| ![Wizard](Wizard.png) | Wizard | 2 | 7 | 2 | 10 | Chain (AoE arc) |
-| ![Berserker](Berserker.png) | Berserker | 6 | 1 | 3 | 20 | Rage (gains stats when hit) |
-| ![Rogue](Rogue.png) | Rogue | 4 | 2 | 6 | 12 | — |
-| ![Cleric](Cleric.png) | Cleric | 2 | 1 | 3 | 12 | Heal (restores ally HP) |
-| ![Jester](Jester.png) | Jester | 3 | 2 | 5 | 10 | Trick (debuffs enemy stats) |
-| ![Meatwalker](Meatwalker.png) | Meatwalker | 7 | 1 | 2 | 22 | Bulk |
-| ![Soothscribe](Soothscribe.png) | Soothscribe | 2 | 6 | 3 | 11 | Fate |
-| ![Nonsequiteur](Nonsequiteur.png) | Nonsequiteur | 3 | 3 | 3 | 10 | Caprice (random stat growth) |
-| ![Griot](Griot.png) | Griot | 1 | 1 | 1 | 10 | Narrative flavor |
-| ![Torcher](Torcher.png) | Torcher | 4 | 2 | 3 | 14 | Burn (fixed DoT) |
-| ![Slüjier](Slujier.png) | Slüjier | 5 | 1 | 4 | 16 | Slüj (stacking DoT) |
-| ![Shrink](Shrink.png) | Shrink | 2 | 1 | 3 | 12 | Psych (buffs random ally) |
-| ![Sycophant](Sycophant.png) | Sycophant | 0 | 0 | 2 | 15 | Mode Up buffs every stat |
-| ![Yeetrian](Yeetrian.png) | Yeetrian | 3 | 2 | 4 | 14 | Yeet (knockback) |
-| ![Mellitron](Mellitron.png) | Mellitron | 1 | 3 | 5 | 18 | Swarm (passive AoE aura) |
-| ![Gastronomer](Gastronomer.png) | Gastronomer | 2 | 1 | 3 | 15 | Spicy (vittles heal more) |
-| ![Palisade](Palisade.png) | Palisade | 3 | 1 | 2 | 20 | Armor (damage shield) |
-| ![Mycelian](Mycelian.png) | Mycelian | 2 | 1 | 3 | 15 | Spore (mushroom upgrades) |
-| ![Pæg](Paeg.png) | Pæg | 1 | 1 | 1 | 1 | Every stat at 1 |
-| ![Kemetic](Kemetic.png) | Kemetic | 5 | 5 | 5 | 25 | Ankh (buffs allies on death) |
-| ![Greenjay](Greenjay.png) | Greenjay | 5 | 2 | 4 | 30 | Rise (resurrects after death) |
-| ![Sysiphuge](Sysiphuge.png) | Sysiphuge | 4 | 1 | 4 | 16 | Dodge (evasion chance) |
-| ![Bombador](Bombador.png) | Bombador | 2 | 1 | 6 | 20 | Bomba (reaction damage) |
+| <img src="Knight.png" alt="Knight" height="64"> | Knight | 4 | 1 | 4 | 18 | — |
+| <img src="Archer.png" alt="Archer" height="64"> | Archer | 3 | 5 | 4 | 12 | — |
+| <img src="Wizard.png" alt="Wizard" height="64"> | Wizard | 2 | 7 | 2 | 10 | Chain (AoE arc) |
+| <img src="Berserker.png" alt="Berserker" height="64"> | Berserker | 6 | 1 | 3 | 20 | Rage (gains stats when hit) |
+| <img src="Rogue.png" alt="Rogue" height="64"> | Rogue | 4 | 2 | 6 | 12 | — |
+| <img src="Cleric.png" alt="Cleric" height="64"> | Cleric | 2 | 1 | 3 | 12 | Heal (restores ally HP) |
+| <img src="Jester.png" alt="Jester" height="64"> | Jester | 3 | 2 | 5 | 10 | Trick (debuffs enemy stats) |
+| <img src="Meatwalker.png" alt="Meatwalker" height="64"> | Meatwalker | 7 | 1 | 2 | 22 | Bulk |
+| <img src="Soothscribe.png" alt="Soothscribe" height="64"> | Soothscribe | 2 | 6 | 3 | 11 | Fate |
+| <img src="Nonsequiteur.png" alt="Nonsequiteur" height="64"> | Nonsequiteur | 3 | 3 | 3 | 10 | Caprice (random stat growth) |
+| <img src="Griot.png" alt="Griot" height="64"> | Griot | 1 | 1 | 1 | 10 | Narrative flavor |
+| <img src="Torcher.png" alt="Torcher" height="64"> | Torcher | 4 | 2 | 3 | 14 | Burn (fixed DoT) |
+| <img src="Slujier.png" alt="Slüjier" height="64"> | Slüjier | 5 | 1 | 4 | 16 | Slüj (stacking DoT) |
+| <img src="Shrink.png" alt="Shrink" height="64"> | Shrink | 2 | 1 | 3 | 12 | Psych (buffs random ally) |
+| <img src="Sycophant.png" alt="Sycophant" height="64"> | Sycophant | 0 | 0 | 2 | 15 | Mode Up buffs every stat |
+| <img src="Yeetrian.png" alt="Yeetrian" height="64"> | Yeetrian | 3 | 2 | 4 | 14 | Yeet (knockback) |
+| <img src="Mellitron.png" alt="Mellitron" height="64"> | Mellitron | 1 | 3 | 5 | 18 | Swarm (passive AoE aura) |
+| <img src="Gastronomer.png" alt="Gastronomer" height="64"> | Gastronomer | 2 | 1 | 3 | 15 | Spicy (vittles heal more) |
+| <img src="Palisade.png" alt="Palisade" height="64"> | Palisade | 3 | 1 | 2 | 20 | Armor (damage shield) |
+| <img src="Mycelian.png" alt="Mycelian" height="64"> | Mycelian | 2 | 1 | 3 | 15 | Spore (mushroom upgrades) |
+| <img src="Paeg.png" alt="Pæg" height="64"> | Pæg | 1 | 1 | 1 | 1 | Every stat at 1 |
+| <img src="Kemetic.png" alt="Kemetic" height="64"> | Kemetic | 5 | 5 | 5 | 25 | Ankh (buffs allies on death) |
+| <img src="Greenjay.png" alt="Greenjay" height="64"> | Greenjay | 5 | 2 | 4 | 30 | Rise (resurrects after death) |
+| <img src="Sysiphuge.png" alt="Sysiphuge" height="64"> | Sysiphuge | 4 | 1 | 4 | 16 | Dodge (evasion chance) |
+| <img src="Bombador.png" alt="Bombador" height="64"> | Bombador | 2 | 1 | 6 | 20 | Bomba (reaction damage) |
 
 ---
 
