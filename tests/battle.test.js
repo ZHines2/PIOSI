@@ -8,9 +8,9 @@
 
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { BattleEngine, PersistentDeath } from '../battleEngine.js';
-import { applyKnockback } from '../applyKnockback.js';
-import { applySlujEffect } from '../sluj.js';
+import { BattleEngine, PersistentDeath } from '../src/battleEngine.js';
+import { applyKnockback } from '../src/applyKnockback.js';
+import { applySlujEffect } from '../src/sluj.js';
 
 // ─── Factories ───────────────────────────────────────────────────────────────
 

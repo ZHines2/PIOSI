@@ -7,6 +7,18 @@ Format: **What changed**, **Why**, **What it affects**.
 
 ## [Unreleased] — 2026-05-17 (continued)
 
+### Root cleanup — JS modules moved to src/
+
+**What:** Moved all 20 JavaScript engine and UI modules from the project root into `src/`. Root now contains only `index.html`, `styles.css`, `package.json`, `play.bat`, and project-level docs.
+
+Updated `index.html` entry-point imports (`./state.js` → `./src/state.js`, etc.) and `tests/battle.test.js` imports (`../battleEngine.js` → `../src/battleEngine.js`, etc.). All inter-module imports within `src/` are unchanged — they were already `./module.js` relative paths.
+
+**Why:** ~20 loose JS files at the project root made it hard to distinguish entry point, config, and engine at a glance. Moving to `src/` follows standard convention and leaves the root readable.
+
+**Affects:** `index.html` (5 import paths), `tests/battle.test.js` (3 import paths). No logic changes. 97/97 tests pass.
+
+---
+
 ### Asset and directory reorganization
 
 **What:** Moved all loose files from the project root into organized subdirectories and added a `README.md` to every folder:

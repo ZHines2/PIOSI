@@ -127,11 +127,11 @@
     <audio id="level-6-music" src="assets/audio/ineedsome.mp3" loop></audio>
 
     <script type="module">
-      import { state } from './state.js';
-      import { loadContent } from './contentLoader.js';
-      import { initializeGriot } from './griot.js';
-      import { showScreen } from './screenManager.js';
-      import { initInputHandler } from './inputHandler.js';
+      import { state } from './src/state.js';
+      import { loadContent } from './src/contentLoader.js';
+      import { initializeGriot } from './src/griot.js';
+      import { showScreen } from './src/screenManager.js';
+      import { initInputHandler } from './src/inputHandler.js';
 
       Promise.all([
         initializeGriot('content/fantasy_narrative.txt'),
