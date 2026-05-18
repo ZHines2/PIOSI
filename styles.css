@@ -986,6 +986,9 @@ button:active {
   gap: 8px;
   position: relative;
   z-index: 1;
+  background: rgba(0,0,0,0.35);
+  border-radius: 6px;
+  padding: 10px 14px;
 }
 
 .spotlight-name-row {
@@ -1020,11 +1023,12 @@ button:active {
 
 /* Flavor, chips, action row */
 .hero-flavor {
-  font-size: 0.78rem;
-  color: #8899aa;
+  font-size: 0.80rem;
+  color: #b8ccd8;
   font-style: italic;
   max-height: 56px;
   overflow: hidden;
+  line-height: 1.5;
 }
 
 .hero-stat-chips {
@@ -1034,12 +1038,12 @@ button:active {
 }
 
 .stat-chip {
-  font-size: 0.7rem;
-  padding: 2px 7px;
+  font-size: 0.72rem;
+  padding: 3px 8px;
   border-radius: 4px;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid #2a2a3a;
-  color: #8090a0;
+  background: rgba(255,255,255,0.10);
+  border: 1px solid #404058;
+  color: #c8dce8;
 }
 
 .hero-action-row { font-size: 0.82rem; }
