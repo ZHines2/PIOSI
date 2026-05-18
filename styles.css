@@ -796,3 +796,285 @@ button:active {
   color: #ff9090;
   opacity: 0.85;
 }
+
+/* ── Party Select Redesign ───────────────────────────────── */
+
+#party-select {
+  min-height: 100vh;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  gap: 16px;
+}
+
+/* Party slots row — 3 filled/empty tiles */
+#party-slots {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.party-slot {
+  width: 80px;
+  min-height: 90px;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.party-slot.empty {
+  border: 2px dashed #555;
+  background: rgba(255,255,255,0.03);
+}
+
+.party-slot.filled {
+  border: 2px solid #5bc4ff;
+  background: rgba(91,196,255,0.08);
+}
+
+.slot-sprite {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.slot-symbol {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.slot-name {
+  font-size: 0.7rem;
+  color: #9bbfd4;
+  max-width: 76px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.slot-empty-label {
+  font-size: 0.7rem;
+  color: #555;
+}
+
+/* Hero browser — prev button | display | next button */
+#hero-browser {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  max-width: 680px;
+  justify-content: center;
+}
+
+#nav-prev,
+#nav-next {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid #444;
+  color: #ccc;
+  border-radius: 6px;
+  width: 40px;
+  height: 40px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+
+#nav-prev:hover,
+#nav-next:hover {
+  background: rgba(255,255,255,0.14);
+}
+
+/* Hero display card */
+#hero-display {
+  flex: 1;
+  transition: opacity 0.08s ease;
+}
+
+#hero-display.fading {
+  opacity: 0;
+}
+
+.hero-focus {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid #333;
+  border-radius: 10px;
+  padding: 16px 20px;
+  text-align: left;
+}
+
+.hero-sprite-stage {
+  flex-shrink: 0;
+  width: 96px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-sprite-large {
+  width: 96px;
+  height: 96px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.hero-symbol-large {
+  font-size: 4rem;
+  line-height: 1;
+}
+
+.hero-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hero-name-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.hero-focus-name {
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: #fff;
+}
+
+/* Archetype tags */
+.hero-archetype-tag {
+  font-size: 0.68rem;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-weight: bold;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.archetype-frontliner  { background: rgba(80,160,240,0.25); color: #7ecfff; border: 1px solid #4a9fd4; }
+.archetype-ranged      { background: rgba(80,220,140,0.2);  color: #6de8a8; border: 1px solid #3dab72; }
+.archetype-support     { background: rgba(220,180,60,0.2);  color: #f0d070; border: 1px solid #b89a38; }
+.archetype-skirmisher  { background: rgba(220,100,60,0.2);  color: #f09060; border: 1px solid #b85538; }
+.archetype-wildcard    { background: rgba(160,80,220,0.2);  color: #c090f0; border: 1px solid #8048b8; }
+
+/* Flavor text */
+.hero-flavor {
+  font-size: 0.78rem;
+  color: #8899aa;
+  font-style: italic;
+  max-height: 60px;
+  overflow: hidden;
+}
+
+/* Stat chips */
+.hero-stat-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.stat-chip {
+  font-size: 0.7rem;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid #444;
+  color: #b0c8d8;
+}
+
+/* Action row */
+.hero-action-row {
+  font-size: 0.82rem;
+}
+
+.action-pick     { color: #5bc4ff; }
+.action-selected { color: #7de878; }
+.action-full     { color: #888; }
+
+/* Roster strip — scrollable thumbnail row */
+#roster-strip {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  max-width: 680px;
+  width: 100%;
+  padding: 6px 0;
+  scrollbar-width: thin;
+  scrollbar-color: #444 transparent;
+}
+
+.roster-tile {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 6px;
+  border: 2px solid #444;
+  background: rgba(255,255,255,0.04);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  overflow: hidden;
+}
+
+.roster-tile img {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.roster-tile span {
+  font-size: 1.3rem;
+}
+
+.roster-tile:hover {
+  border-color: #777;
+  background: rgba(255,255,255,0.09);
+}
+
+.roster-tile.selected {
+  border-color: #5bc4ff;
+  background: rgba(91,196,255,0.12);
+}
+
+.roster-tile.current {
+  border-color: #fff;
+  box-shadow: 0 0 0 2px rgba(255,255,255,0.2);
+}
+
+/* Synergy hint */
+#synergy-hint {
+  max-width: 580px;
+  background: rgba(255, 210, 80, 0.07);
+  border: 1px solid rgba(255, 210, 80, 0.3);
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 0.82rem;
+  color: #f0d070;
+  text-align: center;
+}
+
+/* Party-assembled state — pulsing border on the screen */
+#party-select.party-assembled {
+  animation: assembled-pulse 2s ease-in-out infinite;
+}
+
+@keyframes assembled-pulse {
+  0%   { box-shadow: inset 0 0 0 2px transparent; }
+  50%  { box-shadow: inset 0 0 0 2px rgba(91,196,255,0.4); }
+  100% { box-shadow: inset 0 0 0 2px transparent; }
+}

@@ -5,61 +5,195 @@ import {
 } from './griot.js';
 import { getCompleteStats } from './renderer.js';
 
+// ── Archetype derivation ──────────────────────────────────────────────────────
+
+function getArchetype(hero) {
+  if ((hero.heal || 0) > 0 || (hero.psych || 0) > 0 || (hero.swarm || 0) > 0 ||
+      (hero.spicy || 0) > 0 || (hero.spore || 0) > 0) return 'Support';
+  if ((hero.range || 0) >= 5) return 'Ranged';
+  if ((hero.agility || 0) >= 5 || (hero.yeet || 0) > 0 || (hero.bomba || 0) > 0) return 'Skirmisher';
+  if ((hero.hp || 0) >= 18 && (hero.range || 0) <= 2) return 'Frontliner';
+  return 'Wildcard';
+}
+
+// ── Synergy hints ─────────────────────────────────────────────────────────────
+
+function getSynergyHint(selectedIndices, allHeroes) {
+  if (!selectedIndices.length) return '';
+  const selected = selectedIndices.map(i => allHeroes[i]);
+  const archetypes = selected.map(getArchetype);
+  const ids = selected.map(h => h.id || h.name.toLowerCase());
+
+  if (selectedIndices.length === 1) {
+    const a = archetypes[0];
+    if (a === 'Frontliner') return 'Solid anchor. Second slot: Ranged to work from safety, or Support to sustain the frontline.';
+    if (a === 'Ranged')     return 'Long reach but fragile. A Frontliner to absorb hits would help.';
+    if (a === 'Support')    return 'Strong sustain core. Your second pick wants to be a damage dealer.';
+    if (a === 'Skirmisher') return 'High mobility. Pair with someone who holds ground so you have a safe base to return to.';
+    return 'Wildcard start — anything can pair here. Pick what sounds interesting.';
+  }
+
+  if (selectedIndices.length === 2) {
+    // Named synergies
+    if (ids.includes('mellitron') && ids.includes('yeetrian'))
+      return '⚡ Mellitron + Yeetrian: yeet enemies into swarm range for passive AoE stacking. Third slot: a healer keeps it going.';
+    if (ids.includes('wizard') && ids.includes('mellitron'))
+      return '⚡ Double AoE pressure. Both heroes are fragile — add a Frontliner to give them a body shield.';
+    if (ids.includes('berserker') && ids.includes('cleric'))
+      return '⚡ Classic rage-and-heal. Berserker tanks and snowballs; Cleric keeps HP topped. Third slot is free.';
+    if (ids.includes('kemetic') && (ids.includes('cleric') || ids.includes('greenjay')))
+      return '⚡ Ankh + healing: dying becomes a strategic buff delivery. Third slot wants raw damage.';
+    if (ids.includes('palisade') && ids.includes('mellitron'))
+      return '⚡ Wall + swarm: park Mellitron behind Palisade and let the aura work. Third slot: range.';
+    if (ids.includes('sycophant') && ids.includes('cleric'))
+      return '⚡ Sycophant starts at zero — the Cleric keeps it alive long enough to Mode Up into a powerhouse.';
+    if (ids.includes('paeg') && ids.includes('palisade'))
+      return '⚡ Pæg hidden behind armor: glass artillery protected by a tank. Extremely fragile, extremely potent.';
+
+    // Archetype-based hints
+    const hasFront   = archetypes.includes('Frontliner');
+    const hasRange   = archetypes.includes('Ranged');
+    const hasSupport = archetypes.includes('Support');
+    const hasSkirmisher = archetypes.includes('Skirmisher');
+
+    if (hasFront && hasRange)   return 'Good foundation. Third slot: Support will keep both alive longer — or a Skirmisher for aggression.';
+    if (hasFront && hasSupport) return 'Durable core. Third slot: Ranged or Skirmisher for reach.';
+    if (hasRange && hasSupport) return 'Fragile backline. You need a Frontliner up front to absorb hits.';
+    if (hasFront && hasFront)   return 'Heavy frontline. Third slot: range or mobility to reach isolated targets.';
+    if (hasSkirmisher && hasRange) return 'Mobile and long-reach. A Frontliner or Support rounds this out.';
+    return 'Interesting combination. Third slot can pull this in any direction.';
+  }
+
+  return '';
+}
+
+// ── Sub-renders ───────────────────────────────────────────────────────────────
+
+export function renderPartySlots() {
+  const el = document.getElementById('party-slots');
+  if (!el) return;
+  el.innerHTML = [0, 1, 2].map(i => {
+    const heroIdx = state.selectedHeroes[i];
+    const hero = heroIdx !== undefined ? state.allHeroes[heroIdx] : null;
+    return `<div class="party-slot${hero ? ' filled' : ' empty'}">
+      ${hero
+        ? `${hero.sprite
+            ? `<img class="slot-sprite" src="${hero.sprite}" alt="${hero.name}">`
+            : `<div class="slot-symbol">${hero.symbol}</div>`}
+           <div class="slot-name">${hero.name}</div>`
+        : `<div class="slot-empty-label">Slot ${i + 1}</div>`}
+    </div>`;
+  }).join('');
+}
+
+export function renderRosterStrip() {
+  const strip = document.getElementById('roster-strip');
+  if (!strip) return;
+  strip.innerHTML = state.allHeroes.map((hero, i) => {
+    const isSel = state.selectedHeroes.includes(i);
+    const isCur = i === state.heroIndex;
+    return `<div class="roster-tile${isSel ? ' selected' : ''}${isCur ? ' current' : ''}"
+      data-index="${i}" title="${hero.name}">
+      ${hero.sprite
+        ? `<img src="${hero.sprite}" alt="${hero.name}">`
+        : `<span>${hero.symbol}</span>`}
+    </div>`;
+  }).join('');
+
+  strip.querySelectorAll('.roster-tile').forEach(tile => {
+    tile.addEventListener('click', () => {
+      state.heroIndex = parseInt(tile.dataset.index, 10);
+      updateHeroDisplay();
+    });
+  });
+
+  // Scroll current tile into view
+  const cur = strip.querySelector('.roster-tile.current');
+  if (cur) cur.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
+}
+
+// ── Main display update ───────────────────────────────────────────────────────
+
 export async function updateHeroDisplay() {
   const hero = state.allHeroes[state.heroIndex];
-  let display = `<p class="highlight">${hero.name} `;
-  if (hero.sprite) {
-    display += `<img src="${hero.sprite}" alt="${hero.name}" style="height:40px; vertical-align:middle; image-rendering: pixelated;">`;
-  } else {
-    display += `(${hero.symbol})`;
-  }
-  display += '</p>';
-  if (hero.joke) {
-    display += `<p>${await fetchJoke()}</p>`;
-  } else if (hero.meat) {
-    display += `<p>${await fetchBaconIpsum()}</p>`;
-  } else if (hero.tarot) {
-    display += `<p>${await fetchTarotCard()}</p>`;
-  } else if (hero.nonseq) {
-    display += `<p>${await fetchNonseqFact()}</p>`;
-  } else if (hero.shrink) {
-    display += `<p>Advice: ${await fetchShrinkAdvice()}</p>`;
-  } else if (hero.recipe) {
-    display += `<p>${await fetchRandomRecipe()}</p>`;
-  } else if (hero.reactsToHistory) {
-    display += `<p>${await getGriotReaction()}</p>`;
-  }
+  const isSelected = state.selectedHeroes.includes(state.heroIndex);
+  const displayEl = document.getElementById('hero-display');
+  if (!displayEl) return;
+
+  // Crossfade out
+  displayEl.classList.add('fading');
+  await new Promise(r => setTimeout(r, 80));
+
+  // Fetch flavor text while faded
+  let flavor = '';
+  if (hero.joke)              flavor = await fetchJoke();
+  else if (hero.meat)         flavor = await fetchBaconIpsum();
+  else if (hero.tarot)        flavor = await fetchTarotCard();
+  else if (hero.nonseq)       flavor = await fetchNonseqFact();
+  else if (hero.shrink)       flavor = `Advice: ${await fetchShrinkAdvice()}`;
+  else if (hero.recipe)       flavor = await fetchRandomRecipe();
+  else if (hero.reactsToHistory) flavor = await getGriotReaction();
+
+  // Nonzero stat chips only
   const stats = getCompleteStats(hero);
-  display += `<p>
-    Attack: ${stats.attack} |
-    Range: ${stats.range} |
-    Agility: ${stats.agility} |
-    HP: ${stats.hp} |
-    Heal: ${stats.heal} |
-    Burn: ${stats.burn} |
-    Slüj: ${stats.sluj} |
-    Ghïs: ${stats.ghis} |
-    Trick: ${stats.trick} |
-    Yeet: ${stats.yeet} |
-    Swarm: ${stats.swarm} |
-    Spicy: ${stats.spicy} |
-    Armor: ${stats.armor} |
-    Spore: ${stats.spore} |
-    Chain: ${stats.chain} |
-    Caprice: ${stats.caprice} |
-    Fate: ${stats.fate} |
-    Rage: ${stats.rage} |
-    Bulk: ${stats.bulk} |
-    Psych: ${stats.psych} |
-    Ankh: ${stats.ankh} |
-    Rise: ${stats.rise} |
-    Dodge: ${stats.dodge} |
-    Bomba: ${stats.bomba} |
-  </p>`;
-  display += `<p>${state.selectedHeroes.includes(state.heroIndex) ? 'SELECTED' : 'Press Spacebar to Select'}</p>`;
-  document.getElementById('hero-display').innerHTML = display;
-  document.getElementById('selection-info').textContent = `Selected Heroes: ${state.selectedHeroes.length}/3`;
+  const chips = Object.entries(stats)
+    .filter(([, v]) => v > 0)
+    .map(([k, v]) => `<span class="stat-chip">${k.charAt(0).toUpperCase() + k.slice(1)}: ${v}</span>`)
+    .join('');
+
+  const archetype = getArchetype(hero);
+  const selCount = state.selectedHeroes.length;
+
+  let actionLabel;
+  if (isSelected)          actionLabel = '<span class="action-selected">✓ Selected — Space to deselect</span>';
+  else if (selCount < 3)   actionLabel = '<span class="action-pick">Space to select</span>';
+  else                     actionLabel = '<span class="action-full">Party full</span>';
+
+  displayEl.innerHTML = `
+    <div class="hero-focus">
+      <div class="hero-sprite-stage">
+        ${hero.sprite
+          ? `<img src="${hero.sprite}" alt="${hero.name}" class="hero-sprite-large">`
+          : `<div class="hero-symbol-large">${hero.symbol}</div>`}
+      </div>
+      <div class="hero-info">
+        <div class="hero-name-row">
+          <span class="hero-focus-name">${hero.name}</span>
+          <span class="hero-archetype-tag archetype-${archetype.toLowerCase()}">${archetype}</span>
+        </div>
+        ${flavor ? `<div class="hero-flavor">${flavor}</div>` : ''}
+        <div class="hero-stat-chips">${chips}</div>
+        <div class="hero-action-row">${actionLabel}</div>
+      </div>
+    </div>`;
+
+  // Crossfade back in
+  displayEl.classList.remove('fading');
+
+  // Update dependent panels
+  renderPartySlots();
+  renderRosterStrip();
+
+  // Synergy hint
+  const hintEl = document.getElementById('synergy-hint');
+  if (hintEl) {
+    const hint = getSynergyHint(state.selectedHeroes, state.allHeroes);
+    hintEl.textContent = hint;
+    hintEl.style.display = hint ? '' : 'none';
+  }
+
+  // Selection counter
+  const infoEl = document.getElementById('selection-info');
+  if (infoEl) infoEl.textContent = `${selCount} / 3 heroes selected`;
+
+  // Party-assembled state
+  const screen = document.getElementById('party-select');
+  if (screen) {
+    screen.classList.toggle('party-assembled', selCount === 3);
+  }
 }
+
+// ── Select / deselect ─────────────────────────────────────────────────────────
 
 export function selectHero() {
   if (state.selectedHeroes.includes(state.heroIndex)) {

@@ -17,7 +17,7 @@ export function showScreen(screen) {
   if (screen === 'title') {
     document.getElementById('title-screen').style.display = 'flex';
   } else if (screen === 'party') {
-    document.getElementById('party-select').style.display = 'block';
+    document.getElementById('party-select').style.display = 'flex';
   } else if (screen === 'battle') {
     document.getElementById('game-container').style.display = 'block';
   } else if (screen === 'victory') {

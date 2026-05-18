@@ -198,6 +198,22 @@ export function initInputHandler() {
     });
   }
 
+  // Party select nav arrows
+  const navPrev = document.getElementById('nav-prev');
+  const navNext = document.getElementById('nav-next');
+  if (navPrev) {
+    navPrev.addEventListener('click', () => {
+      state.heroIndex = (state.heroIndex - 1 + state.allHeroes.length) % state.allHeroes.length;
+      updateHeroDisplay();
+    });
+  }
+  if (navNext) {
+    navNext.addEventListener('click', () => {
+      state.heroIndex = (state.heroIndex + 1) % state.allHeroes.length;
+      updateHeroDisplay();
+    });
+  }
+
   document.getElementById('dpad-toggle-btn').addEventListener('click', () => {
     document.getElementById('mobile-dpad').classList.toggle('dpad-visible');
   });
