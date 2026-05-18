@@ -51,15 +51,15 @@ function getSynergyHint(selectedIndices, allHeroes) {
       return '⚡ Pæg hidden behind armor: glass artillery protected by a tank. Extremely fragile, extremely potent.';
 
     // Archetype-based hints
-    const hasFront   = archetypes.includes('Frontliner');
-    const hasRange   = archetypes.includes('Ranged');
-    const hasSupport = archetypes.includes('Support');
+    const hasFront      = archetypes.includes('Frontliner');
+    const hasRange      = archetypes.includes('Ranged');
+    const hasSupport    = archetypes.includes('Support');
     const hasSkirmisher = archetypes.includes('Skirmisher');
 
-    if (hasFront && hasRange)   return 'Good foundation. Third slot: Support will keep both alive longer — or a Skirmisher for aggression.';
-    if (hasFront && hasSupport) return 'Durable core. Third slot: Ranged or Skirmisher for reach.';
-    if (hasRange && hasSupport) return 'Fragile backline. You need a Frontliner up front to absorb hits.';
-    if (hasFront && hasFront)   return 'Heavy frontline. Third slot: range or mobility to reach isolated targets.';
+    if (hasFront && hasRange)      return 'Good foundation. Third slot: Support will keep both alive longer — or a Skirmisher for aggression.';
+    if (hasFront && hasSupport)    return 'Durable core. Third slot: Ranged or Skirmisher for reach.';
+    if (hasRange && hasSupport)    return 'Fragile backline. You need a Frontliner up front to absorb hits.';
+    if (hasFront && hasFront)      return 'Heavy frontline. Third slot: range or mobility to reach isolated targets.';
     if (hasSkirmisher && hasRange) return 'Mobile and long-reach. A Frontliner or Support rounds this out.';
     return 'Interesting combination. Third slot can pull this in any direction.';
   }
@@ -67,7 +67,7 @@ function getSynergyHint(selectedIndices, allHeroes) {
   return '';
 }
 
-// ── Sub-renders ───────────────────────────────────────────────────────────────
+// ── Upstage trio (selected party) ────────────────────────────────────────────
 
 export function renderPartySlots() {
   const el = document.getElementById('party-slots');
@@ -75,44 +75,47 @@ export function renderPartySlots() {
   el.innerHTML = [0, 1, 2].map(i => {
     const heroIdx = state.selectedHeroes[i];
     const hero = heroIdx !== undefined ? state.allHeroes[heroIdx] : null;
-    return `<div class="party-slot${hero ? ' filled' : ' empty'}">
+    return `<div class="upstage-slot${hero ? ' filled' : ' empty'}">
+      <div class="upstage-light"></div>
       ${hero
         ? `${hero.sprite
-            ? `<img class="slot-sprite" src="${hero.sprite}" alt="${hero.name}">`
-            : `<div class="slot-symbol">${hero.symbol}</div>`}
-           <div class="slot-name">${hero.name}</div>`
-        : `<div class="slot-empty-label">Slot ${i + 1}</div>`}
+            ? `<img class="upstage-sprite" src="${hero.sprite}" alt="${hero.name}">`
+            : `<div class="upstage-symbol">${hero.symbol}</div>`}
+           <div class="upstage-name">${hero.name}</div>`
+        : `<div class="upstage-vacancy">VACANT</div>`}
     </div>`;
   }).join('');
 }
 
+// ── Stage row (silhouette roster) ─────────────────────────────────────────────
+
 export function renderRosterStrip() {
-  const strip = document.getElementById('roster-strip');
+  const strip = document.getElementById('stage-row');
   if (!strip) return;
   strip.innerHTML = state.allHeroes.map((hero, i) => {
     const isSel = state.selectedHeroes.includes(i);
     const isCur = i === state.heroIndex;
-    return `<div class="roster-tile${isSel ? ' selected' : ''}${isCur ? ' current' : ''}"
+    return `<div class="stage-figure${isSel ? ' cast' : ''}${isCur ? ' center-stage' : ''}"
       data-index="${i}" title="${hero.name}">
       ${hero.sprite
         ? `<img src="${hero.sprite}" alt="${hero.name}">`
         : `<span>${hero.symbol}</span>`}
+      ${isCur ? '<div class="footlight"></div>' : ''}
     </div>`;
   }).join('');
 
-  strip.querySelectorAll('.roster-tile').forEach(tile => {
-    tile.addEventListener('click', () => {
-      state.heroIndex = parseInt(tile.dataset.index, 10);
+  strip.querySelectorAll('.stage-figure').forEach(fig => {
+    fig.addEventListener('click', () => {
+      state.heroIndex = parseInt(fig.dataset.index, 10);
       updateHeroDisplay();
     });
   });
 
-  // Scroll current tile into view
-  const cur = strip.querySelector('.roster-tile.current');
+  const cur = strip.querySelector('.stage-figure.center-stage');
   if (cur) cur.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
 }
 
-// ── Main display update ───────────────────────────────────────────────────────
+// ── Spotlight hero display ────────────────────────────────────────────────────
 
 export async function updateHeroDisplay() {
   const hero = state.allHeroes[state.heroIndex];
@@ -124,14 +127,14 @@ export async function updateHeroDisplay() {
   displayEl.classList.add('fading');
   await new Promise(r => setTimeout(r, 80));
 
-  // Fetch flavor text while faded
+  // Fetch flavor while faded
   let flavor = '';
-  if (hero.joke)              flavor = await fetchJoke();
-  else if (hero.meat)         flavor = await fetchBaconIpsum();
-  else if (hero.tarot)        flavor = await fetchTarotCard();
-  else if (hero.nonseq)       flavor = await fetchNonseqFact();
-  else if (hero.shrink)       flavor = `Advice: ${await fetchShrinkAdvice()}`;
-  else if (hero.recipe)       flavor = await fetchRandomRecipe();
+  if (hero.joke)               flavor = await fetchJoke();
+  else if (hero.meat)          flavor = await fetchBaconIpsum();
+  else if (hero.tarot)         flavor = await fetchTarotCard();
+  else if (hero.nonseq)        flavor = await fetchNonseqFact();
+  else if (hero.shrink)        flavor = `Advice: ${await fetchShrinkAdvice()}`;
+  else if (hero.recipe)        flavor = await fetchRandomRecipe();
   else if (hero.reactsToHistory) flavor = await getGriotReaction();
 
   // Nonzero stat chips only
@@ -142,23 +145,24 @@ export async function updateHeroDisplay() {
     .join('');
 
   const archetype = getArchetype(hero);
-  const selCount = state.selectedHeroes.length;
+  const selCount  = state.selectedHeroes.length;
 
   let actionLabel;
-  if (isSelected)          actionLabel = '<span class="action-selected">✓ Selected — Space to deselect</span>';
-  else if (selCount < 3)   actionLabel = '<span class="action-pick">Space to select</span>';
-  else                     actionLabel = '<span class="action-full">Party full</span>';
+  if (isSelected)        actionLabel = '<span class="action-selected">✓ In the company — Space to remove</span>';
+  else if (selCount < 3) actionLabel = '<span class="action-pick">Space to cast</span>';
+  else                   actionLabel = '<span class="action-full">Company full</span>';
 
   displayEl.innerHTML = `
-    <div class="hero-focus">
-      <div class="hero-sprite-stage">
+    <div class="spotlight-hero">
+      <div class="spotlight-glow archetype-glow-${archetype.toLowerCase()}"></div>
+      <div class="spotlight-sprite-wrap">
         ${hero.sprite
-          ? `<img src="${hero.sprite}" alt="${hero.name}" class="hero-sprite-large">`
-          : `<div class="hero-symbol-large">${hero.symbol}</div>`}
+          ? `<img src="${hero.sprite}" alt="${hero.name}" class="spotlight-sprite">`
+          : `<div class="spotlight-symbol">${hero.symbol}</div>`}
       </div>
-      <div class="hero-info">
-        <div class="hero-name-row">
-          <span class="hero-focus-name">${hero.name}</span>
+      <div class="spotlight-info">
+        <div class="spotlight-name-row">
+          <span class="spotlight-name">${hero.name}</span>
           <span class="hero-archetype-tag archetype-${archetype.toLowerCase()}">${archetype}</span>
         </div>
         ${flavor ? `<div class="hero-flavor">${flavor}</div>` : ''}
@@ -184,13 +188,11 @@ export async function updateHeroDisplay() {
 
   // Selection counter
   const infoEl = document.getElementById('selection-info');
-  if (infoEl) infoEl.textContent = `${selCount} / 3 heroes selected`;
+  if (infoEl) infoEl.textContent = `${selCount} / 3 cast`;
 
   // Party-assembled state
   const screen = document.getElementById('party-select');
-  if (screen) {
-    screen.classList.toggle('party-assembled', selCount === 3);
-  }
+  if (screen) screen.classList.toggle('party-assembled', selCount === 3);
 }
 
 // ── Select / deselect ─────────────────────────────────────────────────────────
