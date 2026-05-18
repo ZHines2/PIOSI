@@ -810,19 +810,22 @@ button:active {
   overflow: hidden;
 }
 
-/* ── Upstage: selected trio ─────────────────────────────── */
+/* ── Downstage: selected trio (bottom, large) ───────────── */
 
 #stage-back {
   width: 100%;
-  padding: 24px 0 16px;
-  background: linear-gradient(to bottom, #040408 0%, #0c0c18 100%);
+  padding: 32px 0 20px;
+  background: linear-gradient(to top, #040408 0%, #0c0c18 100%);
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
 }
 
 #party-slots {
   display: flex;
-  gap: 48px;
+  gap: 64px;
   justify-content: center;
   align-items: flex-end;
 }
@@ -831,49 +834,50 @@ button:active {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  width: 80px;
+  gap: 10px;
+  width: 120px;
   position: relative;
 }
 
 .upstage-light {
   position: absolute;
-  top: -24px;
+  top: -36px;
   left: 50%;
   transform: translateX(-50%);
-  width: 110px;
-  height: 110px;
+  width: 200px;
+  height: 200px;
   border-radius: 50%;
   pointer-events: none;
   transition: background 0.5s;
 }
 
 .upstage-slot.empty .upstage-light {
-  background: radial-gradient(ellipse at center, rgba(140,140,180,0.06) 0%, transparent 70%);
+  background: radial-gradient(ellipse at center, rgba(140,140,180,0.05) 0%, transparent 70%);
 }
 
 .upstage-slot.filled .upstage-light {
-  background: radial-gradient(ellipse at center, rgba(255,220,100,0.22) 0%, transparent 70%);
+  background: radial-gradient(ellipse at center, rgba(255,220,100,0.28) 0%, transparent 70%);
 }
 
 .upstage-sprite {
-  width: 52px;
-  height: 52px;
+  width: 96px;
+  height: 96px;
   object-fit: contain;
   image-rendering: pixelated;
   position: relative;
   z-index: 1;
+  filter: drop-shadow(0 0 12px rgba(255,210,80,0.2));
 }
 
 .upstage-symbol {
-  font-size: 2.4rem;
+  font-size: 4rem;
   line-height: 1;
   position: relative;
   z-index: 1;
 }
 
 .upstage-name {
-  font-size: 0.62rem;
+  font-size: 0.75rem;
   color: #c8a84a;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -886,7 +890,7 @@ button:active {
   color: #2a2a38;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  height: 52px;
+  height: 96px;
   display: flex;
   align-items: center;
 }
@@ -1062,8 +1066,8 @@ button:active {
   justify-content: center;
   scrollbar-width: thin;
   scrollbar-color: #1e1e2e transparent;
-  background: linear-gradient(to top, #040408 0%, #0c0c18 100%);
-  border-top: 1px solid #111;
+  background: linear-gradient(to bottom, #040408 0%, #0c0c18 100%);
+  border-bottom: 1px solid #111;
 }
 
 .stage-figure {
@@ -1122,14 +1126,14 @@ button:active {
 /* ── Synergy hint — stage placard ──────────────────────── */
 
 #synergy-hint {
-  max-width: 560px;
+  max-width: 600px;
   width: 88%;
-  background: #0a0a14;
+  background: rgba(0,0,0,0.4);
   border: 1px solid #2e2810;
   border-top: 3px solid #c8a84a;
   border-radius: 0 0 5px 5px;
   padding: 8px 18px 10px;
-  font-size: 0.80rem;
+  font-size: 0.82rem;
   color: #c8a84a;
   text-align: center;
   letter-spacing: 0.02em;
@@ -1142,14 +1146,15 @@ button:active {
   color: #2e2e42;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  padding: 6px 0 18px;
+  margin: 0;
+  padding: 0 0 4px;
   transition: color 0.4s;
 }
 
 /* ── Party assembled ────────────────────────────────────── */
 
 #party-select.party-assembled #stage-back {
-  background: linear-gradient(to bottom, #060409 0%, #140e06 100%);
+  background: linear-gradient(to top, #060409 0%, #140e06 100%);
   transition: background 0.6s;
 }
 
