@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PIOSI — Architecture Map</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#07070f;color:#d0d0e8;font-family:'Courier New',monospace;overflow:hidden;height:100vh;width:100vw;user-select:none}
+#app{display:flex;flex-direction:column;height:100vh}
+#header{display:flex;align-items:center;gap:16px;padding:10px 18px;background:#0d0d1a;border-bottom:1px solid #1a1a2e;flex-shrink:0}
+#header h1{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:#8888bb}
+.hint{font-size:11px;color:#333355;margin-left:auto}
+#flag-pill{background:#1a0a0a;border:1px solid #5a1a1a;border-radius:12px;padding:2px 10px;font-size:11px;color:#f87171}
+#body{display:flex;flex:1;overflow:hidden;position:relative}
+#graph-wrap{flex:1;overflow:hidden;cursor:grab;position:relative}
+#graph-wrap.dragging{cursor:grabbing}
+svg{display:block;width:100%;height:100%}
+
+/* cluster rects */
+.c-bg{rx:8;transition:all .25s ease;cursor:pointer}
+.c-bg:hover{filter:brightness(1.15)}
+.c-label{font-size:12px;font-weight:bold;letter-spacing:.06em;pointer-events:none;dominant-baseline:middle;text-anchor:middle}
+.c-count{font-size:10px;pointer-events:none;dominant-baseline:middle;text-anchor:middle;opacity:.6}
+
+/* nodes */
+.node-circle{stroke-width:2;cursor:pointer;transition:filter .15s}
+.node-circle:hover{filter:brightness(1.3)}
+.node-circle.selected{stroke:#fff;stroke-width:3;filter:drop-shadow(0 0 6px rgba(255,255,255,.5))}
+.node-label{font-size:9.5px;pointer-events:none;dominant-baseline:hanging;text-anchor:middle;fill:#ccc}
+.node-flag{pointer-events:none;font-size:11px;dominant-baseline:middle;text-anchor:middle;fill:#fbbf24}
+
+/* edges */
+.edge{fill:none;stroke-width:1.5;opacity:.65;transition:opacity .15s,stroke-width .15s}
+.edge:hover{opacity:1;stroke-width:2.5}
+.edge.type-import{stroke:#3b6e9a}
+.edge.type-api{stroke:#c2660a;stroke-dasharray:5,3}
+.edge.type-fallback{stroke:#1d4ed8;stroke-dasharray:3,3}
+.edge.type-flag{stroke:#dc2626;stroke-width:2}
+.edge.dimmed{opacity:.08}
+.edge.lit{opacity:1;stroke-width:2.5}
+.edge-label{font-size:9px;fill:#556;pointer-events:none;dominant-baseline:middle;text-anchor:middle}
+
+/* detail panel */
+#detail{position:absolute;right:0;top:0;bottom:0;width:320px;background:#0e0e1c;border-left:1px solid #1a1a2e;overflow-y:auto;transform:translateX(100%);transition:transform .22s ease;padding:18px}
+#detail.open{transform:translateX(0)}
+#detail-close{position:absolute;top:12px;right:14px;background:none;border:none;color:#556;font-size:18px;cursor:pointer;line-height:1}
+#detail-close:hover{color:#aaa}
+.d-name{font-size:14px;font-weight:bold;color:#e0e0ff;margin-bottom:2px}
+.d-path{font-size:10px;color:#445;margin-bottom:12px;word-break:break-all}
+.d-section{margin-top:12px}
+.d-section h3{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#556;margin-bottom:6px;border-bottom:1px solid #1a1a2e;padding-bottom:4px}
+.d-item{font-size:11px;color:#9090b8;padding:2px 0;border-bottom:1px solid #0d0d18}
+.d-item code{color:#7cb8d4;font-size:10px}
+.d-flag{font-size:11px;color:#fca5a5;background:#1a0808;border:1px solid #3a1010;border-radius:4px;padding:5px 8px;margin:4px 0}
+.d-desc{font-size:11px;color:#8888aa;line-height:1.6;margin-top:8px}
+.d-tag{display:inline-block;border-radius:3px;padding:1px 6px;font-size:10px;margin:2px 2px 2px 0}
+
+/* legend */
+#legend{display:flex;gap:18px;align-items:center;padding:7px 18px;background:#0d0d1a;border-top:1px solid #1a1a2e;flex-shrink:0;font-size:11px;color:#445}
+.leg{display:flex;align-items:center;gap:6px}
+.leg svg{flex-shrink:0}
+
+/* zoom hint */
+#zoom-hint{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);font-size:10px;color:#222240;pointer-events:none}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="header">
+    <h1>PIOSI — Architecture Map</h1>
+    <span class="hint">Click cluster to expand · Click node to inspect · Scroll/drag to navigate</span>
+    <div id="flag-pill">⚠ 6 flags</div>
+  </div>
+  <div id="body">
+    <div id="graph-wrap">
+      <svg id="svg">
+        <defs>
+          <marker id="arr-import" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3z" fill="#3b6e9a"/></marker>
+          <marker id="arr-api"    markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3z" fill="#c2660a"/></marker>
+          <marker id="arr-flag"   markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3z" fill="#dc2626"/></marker>
+          <marker id="arr-fallback" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3z" fill="#1d4ed8"/></marker>
+          <filter id="glow"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+          <filter id="glow-s"><feGaussianBlur stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        </defs>
+        <g id="g-transform">
+          <g id="g-edges"></g>
+          <g id="g-clusters"></g>
+          <g id="g-nodes"></g>
+        </g>
+      </svg>
+      <div id="zoom-hint">scroll to zoom · drag to pan</div>
+    </div>
+    <div id="detail">
+      <button id="detail-close">×</button>
+      <div id="detail-content"></div>
+    </div>
+  </div>
+  <div id="legend">
+    <div class="leg"><svg width="28" height="10"><line x1="0" y1="5" x2="28" y2="5" stroke="#3b6e9a" stroke-width="2" marker-end="url(#arr-import)"/></svg><span>import</span></div>
+    <div class="leg"><svg width="28" height="10"><line x1="0" y1="5" x2="28" y2="5" stroke="#c2660a" stroke-width="2" stroke-dasharray="5,3"/></svg><span>API call</span></div>
+    <div class="leg"><svg width="28" height="10"><line x1="0" y1="5" x2="28" y2="5" stroke="#1d4ed8" stroke-width="2" stroke-dasharray="3,3"/></svg><span>fallback path</span></div>
+    <div class="leg"><svg width="28" height="10"><line x1="0" y1="5" x2="28" y2="5" stroke="#dc2626" stroke-width="2"/></svg><span>⚠ flagged boundary</span></div>
+    <div class="leg" style="margin-left:auto"><span style="color:#3b3360">Collapsed clusters show cross-cluster edges · Expand to see internals</span></div>
+  </div>
+</div>
+<script>
+// ═══════════════════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════════════════
+
+// Each cluster: collapsed pill position + color + node list
+const CLUSTERS = {
+  entry:     { label:'Entry',         color:'#6366f1', x:  60, y: 270, cw:120, ch:46, desc:'Bootstrap — runs Promise.all then showScreen("title") + initInputHandler()' },
+  state:     { label:'State (Hub)',   color:'#ec4899', x: 265, y: 270, cw:130, ch:46, desc:'Mutable singleton shared by every module. No encapsulation.' },
+  content:   { label:'Content',       color:'#10b981', x: 265, y:  80, cw:170, ch:46, desc:'JSON content loading pipeline with static-file fallback.' },
+  gameflow:  { label:'Game Flow',     color:'#f59e0b', x: 470, y: 190, cw:155, ch:46, desc:'Level transitions, BattleEngine construction, cheat activation.' },
+  input:     { label:'Input',         color:'#3b82f6', x:  60, y: 440, cw:120, ch:46, desc:'Keyboard, touch, d-pad routing. Context-aware via state.currentScreen.' },
+  engine:    { label:'Battle Engine', color:'#ef4444', x: 680, y:  80, cw:185, ch:46, desc:'DOM-free grid combat. 18 abilities. Enemy AI. Fully testable in Node.' },
+  rendering: { label:'Rendering',     color:'#8b5cf6', x: 470, y: 440, cw:185, ch:46, desc:'Battle HUD, party cards, timeline, enemy intent, party select UI.' },
+  narrative: { label:'Narrative',     color:'#06b6d4', x: 790, y: 440, cw:145, ch:46, desc:'Griot API hub + battle log. Fires external fetches on hero display & attacks.' },
+  external:  { label:'External APIs', color:'#f97316', x:1055, y: 440, cw:215, ch:46, desc:'6 third-party REST endpoints for hero flavor text.' },
+  modes:     { label:'Game Modes',    color:'#84cc16', x: 930, y: 190, cw:155, ch:46, desc:'World map, summit battle-royale, music player. Mode-gated by manifest.' },
+  audio:     { label:'Audio',         color:'#f43f5e', x:1150, y: 270, cw:120, ch:46, desc:'fadeOut() + stopAudio(). Receives audio elements as parameters.' },
+  gamelogic: { label:'Game Logic',    color:'#a855f7', x: 930, y:  80, cw:150, ch:46, desc:'Mode-up buff system. 28-case switch(hero.id).' },
+};
+
+// Node definitions. expandX/Y = offset from cluster TL when expanded.
+// Cluster expanded TL = (cluster_cx - expandedW/2, cluster_cy - expandedH/2)
+const NODES = {
+  'index.html':        { cluster:'entry',     expandOff:[60,50],  type:'entry',    file:'index.html',               desc:'Bootstrap script. Calls initializeGriot(), loadContent(), showScreen(), initInputHandler(). Wires all screens.' },
+  'state.js':          { cluster:'state',     expandOff:[65,50],  type:'singleton',file:'src/state.js',             desc:'Exports one mutable {state} object. Imports heroes.js + levels.js for initial defaults. Imported by 9 modules.', flags:['Mutable singleton — no encapsulation. All modules mutate the same reference.'] },
+  'contentLoader.js':  { cluster:'content',   expandOff:[40,50],  type:'loader',   file:'src/contentLoader.js',     desc:'Fetches manifest.json, then heroes.{pack}.json + levels.{pack}.json. Falls back to heroes.js / levels.js on any fetch failure.' },
+  'heroes.js':         { cluster:'content',   expandOff:[130,50], type:'data',     file:'src/heroes.js',            desc:'Static hero fallback data (28 heroes). Imported by state.js, contentLoader.js, AND summitMode.js directly.', flags:['Imported by summitMode.js directly — bypasses the content system. JSON content pack changes will not affect Summit Mode.'] },
+  'levels.js':         { cluster:'content',   expandOff:[220,50], type:'data',     file:'src/levels.js',            desc:'Static level fallback data (20 levels + level 99). Imported by state.js and contentLoader.js.', flags:['state.js imports getLevel from levels.js at boot — fallback is baked into the singleton, not just the loader.'] },
+  'gameFlow.js':       { cluster:'gameflow',  expandOff:[45,50],  type:'ctrl',     file:'src/gameFlow.js',          desc:'Orchestrates all game progression. Constructs BattleEngine, SummitMode. Handles level transitions, restarts, cheat codes. Widest import fan: 9 imports.' },
+  'screenManager.js':  { cluster:'gameflow',  expandOff:[145,50], type:'ctrl',     file:'src/screenManager.js',     desc:'Shows/hides screen containers. Sets state.currentScreen. Directly calls initWorldMap() + createEmanationsUI() — tight coupling to mode internals.', flags:['Calls initWorldMap() and createEmanationsUI() directly. Screen manager knows the implementation details of the modes it activates.'] },
+  'inputHandler.js':   { cluster:'input',     expandOff:[60,50],  type:'event',    file:'src/inputHandler.js',      desc:'Keyboard + touch + d-pad routing. keyActions map keyed by currentScreen. 8 module imports — knows about almost every subsystem.', flags:['Imports 8 modules — effectively a god-handler. Any new screen requires editing this file.'] },
+  'battleEngine.js':   { cluster:'engine',    expandOff:[50,50],  type:'class',    file:'src/battleEngine.js',      desc:'BattleEngine class. DOM-free. battlefield[y][x] grid. Handles movement, 18 abilities, enemy AI, turn rotation. drawBattlefield() returns HTML string.' },
+  'applyKnockback.js': { cluster:'engine',    expandOff:[143,50], type:'util',     file:'src/applyKnockback.js',    desc:'Extracted from BattleEngine for testability. Resolves yeet/knockback: bounce, wall collision, chain triggers.' },
+  'sluj.js':           { cluster:'engine',    expandOff:[236,50], type:'util',     file:'src/sluj.js',              desc:'Slüj DoT tick. Decrements duration, applies damage per tick, logs result. Called by BattleEngine each turn.' },
+  'renderer.js':       { cluster:'rendering', expandOff:[45,50],  type:'render',   file:'src/renderer.js',          desc:'Battle screen rendering. renderBattlefield(), renderPartyCards(), renderTurnTimeline(), renderEnemyIntent(). Also exports getCompleteStats().' },
+  'partySelectUI.js':  { cluster:'rendering', expandOff:[140,50], type:'render',   file:'src/partySelectUI.js',     desc:'Theatre-stage party select. Archetype derivation from stats. 7 named synergy pairs. Calls griot for flavor text on each hero browse.' },
+  'modeUpUI.js':       { cluster:'rendering', expandOff:[235,50], type:'render',   file:'src/modeUpUI.js',          desc:'Mode-up selection screen. Shows buff preview per hero. Imports renderer.js (getCompleteStats) + modeup.js (getModeUpBuff).' },
+  'griot.js':          { cluster:'narrative', expandOff:[40,50],  type:'service',  file:'src/griot.js',             desc:'Narrative flavor service. Loads fantasy_narrative.txt for Markov chain. Exports 6 fetch functions (joke, bacon, tarot, facts, advice, recipe) + getGriotReaction().', flags:['No response caching — navigating to the same hero repeatedly fires duplicate API calls. Network latency appears in party select UI.'] },
+  'logger.js':         { cluster:'narrative', expandOff:[130,50], type:'util',     file:'src/logger.js',            desc:'Battle log. logMessage() caps at 220 lines. recordAttack() fires griot APIs on every hero attack — network request in the middle of combat.', flags:['recordAttack() calls external APIs mid-combat on every attack. This introduces async network latency into turn resolution.'] },
+  'JokeAPI':           { cluster:'external',  expandOff:[35,45],  type:'ext',      file:'https://v2.jokeapi.dev',   desc:'GET /joke/Programming?type=single. Triggered by heroes where joke:true.' },
+  'BaconIpsum':        { cluster:'external',  expandOff:[115,45], type:'ext',      file:'https://baconipsum.com',   desc:'GET /?type=meat-and-filler&sentences=1. Triggered by heroes where meat:true.' },
+  'TarotAPI':          { cluster:'external',  expandOff:[195,45], type:'ext',      file:'https://tarotapi.dev',     desc:'GET /api/v1/cards/random. Triggered by heroes where tarot:true.' },
+  'UselessFacts':      { cluster:'external',  expandOff:[35,130], type:'ext',      file:'https://uselessfacts.jsph.pl', desc:'GET /random.json?language=en. Triggered by heroes where nonseq:true.' },
+  'AdviceSlip':        { cluster:'external',  expandOff:[115,130],type:'ext',      file:'https://api.adviceslip.com',  desc:'GET /advice. Triggered by heroes where shrink:true.' },
+  'TheMealDB':         { cluster:'external',  expandOff:[195,130],type:'ext',      file:'https://www.themealdb.com',    desc:'GET /api/json/v1/1/random.php. Triggered by heroes where recipe:true.' },
+  'worldMap.js':       { cluster:'modes',     expandOff:[40,50],  type:'screen',   file:'src/worldMap.js',          desc:'6-node world map navigation. ZERO imports — fully self-contained. Receives callbacks (activateCheat, startSummitMode, startEmanationsMode) as parameters.' },
+  'summitMode.js':     { cluster:'modes',     expandOff:[130,50], type:'class',    file:'src/summitMode.js',        desc:'Isometric canvas battle-royale on 50×50 grid. Imports heroes.js directly, bypassing the content system entirely.', flags:['Imports heroes.js directly. Summit Mode will not reflect changes to heroes.core.json or any other content pack.'] },
+  'emanations.js':     { cluster:'modes',     expandOff:[220,50], type:'screen',   file:'src/emanations.js',        desc:'Music player + canvas visualizer. ZERO imports. 8 MP3 tracks. Reads DOM directly. Called by screenManager on mode activation.' },
+  'audioManager.js':   { cluster:'audio',     expandOff:[60,50],  type:'util',     file:'src/audioManager.js',      desc:'ZERO imports. fadeOut() steps volume -0.1 per 100ms. stopAudio() pauses + resets currentTime. Receives audio elements as params.' },
+  'modeup.js':         { cluster:'gamelogic', expandOff:[75,50],  type:'logic',    file:'src/modeup.js',            desc:'Hero-specific level-up buffs. switch(hero.id) over 28 cases. Sycophant gets +1 to all stats. Unlisted heroes get ghis default. ZERO imports.', flags:['switch(hero.id) ties abilities to hero identity, not stats. Contradicts the "ABILITIES ARE TIED TO STATS NOT HEROES" design direction noted in the roadmap.'] },
+};
+
+// Edges: from/to use node ids, type controls visual style
+const EDGES = [
+  // ── Entry bootstrap ──────────────────────────────────────
+  { f:'index.html', t:'state.js',        type:'import',   label:'import state' },
+  { f:'index.html', t:'contentLoader.js',type:'import',   label:'loadContent()' },
+  { f:'index.html', t:'griot.js',        type:'import',   label:'initializeGriot()' },
+  { f:'index.html', t:'screenManager.js',type:'import',   label:'showScreen()' },
+  { f:'index.html', t:'inputHandler.js', type:'import',   label:'initInputHandler()' },
+
+  // ── state.js imports (surprise: baked-in fallbacks) ─────
+  { f:'state.js',   t:'heroes.js',       type:'fallback', label:'initial heroes' },
+  { f:'state.js',   t:'levels.js',       type:'fallback', label:'initial getLevel' },
+
+  // ── Content system ───────────────────────────────────────
+  { f:'contentLoader.js', t:'heroes.js', type:'fallback', label:'on fetch fail' },
+  { f:'contentLoader.js', t:'levels.js', type:'fallback', label:'on fetch fail' },
+
+  // ── Game Flow (9 imports) ────────────────────────────────
+  { f:'gameFlow.js', t:'state.js',        type:'import', label:'reads/writes' },
+  { f:'gameFlow.js', t:'logger.js',       type:'import', label:'logMessage()' },
+  { f:'gameFlow.js', t:'renderer.js',     type:'import', label:'renderBattlefield()' },
+  { f:'gameFlow.js', t:'screenManager.js',type:'import', label:'showScreen()' },
+  { f:'gameFlow.js', t:'audioManager.js', type:'import', label:'fadeOut()' },
+  { f:'gameFlow.js', t:'modeUpUI.js',     type:'import', label:'updateModeUpHeroDisplay()' },
+  { f:'gameFlow.js', t:'modeup.js',       type:'import', label:'applyModeUp()' },
+  { f:'gameFlow.js', t:'battleEngine.js', type:'import', label:'new BattleEngine()' },
+  { f:'gameFlow.js', t:'summitMode.js',   type:'import', label:'new SummitMode()' },
+
+  // ── Input (8 imports) ────────────────────────────────────
+  { f:'inputHandler.js', t:'state.js',       type:'import', label:'reads currentScreen' },
+  { f:'inputHandler.js', t:'logger.js',      type:'import', label:'recordAttack()' },
+  { f:'inputHandler.js', t:'renderer.js',    type:'import', label:'render*()' },
+  { f:'inputHandler.js', t:'partySelectUI.js',type:'import',label:'updateHeroDisplay()' },
+  { f:'inputHandler.js', t:'modeUpUI.js',    type:'import', label:'updateModeUpHeroDisplay()' },
+  { f:'inputHandler.js', t:'gameFlow.js',    type:'import', label:'startGame(), restartGame()' },
+  { f:'inputHandler.js', t:'worldMap.js',    type:'import', label:'moveSelection*()' },
+  { f:'inputHandler.js', t:'emanations.js',  type:'import', label:'play*()' },
+
+  // ── Battle Engine ────────────────────────────────────────
+  { f:'battleEngine.js', t:'applyKnockback.js', type:'import', label:'applyKnockback()' },
+  { f:'battleEngine.js', t:'sluj.js',           type:'import', label:'applySlujEffect()' },
+
+  // ── Rendering ────────────────────────────────────────────
+  { f:'renderer.js',     t:'state.js',     type:'import', label:'reads state' },
+  { f:'partySelectUI.js',t:'state.js',     type:'import', label:'reads/writes' },
+  { f:'partySelectUI.js',t:'griot.js',     type:'import', label:'fetchJoke() etc.' },
+  { f:'partySelectUI.js',t:'renderer.js',  type:'import', label:'getCompleteStats()' },
+  { f:'modeUpUI.js',     t:'state.js',     type:'import', label:'reads state' },
+  { f:'modeUpUI.js',     t:'modeup.js',    type:'import', label:'getModeUpBuff()' },
+  { f:'modeUpUI.js',     t:'renderer.js',  type:'import', label:'getCompleteStats()' },
+
+  // ── Narrative ────────────────────────────────────────────
+  { f:'logger.js', t:'state.js', type:'import', label:'reads battleEngine' },
+  { f:'logger.js', t:'griot.js', type:'import', label:'fetch*(), recordInteraction()' },
+
+  // ── Griot → External APIs ────────────────────────────────
+  { f:'griot.js', t:'JokeAPI',      type:'api', label:'GET /joke/Programming' },
+  { f:'griot.js', t:'BaconIpsum',   type:'api', label:'GET /?type=meat-and-filler' },
+  { f:'griot.js', t:'TarotAPI',     type:'api', label:'GET /cards/random' },
+  { f:'griot.js', t:'UselessFacts', type:'api', label:'GET /random.json' },
+  { f:'griot.js', t:'AdviceSlip',   type:'api', label:'GET /advice' },
+  { f:'griot.js', t:'TheMealDB',    type:'api', label:'GET /random.php' },
+
+  // ── Screen Manager (tight coupling flags) ────────────────
+  { f:'screenManager.js', t:'state.js',      type:'import', label:'writes currentScreen' },
+  { f:'screenManager.js', t:'audioManager.js',type:'import',label:'fadeOut()' },
+  { f:'screenManager.js', t:'worldMap.js',   type:'flag',   label:'initWorldMap()' },
+  { f:'screenManager.js', t:'emanations.js', type:'flag',   label:'createEmanationsUI()' },
+
+  // ── Game Logic ───────────────────────────────────────────
+  // (modeup.js has ZERO imports — receives all data as params)
+
+  // ── Modes ────────────────────────────────────────────────
+  { f:'summitMode.js', t:'heroes.js', type:'flag', label:'bypasses content system' },
+];
+
+// ═══════════════════════════════════════════════════════════
+// LAYOUT HELPERS
+// ═══════════════════════════════════════════════════════════
+
+// Expanded cluster dimensions by node count
+function expandedDims(count) {
+  if (count === 1) return { w:140, h:95 };
+  if (count === 2) return { w:230, h:95 };
+  if (count === 3) return { w:320, h:95 };
+  if (count <= 4)  return { w:410, h:95 };
+  return { w:320, h:175 }; // 6 nodes: 2 rows
+}
+
+function clusterCenter(cid) {
+  const c = CLUSTERS[cid];
+  return { x: c.x + c.cw/2, y: c.y + c.ch/2 };
+}
+
+function nodePos(nid) {
+  const n = NODES[nid];
+  const c = CLUSTERS[n.cluster];
+  const cc = clusterCenter(n.cluster);
+  const nodes = Object.keys(NODES).filter(k => NODES[k].cluster === n.cluster);
+  const count = nodes.length;
+  if (!expanded.has(n.cluster)) {
+    return { x: cc.x, y: cc.y };
+  }
+  const dims = expandedDims(count);
+  const tlx = cc.x - dims.w/2;
+  const tly = cc.y - dims.h/2;
+  return { x: tlx + n.expandOff[0], y: tly + n.expandOff[1] };
+}
+
+// ═══════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════
+
+const expanded = new Set();
+let selected = null;
+let viewX = 0, viewY = 0, viewScale = 1;
+let dragging = false, dragStartX, dragStartY, dragOrigX, dragOrigY;
+
+// ═══════════════════════════════════════════════════════════
+// SVG UTILITIES
+// ═══════════════════════════════════════════════════════════
+
+function svgEl(tag, attrs={}, text='') {
+  const el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+  for (const [k,v] of Object.entries(attrs)) el.setAttribute(k, v);
+  if (text) el.textContent = text;
+  return el;
+}
+
+function curvedPath(x1,y1,x2,y2) {
+  const dx = x2-x1, dy = y2-y1;
+  const mx = (x1+x2)/2, my = (y1+y2)/2;
+  // Gentle quadratic curve
+  const cx = mx + dy*0.15, cy = my - dx*0.15;
+  return `M${x1},${y1} Q${cx},${cy} ${x2},${y2}`;
+}
+
+// Shorten path to not overlap node circles
+function shortenPath(x1,y1,x2,y2,r1,r2) {
+  const dx = x2-x1, dy = y2-y1;
+  const len = Math.sqrt(dx*dx+dy*dy);
+  if (len < 1) return {x1,y1,x2,y2};
+  const ux = dx/len, uy = dy/len;
+  return {
+    x1: x1+ux*r1, y1: y1+uy*r1,
+    x2: x2-ux*r2, y2: y2-uy*r2,
+  };
+}
+
+// ═══════════════════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════════════════
+
+function render() {
+  renderEdges();
+  renderClusters();
+  renderNodes();
+}
+
+function renderClusters() {
+  const g = document.getElementById('g-clusters');
+  g.innerHTML = '';
+  for (const [cid, c] of Object.entries(CLUSTERS)) {
+    const isExpanded = expanded.has(cid);
+    const nodes = Object.keys(NODES).filter(k => NODES[k].cluster === cid);
+    const cc = clusterCenter(cid);
+    let rx, ry, rw, rh;
+    if (isExpanded) {
+      const dims = expandedDims(nodes.length);
+      rw = dims.w; rh = dims.h;
+      rx = cc.x - rw/2; ry = cc.y - rh/2;
+    } else {
+      rx = c.x; ry = c.y; rw = c.cw; rh = c.ch;
+    }
+
+    const grp = svgEl('g');
+    grp.style.cursor = 'pointer';
+    grp.addEventListener('click', (e) => { e.stopPropagation(); toggleCluster(cid); });
+
+    // Background rect
+    const bg = svgEl('rect', {
+      x: rx, y: ry, width: rw, height: rh, rx: 8,
+      fill: hexAlpha(c.color, isExpanded ? 0.12 : 0.18),
+      stroke: c.color,
+      'stroke-width': isExpanded ? 1 : 1.5,
+      'stroke-opacity': isExpanded ? 0.4 : 0.7,
+    });
+    grp.appendChild(bg);
+
+    // Label (only when collapsed)
+    if (!isExpanded) {
+      const lbl = svgEl('text', {
+        x: rx + rw/2, y: ry + rh/2 - 5,
+        fill: c.color,
+        'font-size': '12',
+        'font-weight': 'bold',
+        'letter-spacing': '.06em',
+        'dominant-baseline': 'middle',
+        'text-anchor': 'middle',
+        'pointer-events': 'none',
+      });
+      lbl.textContent = c.label;
+      grp.appendChild(lbl);
+
+      // Node count badge
+      const cnt = svgEl('text', {
+        x: rx + rw/2, y: ry + rh/2 + 10,
+        fill: c.color,
+        'font-size': '10',
+        'opacity': '.5',
+        'dominant-baseline': 'middle',
+        'text-anchor': 'middle',
+        'pointer-events': 'none',
+      });
+      cnt.textContent = `${nodes.length} module${nodes.length!==1?'s':''}  ▸ expand`;
+      grp.appendChild(cnt);
+    } else {
+      // Expanded: cluster title in corner
+      const lbl = svgEl('text', {
+        x: rx + 10, y: ry + 14,
+        fill: c.color, 'font-size': '9', 'font-weight': 'bold',
+        'letter-spacing': '.08em', 'text-anchor': 'start',
+        'dominant-baseline': 'middle', 'pointer-events': 'none',
+        'opacity': '.7', 'text-transform': 'uppercase',
+      });
+      lbl.textContent = c.label.toUpperCase() + '  ✕';
+      grp.appendChild(lbl);
+    }
+
+    g.appendChild(grp);
+  }
+}
+
+function renderNodes() {
+  const g = document.getElementById('g-nodes');
+  g.innerHTML = '';
+  for (const [nid, n] of Object.entries(NODES)) {
+    if (!expanded.has(n.cluster)) continue;
+    const c = CLUSTERS[n.cluster];
+    const pos = nodePos(nid);
+    const isSel = nid === selected;
+    const hasFlag = n.flags && n.flags.length;
+
+    const grp = svgEl('g');
+    grp.style.cursor = 'pointer';
+    grp.addEventListener('click', (e) => { e.stopPropagation(); selectNode(nid); });
+
+    // Node circle
+    const r = 22;
+    const circle = svgEl('circle', {
+      cx: pos.x, cy: pos.y, r,
+      fill: hexAlpha(c.color, isSel ? 0.35 : 0.18),
+      stroke: isSel ? '#fff' : c.color,
+      'stroke-width': isSel ? 2.5 : 1.5,
+    });
+    if (isSel) circle.setAttribute('filter', 'url(#glow-s)');
+    grp.appendChild(circle);
+
+    // Flag badge
+    if (hasFlag) {
+      const badge = svgEl('text', { cx: pos.x, cy: pos.y, x: pos.x+14, y: pos.y-14,
+        'font-size':'12', 'text-anchor':'middle', 'dominant-baseline':'middle',
+        fill:'#fbbf24', 'pointer-events':'none' });
+      badge.textContent = '⚠';
+      grp.appendChild(badge);
+    }
+
+    // Type icon
+    const icons = { entry:'◆', singleton:'◉', loader:'⇩', data:'▣', ctrl:'⬡', event:'⚡', class:'⬢', util:'◎', render:'▨', service:'☁', logic:'⊛', screen:'⬕', ext:'↗' };
+    const icon = svgEl('text', { x: pos.x, y: pos.y,
+      'font-size':'13', 'text-anchor':'middle', 'dominant-baseline':'middle',
+      fill: c.color, 'pointer-events':'none' });
+    icon.textContent = icons[n.type] || '○';
+    grp.appendChild(icon);
+
+    // Label below
+    const lbl = svgEl('text', { x: pos.x, y: pos.y + r + 5,
+      'font-size':'9', 'text-anchor':'middle', 'dominant-baseline':'hanging',
+      fill:'#9090b8', 'pointer-events':'none' });
+    lbl.textContent = nid.replace('.js','').replace('.html','');
+    grp.appendChild(lbl);
+
+    g.appendChild(grp);
+  }
+}
+
+function renderEdges() {
+  const g = document.getElementById('g-edges');
+  g.innerHTML = '';
+
+  // Determine which edges to highlight based on selection
+  const connectedNodes = new Set();
+  const connectedEdges = new Set();
+  if (selected) {
+    EDGES.forEach((e,i) => {
+      if (e.f === selected || e.t === selected) {
+        connectedNodes.add(e.f);
+        connectedNodes.add(e.t);
+        connectedEdges.add(i);
+      }
+    });
+  }
+
+  EDGES.forEach((e, i) => {
+    const fp = nodePos(e.f);
+    const tp = nodePos(e.t);
+
+    // Don't draw intra-cluster edges when both collapsed and in same cluster
+    const fc = NODES[e.f].cluster;
+    const tc = NODES[e.t].cluster;
+    if (fc === tc && !expanded.has(fc)) return;
+
+    // Compute node radii for shortening
+    const fr = (expanded.has(fc) && NODES[e.f]) ? 22 : 0;
+    const tr = (expanded.has(tc) && NODES[e.t]) ? 22 : 0;
+    const s = shortenPath(fp.x, fp.y, tp.x, tp.y, fr+2, tr+6);
+
+    const path = curvedPath(s.x1, s.y1, s.x2, s.y2);
+    const markerMap = { import:'url(#arr-import)', api:'url(#arr-api)', flag:'url(#arr-flag)', fallback:'url(#arr-fallback)' };
+
+    const dimmed = selected && !connectedEdges.has(i);
+
+    const el = svgEl('path', {
+      d: path,
+      class: `edge type-${e.type}${dimmed ? ' dimmed' : ''}`,
+      'marker-end': markerMap[e.type] || 'url(#arr-import)',
+    });
+
+    // Label on hover (tooltip via title)
+    const titleEl = document.createElementNS('http://www.w3.org/2000/svg','title');
+    titleEl.textContent = `${e.f} → ${e.t}: ${e.label||e.type}`;
+    el.appendChild(titleEl);
+
+    // Edge label midpoint (only show if both ends are expanded nodes)
+    if (e.label && expanded.has(fc) && expanded.has(tc)) {
+      const mx = (fp.x+tp.x)/2, my = (fp.y+tp.y)/2;
+      const lbl = svgEl('text', { x:mx, y:my-8, class:'edge-label' });
+      lbl.textContent = e.label;
+      g.appendChild(lbl);
+    }
+
+    g.appendChild(el);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+// INTERACTION
+// ═══════════════════════════════════════════════════════════
+
+function toggleCluster(cid) {
+  if (expanded.has(cid)) {
+    expanded.delete(cid);
+    // Deselect if selected node was in this cluster
+    if (selected && NODES[selected]?.cluster === cid) {
+      selected = null;
+      closeDetail();
+    }
+  } else {
+    expanded.add(cid);
+  }
+  render();
+}
+
+function selectNode(nid) {
+  selected = nid === selected ? null : nid;
+  if (selected) showDetail(nid);
+  else closeDetail();
+  render();
+}
+
+function showDetail(nid) {
+  const n = NODES[nid];
+  const c = CLUSTERS[n.cluster];
+  const panel = document.getElementById('detail');
+  const content = document.getElementById('detail-content');
+
+  const inEdges  = EDGES.filter(e => e.t === nid);
+  const outEdges = EDGES.filter(e => e.f === nid);
+
+  const typeColor = { entry:'#818cf8', singleton:'#f472b6', loader:'#34d399', data:'#34d399',
+    ctrl:'#fbbf24', event:'#60a5fa', class:'#f87171', util:'#94a3b8', render:'#a78bfa',
+    service:'#22d3ee', logic:'#c084fc', screen:'#a3e635', ext:'#fb923c' };
+
+  let html = `
+    <div class="d-name">${nid}</div>
+    <div class="d-path">${n.file}</div>
+    <div>
+      <span class="d-tag" style="background:${hexAlpha(c.color,0.2)};color:${c.color};border:1px solid ${hexAlpha(c.color,0.4)}">${c.label}</span>
+      <span class="d-tag" style="background:${hexAlpha(typeColor[n.type]||'#666',0.15)};color:${typeColor[n.type]||'#aaa'};border:1px solid ${hexAlpha(typeColor[n.type]||'#666',0.3)}">${n.type}</span>
+    </div>
+    <div class="d-desc">${n.desc}</div>
+  `;
+
+  if (n.flags?.length) {
+    html += `<div class="d-section"><h3>⚠ Flags</h3>`;
+    n.flags.forEach(f => { html += `<div class="d-flag">${f}</div>`; });
+    html += `</div>`;
+  }
+
+  if (outEdges.length) {
+    html += `<div class="d-section"><h3>Calls / Imports →</h3>`;
+    outEdges.forEach(e => {
+      const col = e.type==='api'?'#c2660a':e.type==='flag'?'#dc2626':e.type==='fallback'?'#3b82f6':'#3b6e9a';
+      html += `<div class="d-item" style="border-left:2px solid ${col};padding-left:6px;margin:3px 0"><code>${e.t}</code> <span style="color:#445;font-size:10px">${e.label||''}</span></div>`;
+    });
+    html += `</div>`;
+  }
+
+  if (inEdges.length) {
+    html += `<div class="d-section"><h3>← Called by / Imported by</h3>`;
+    inEdges.forEach(e => {
+      html += `<div class="d-item"><code>${e.f}</code></div>`;
+    });
+    html += `</div>`;
+  }
+
+  content.innerHTML = html;
+  panel.classList.add('open');
+}
+
+function closeDetail() {
+  document.getElementById('detail').classList.remove('open');
+}
+
+// ═══════════════════════════════════════════════════════════
+// PAN / ZOOM
+// ═══════════════════════════════════════════════════════════
+
+function applyTransform() {
+  document.getElementById('g-transform').setAttribute('transform',
+    `translate(${viewX},${viewY}) scale(${viewScale})`);
+}
+
+const wrap = document.getElementById('graph-wrap');
+
+wrap.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  const rect = wrap.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+  const delta = e.deltaY > 0 ? 0.9 : 1.1;
+  const newScale = Math.max(0.3, Math.min(4, viewScale * delta));
+  viewX = mx - (mx - viewX) * (newScale/viewScale);
+  viewY = my - (my - viewY) * (newScale/viewScale);
+  viewScale = newScale;
+  applyTransform();
+}, { passive: false });
+
+wrap.addEventListener('mousedown', (e) => {
+  if (e.target.closest('.node-circle, g[data-cluster]')) return;
+  dragging = true;
+  dragStartX = e.clientX; dragStartY = e.clientY;
+  dragOrigX = viewX; dragOrigY = viewY;
+  wrap.classList.add('dragging');
+});
+
+window.addEventListener('mousemove', (e) => {
+  if (!dragging) return;
+  viewX = dragOrigX + (e.clientX - dragStartX);
+  viewY = dragOrigY + (e.clientY - dragStartY);
+  applyTransform();
+});
+
+window.addEventListener('mouseup', () => {
+  dragging = false;
+  wrap.classList.remove('dragging');
+});
+
+// Click on empty SVG area deselects
+document.getElementById('svg').addEventListener('click', () => {
+  selected = null;
+  closeDetail();
+  render();
+});
+
+document.getElementById('detail-close').addEventListener('click', () => {
+  selected = null;
+  closeDetail();
+  render();
+});
+
+// ═══════════════════════════════════════════════════════════
+// UTILITIES
+// ═══════════════════════════════════════════════════════════
+
+function hexAlpha(hex, alpha) {
+  const r = parseInt(hex.slice(1,3),16);
+  const g = parseInt(hex.slice(3,5),16);
+  const b = parseInt(hex.slice(5,7),16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+// ═══════════════════════════════════════════════════════════
+// FIT TO SCREEN
+// ═══════════════════════════════════════════════════════════
+
+function fitToScreen() {
+  const wrap = document.getElementById('graph-wrap');
+  const W = wrap.clientWidth;
+  const H = wrap.clientHeight;
+
+  // Find bounding box of all clusters
+  let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
+  for (const c of Object.values(CLUSTERS)) {
+    minX = Math.min(minX, c.x);
+    minY = Math.min(minY, c.y);
+    maxX = Math.max(maxX, c.x + c.cw);
+    maxY = Math.max(maxY, c.y + c.ch);
+  }
+  const PAD = 50;
+  const cw = maxX - minX + PAD*2;
+  const ch = maxY - minY + PAD*2;
+  viewScale = Math.min(W/cw, H/ch, 1.2);
+  viewX = (W - cw*viewScale)/2 - (minX-PAD)*viewScale;
+  viewY = (H - ch*viewScale)/2 - (minY-PAD)*viewScale;
+  applyTransform();
+}
+
+// ═══════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════
+
+render();
+fitToScreen();
+
+// Expand state cluster by default to show it's the hub
+expanded.add('state');
+render();
+</script>
+</body>
+</html>
