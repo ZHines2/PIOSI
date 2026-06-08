@@ -1,12 +1,14 @@
 {
   "name": "piosi-project",
   "version": "1.0.0",
+  "type": "module",
   "description": "Pee OH See project bundled for Squarespace via GitHub Pages",
   "main": "index.js",
   "scripts": {
     "start": "parcel src/index.html --open",
     "build": "parcel build src/index.html",
-    "deploy": "gh-pages -d dist"
+    "deploy": "gh-pages -d dist",
+    "test": "node --test tests/*.test.js"
   },
   "author": "Your Name",
   "license": "MIT",

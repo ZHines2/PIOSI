@@ -17,37 +17,71 @@
       <div class="image-container">
         <div class="static-noise"></div>
       </div>
+      <p id="title-griot" class="title-griot"></p>
       <p>PRESS SPACE</p>
     </div>
 
     <!-- Party Selection Screen -->
     <div id="party-select">
-      <h2>
-        Select Your Party<br />
-        (Use Left/Right Arrow keys to navigate and Spacebar to select/deselect.
-        Choose exactly 3 heroes.)
-      </h2>
-      <!-- Hero display area with complete stats shown -->
-      <div id="hero-display"></div>
-      <p id="selection-info"></p>
+      <div id="stage-row"></div>
+      <div id="stage-center">
+        <button id="nav-prev" aria-label="Previous hero">◀</button>
+        <div id="hero-display"></div>
+        <button id="nav-next" aria-label="Next hero">▶</button>
+      </div>
+      <div id="stage-back">
+        <div id="party-slots"></div>
+        <div id="synergy-hint" style="display:none;"></div>
+        <p id="selection-info"></p>
+        <button id="start-btn" style="display:none;" aria-label="Begin the saga">BEGIN THE SAGA</button>
+      </div>
     </div>
 
     <!-- Battle Screen -->
     <div id="game-container">
       <h1 id="level-title">Level Title</h1>
+      <div id="battle-options-wrap">
+        <button id="options-toggle-btn" title="Battle Options" aria-label="Battle Options">⚙ Options</button>
+        <div id="options-panel" class="hidden">
+          <label><input id="opt-isometric" type="checkbox" /> Isometric View</label>
+          <label><input id="opt-timeline" type="checkbox" checked /> Turn Order</label>
+          <label><input id="opt-intent" type="checkbox" checked /> Enemy Intent</label>
+          <label><input id="opt-readability" type="checkbox" checked /> Move Hints</label>
+        </div>
+      </div>
+      <button id="dpad-toggle-btn" title="Toggle D-Pad" aria-label="Toggle D-Pad">🕹</button>
+      <div id="battle-hud">
+        <div id="hud-top"></div>
+        <div id="hud-party"></div>
+        <div id="hud-narrative">
+          <div class="hud-panel-title">LAST EVENTS</div>
+          <div id="hud-narrative-lines"></div>
+        </div>
+      </div>
       <div id="battlefield"></div>
+      <canvas id="iso-battlefield" style="display:none;"></canvas>
+      <div id="party-cards"></div>
+      <div id="turn-timeline" class="battle-info-panel"></div>
+      <div id="enemy-intent" class="battle-info-panel"></div>
       <p id="status"></p>
       <div id="log"></div>
-      <p>
-        Use Arrow Keys to Move | Press Spacebar to Attack, then choose attack
-        direction.
-      </p>
+      <!-- On-screen D-pad for touch/mobile — toggled via #dpad-toggle-btn -->
+      <div id="mobile-dpad" aria-hidden="true">
+        <button class="dpad-btn" data-key="ArrowUp" aria-label="Move Up">▲</button>
+        <div class="dpad-row">
+          <button class="dpad-btn" data-key="ArrowLeft" aria-label="Move Left">◀</button>
+          <button class="dpad-btn dpad-action" data-key="Space" aria-label="Attack">⚔</button>
+          <button class="dpad-btn" data-key="ArrowRight" aria-label="Move Right">▶</button>
+        </div>
+        <button class="dpad-btn" data-key="ArrowDown" aria-label="Move Down">▼</button>
+      </div>
     </div>
 
     <!-- Victory Screen -->
     <div id="victory">
       <h1>Victory!</h1>
       <p>Congratulations! All levels have been completed!</p>
+      <p id="victory-griot" class="griot-line"></p>
       <p>Press Spacebar to Restart</p>
     </div>
 
@@ -56,10 +90,31 @@
       <!-- WorldMap.js module will populate this screen -->
     </div>
 
+    <!-- Summit Mode Screen -->
+    <div id="summit-mode" style="display:none; flex-direction: column; align-items: center; padding: 10px;">
+      <h1>SUMMIT</h1>
+      <!-- Updated Summit Mode-specific sections -->
+      <div id="summit-battlefield" style="margin: 10px 0; border: 2px solid #333;">
+        <!-- Canvas will be inserted here by summitMode.js -->
+      </div>
+      <!-- NEW container for displaying hero info (name, coordinates, team color) -->
+      <div id="summit-hero-info" style="background-color: #fff; border: 1px solid #ccc; padding: 8px; margin: 10px 0; max-height: 150px; overflow-y: auto; width: 800px; font-size: 14px;">
+        <!-- Summit Mode hero info will be updated here -->
+      </div>
+      <p id="summit-status"></p>
+      <div id="summit-log" style="background-color: #fff; border: 1px solid #ccc; padding: 8px; margin: 10px 0; max-height: 120px; overflow-y: auto; width: 800px; font-size: 13px;">
+        <!-- Simulation log messages will appear here -->
+      </div>
+      <p>
+        Use Arrow Keys to Move | Press Spacebar to Attack, then choose attack direction.
+      </p>
+    </div>
+
     <!-- Game Over Screen -->
     <div id="game-over">
       <h1>Game Over</h1>
       <p>All your heroes have been defeated.<br />Press Spacebar to Restart.</p>
+      <p id="game-over-griot" class="griot-line"></p>
     </div>
 
     <!-- Mode Up Window -->
@@ -67,826 +122,48 @@
       <h2>MODE UP THE SQUAD</h2>
       <div id="mode-up-hero-display"></div>
       <p id="mode-up-instructions">
-        Use Left/Right to select. Press Space to confirm.
+        ◀ ▶ change hero · ▲ ▼ change path · Space confirm
       </p>
     </div>
 
+    <!-- Emanations Mode Screen -->
+    <div id="emanations-mode" style="display:none; flex-direction: column; align-items: center; padding: 10px;">
+      <h1>EMANATIONS</h1>
+      <div id="music-player"></div>
+      <audio id="emanations-audio"></audio>
+      <canvas id="emanations-canvas" width="600" height="200"></canvas>
+    </div>
+
     <!-- Audio elements -->
-    <audio id="background-music" src="DarkAnoid.mp3" loop></audio>
-    <audio id="hero-select-music" src="WoodenPath.mp3" loop></audio>
-    <audio id="level-5-music" src="5GiMaxVision.mp3" loop></audio>
-    <audio id="level-6-music" src="ineedsome.mp3" loop></audio>
+    <audio id="background-music" src="assets/audio/DarkAnoid.mp3" loop></audio>
+    <audio id="hero-select-music" src="assets/audio/WoodenPath.mp3" loop></audio>
+    <audio id="level-5-music" src="assets/audio/5GiMaxVision.mp3" loop></audio>
+    <audio id="level-6-music" src="assets/audio/ineedsome.mp3" loop></audio>
 
     <script type="module">
-      // Import necessary modules with ample comments
-      import {
-        fetchJoke,
-        fetchBaconIpsum,
-        fetchTarotCard,
-        fetchNonseqFact,
-        fetchShrinkAdvice,
-        fetchRandomRecipe,
-        getGriotReaction,
-        initializeGriot,
-        recordInteraction,
-      } from "./griot.js";
-      import { BattleEngine } from "./battleEngine.js";
-      import { heroes as allHeroes } from "./heroes.js";
-      import { getLevel } from "./levels.js";
-      import { getModeUpBuff, applyModeUp } from "./modeup.js";
-      import {
-        initWorldMap,
-        moveSelectionLeft,
-        moveSelectionRight,
-        selectCurrentNode,
-      } from "./worldMap.js";
+      import { state } from './src/state.js';
+      import { loadContent } from './src/contentLoader.js';
+      import { initializeGriot, getGriotReaction } from './src/griot.js';
+      import { showScreen } from './src/screenManager.js';
+      import { initInputHandler } from './src/inputHandler.js';
 
-      // Global variables to manage game state
-      let currentScreen = "title";
-      let selectedHeroes = [];
-      let heroIndex = 0;
-      let party = [];
-      let level = 1; // Starting level
-      let enemies = [];
-      let battleEngine = null;
-      let cheatActive = false; // Prevent waiting cheat activation
-
-      // Cheat detection variables
-      const cheatSequence = [
-        "ArrowLeft",
-        "ArrowLeft",
-        "ArrowRight",
-        "ArrowRight",
-        "ArrowUp",
-        "ArrowUp",
-        "ArrowDown",
-        "Space"
-      ];
-      const worldMapCheat = ["ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown", "ArrowLeft", "ArrowRight", "Space"]; // New cheat sequence
-      let cheatBuffer = [];
-
-      // For Mode Up selection
-      let modeUpIndex = 0;
-      let livingHeroes = [];
-
-           /**
-       * Function to show a specific screen by setting display properties.
-       */
-      function showScreen(screen) {
-        // Hide all screens by default
-        document.getElementById("title-screen").style.display = "none";
-        document.getElementById("party-select").style.display = "none";
-        document.getElementById("game-container").style.display = "none";
-        document.getElementById("victory").style.display = "none";
-        document.getElementById("world-map").style.display = "none";
-        document.getElementById("mode-up-window").style.display = "none";
-        document.getElementById("game-over").style.display = "none";
-
-        if (screen === "title") {
-          document.getElementById("title-screen").style.display = "flex";
-        } else if (screen === "party") {
-          document.getElementById("party-select").style.display = "block";
-        } else if (screen === "battle") {
-          document.getElementById("game-container").style.display = "block";
-        } else if (screen === "victory") {
-          document.getElementById("victory").style.display = "block";
-        } else if (screen === "worldMap") {
-          document.getElementById("world-map").style.display = "flex";
-          // Initialize world map functionality when this screen is active
-          initWorldMap();
-        } else if (screen === "modeUp") {
-          document.getElementById("mode-up-window").style.display = "flex";
-        }
-        currentScreen = screen;
-      }
-
-
-      /**
-       * Helper function to generate a complete stats object.
-       * Even if a specific stat is 0 or undefined, we display it.
-       */
-          function getCompleteStats(hero) {
-            return {
-              attack: hero.attack || 0,
-              range: hero.range || 0,
-              agility: hero.agility || 0,
-              hp: hero.hp || 0,
-              heal: hero.heal || 0,
-              burn: hero.burn || 0,
-              sluj: hero.sluj || 0,
-              ghis: hero.ghis || 0,
-              trick: hero.trick || 0,
-              yeet: hero.yeet || 0,
-              swarm: hero.swarm || 0,
-              spicy: hero.spicy || 0,
-              armor: hero.armor || 0,
-              spore: hero.spore || 0,
-              chain: hero.chain || 0,
-              caprice: hero.caprice || 0,
-              fate: hero.fate || 0,
-              rage: hero.rage || 0,
-              bulk: hero.bulk || 0,
-              psych: hero.psych || 0,
-              ankh: hero.ankh || 0,
-              rise: hero.rise || 0,
-              dodge: hero.dodge || 0
-            };
-          }
-
-      /**
-       * Update the hero display in the party selection screen.
-       */
-      async function updateHeroDisplay() {
-        const hero = allHeroes[heroIndex];
-        let display = `<p class="highlight">${hero.name} (${hero.symbol})</p>`;
-        // Display special interactions for heroes that have extra properties
-        if (hero.joke) {
-          const joke = await fetchJoke();
-          display += `<p>${joke}</p>`;
-        } else if (hero.meat) {
-          const meatMsg = await fetchBaconIpsum();
-          display += `<p>${meatMsg}</p>`;
-        } else if (hero.tarot) {
-          const tarot = await fetchTarotCard();
-          display += `<p>${tarot}</p>`;
-        } else if (hero.nonseq) {
-          const fact = await fetchNonseqFact();
-          display += `<p>${fact}</p>`;
-        } else if (hero.shrink) {
-          const advice = await fetchShrinkAdvice();
-          display += `<p>Advice: ${advice}</p>`;
-        } else if (hero.recipe) {
-          const recipe = await fetchRandomRecipe();
-          display += `<p>${recipe}</p>`;
-        } else if (hero.reactsToHistory) {
-          const reaction = await getGriotReaction();
-          display += `<p>${reaction}</p>`;
-        }
-        // Get complete stats for the hero, including the new psych stat
-        const stats = getCompleteStats(hero);
-        display += `<p>
-          Attack: ${stats.attack} | 
-          Range: ${stats.range} | 
-          Agility: ${stats.agility} | 
-          HP: ${stats.hp} | 
-          Heal: ${stats.heal} | 
-          Burn: ${stats.burn} | 
-          Slüj: ${stats.sluj} | 
-          Ghïs: ${stats.ghis} | 
-          Trick: ${stats.trick} | 
-          Yeet: ${stats.yeet} | 
-          Swarm: ${stats.swarm} | 
-          Spicy: ${stats.spicy} | 
-          Armor: ${stats.armor} | 
-          Spore: ${stats.spore} | 
-          Chain: ${stats.chain} | 
-          Caprice: ${stats.caprice} | 
-          Fate: ${stats.fate} | 
-          Rage: ${stats.rage} | 
-          Bulk: ${stats.bulk} |
-          Psych: ${stats.psych} |
-          Ankh: ${stats.ankh} |
-          Rise: ${stats.rise} |
-          Dodge: ${stats.dodge} |
-        </p>`;
-        // Indicate selection status
-        display += `<p>${
-          selectedHeroes.includes(heroIndex)
-            ? "SELECTED"
-            : "Press Spacebar to Select"
-        }</p>`;
-        document.getElementById("hero-display").innerHTML = display;
-        document.getElementById("selection-info").textContent = `Selected Heroes: ${selectedHeroes.length}/3`;
-      }
-
-      /**
-       * Toggle hero selection from the party selection screen.
-       */
-      function selectHero() {
-        if (selectedHeroes.includes(heroIndex)) {
-          selectedHeroes = selectedHeroes.filter((i) => i !== heroIndex);
-        } else if (selectedHeroes.length < 3) {
-          selectedHeroes.push(heroIndex);
-        }
-        updateHeroDisplay();
-      }
-
-      /**
-       * Start the game and initialize the party based on selected heroes.
-       * Begins by fading out the hero select music and fading in DarkAnoid.
-       */
-      function startGame() {
-        if (selectedHeroes.length !== 3) {
-          alert("Select exactly 3 heroes!");
-          return;
-        }
-
-        const backgroundMusic = document.getElementById("background-music");
-        const heroSelectMusic = document.getElementById("hero-select-music");
-
-        // Fade out hero select music
-        let volume = 1;
-        const fadeInterval = setInterval(() => {
-          if (volume > 0) {
-            volume -= 0.1;
-            heroSelectMusic.volume = volume;
-          } else {
-            clearInterval(fadeInterval);
-            heroSelectMusic.pause();
-            heroSelectMusic.volume = 1; // Reset volume for future use
-            backgroundMusic.play().catch(() => {});
-          }
-        }, 100); // Adjust timing as needed
-
-        // Clone selected heroes so that changes do not affect base definitions
-        party = selectedHeroes.map((i) => Object.assign({}, allHeroes[i]));
-        // Sort party by agility descending for turn order
-        party.sort((a, b) => b.agility - a.agility);
-        initializeBattle();
-        showScreen("battle");
-      }
-
-      /**
-       * Update the Mode Up display for the currently selected hero.
-       */
-      function updateModeUpHeroDisplay() {
-        const hero = livingHeroes[modeUpIndex];
-        // Use the imported getModeUpBuff method to determine buffs
-        const buff = getModeUpBuff(hero, level);
-        const lines = [];
-        lines.push(`<p class="highlight">${hero.name} (${hero.symbol})</p>`);
-        // Display current stats with buff preview for each stat
-        const stats = getCompleteStats(hero);
-        lines.push(
-          `<p>HP: ${stats.hp} ${
-            buff.hp ? `<span class="stat-up">+${buff.hp}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Attack: ${stats.attack} ${
-            buff.attack ? `<span class="stat-up">+${buff.attack}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Range: ${stats.range} ${
-            buff.range ? `<span class="stat-up">+${buff.range}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Agility: ${stats.agility} ${
-            buff.agility ? `<span class="stat-up">+${buff.agility}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Heal: ${stats.heal} ${
-            buff.heal ? `<span class="stat-up">+${buff.heal}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Burn: ${stats.burn} ${
-            buff.burn ? `<span class="stat-up">+${buff.burn}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Slüj: ${stats.sluj} ${
-            buff.sluj ? `<span class="stat-up">+${buff.sluj}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Ghïs: ${stats.ghis} ${
-            buff.ghis ? `<span class="stat-up">+${buff.ghis}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Trick: ${stats.trick} ${
-            buff.trick ? `<span class="stat-up">+${buff.trick}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Yeet: ${stats.yeet} ${
-            buff.yeet ? `<span class="stat-up">+${buff.yeet}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Swarm: ${stats.swarm} ${
-            buff.swarm ? `<span class="stat-up">+${buff.swarm}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Spicy: ${stats.spicy} ${
-            buff.spicy ? `<span class="stat-up">+${buff.spicy}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Armor: ${stats.armor} ${
-            buff.armor ? `<span class="stat-up">+${buff.armor}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Spore: ${stats.spore} ${
-            buff.spore ? `<span class="stat-up">+${buff.spore}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Chain: ${stats.chain} ${
-            buff.chain ? `<span class="stat-up">+${buff.chain}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Caprice: ${stats.caprice} ${
-            buff.caprice ? `<span class="stat-up">+${buff.caprice}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Fate: ${stats.fate} ${
-            buff.fate ? `<span class="stat-up">+${buff.fate}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Rage: ${stats.rage} ${
-            buff.rage ? `<span class="stat-up">+${buff.rage}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Bulk: ${stats.bulk} ${
-            buff.bulk ? `<span class="stat-up">+${buff.bulk}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Psych: ${stats.psych} ${
-            buff.psych ? `<span class="stat-up">+${buff.psych}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Ankh: ${stats.ankh} ${
-            buff.ankh ? `<span class="stat-up">+${buff.ankh}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Rise: ${stats.rise} ${
-            buff.rise ? `<span class="stat-up">+${buff.rise}</span>` : ""
-          }</p>`
-        );
-        lines.push(
-          `<p>Dodge: ${stats.dodge} ${
-            buff.dodge ? `<span class="stat-up">+${buff.dodge}</span>` : ""
-          }</p>`
-        );
-        document.getElementById("mode-up-hero-display").innerHTML =
-          lines.join("");
-      }
-
-      /**
-       * Show the Mode Up selection window after a level is completed.
-       */
-      function showModeUpWindow() {
-        livingHeroes = party.filter((hero) => hero.hp > 0);
-        if (livingHeroes.length === 0) {
-          setTimeout(initializeBattle, 500);
-          return;
-        }
-        modeUpIndex = 0;
-        showScreen("modeUp");
-        updateModeUpHeroDisplay();
-
-        // Fade out background music if current level is 4
-        if (level === 4) {
-          const backgroundMusic = document.getElementById("background-music");
-          let volume = backgroundMusic.volume;
-          const fadeInterval = setInterval(() => {
-            if (volume > 0) {
-              volume -= 0.1;
-              backgroundMusic.volume = volume;
-            } else {
-              clearInterval(fadeInterval);
-              backgroundMusic.pause();
-              backgroundMusic.volume = 1; // Reset volume for future use
-            }
-          }, 100); // Adjust timing as needed
-        }
-      }
-
-      /**
-       * Apply the buffs from the selected hero and progress to the next level.
-       */
-      function applyCurrentModeUp() {
-        if (livingHeroes.length > 0) {
-          applyModeUp(livingHeroes[modeUpIndex], level, party, logMessage);
-          showScreen("battle");
-          level++;
-          setTimeout(initializeBattle, 2000);
-        }
-      }
-
-      /**
-       * Initialize a battle based on the current level settings.
-       */
-      function initializeBattle() {
-        const settings = getLevel(level);
-        if (!settings) {
-          // If no settings found, show victory unless in special level sequences.
-          if (level < 99 || level > 101) {
-            showScreen("victory");
-            return;
-          }
-        }
-        const { rows, cols, wallHP, title, enemies: levelEnemies } = settings;
-        document.getElementById("level-title").textContent = title;
-        enemies = levelEnemies;
-        battleEngine = new BattleEngine(
-          party,
-          enemies,
-          rows,
-          cols,
-          wallHP,
-          logMessage,
-          onLevelComplete,
-          onGameOver
-        );
-        renderBattlefield();
-
-        // Play new song if current level is 5
-        if (level === 5) {
-          const level5Music = document.getElementById("level-5-music");
-          level5Music.play().catch(() => {});
-        }
-
-        // Play "ineedsome.mp3" if current level is 6
-        if (level === 6) {
-          const level6Music = document.getElementById("level-6-music");
-          level6Music.play().catch(() => {});
-        }
-
-        // Handle level 99 correctly by starting the battle
-        if (level === 99) {
-          logMessage("Entering Level 99: The Hidden Arena!");
-          showScreen("battle");
-          return;
-        }
-      }
-
-     /**
-       * Called when a level is completed and determines the next action.
-       * Levels 1 to 19 trigger the Mode Up window, and level 20 summons world map.
-       * Secret level (level 99) remains unchanged.
-       */
-      function onLevelComplete() {
-        if (level >= 1 && level <= 19) {
-          logMessage(`Level ${level} complete!`);
-          showModeUpWindow();
-        } else if (level === 20) {
-          logMessage("Level 20 complete! Entering the world map...");
-          showScreen("worldMap");
-        } else if (level === 99) {
-          logMessage("The veil of introspection lifts...");
-          logMessage("You've broken through! The eternal wall falls!");
-          showScreen("victory");
-        }
-
-
-        // Fade out level 5 music if current level is 5
-        if (level === 5) {
-          const level5Music = document.getElementById("level-5-music");
-          let volume = level5Music.volume;
-          const fadeInterval = setInterval(() => {
-            if (volume > 0) {
-              volume -= 0.1;
-              level5Music.volume = volume;
-            } else {
-              clearInterval(fadeInterval);
-              level5Music.pause();
-              level5Music.volume = 1; // Reset volume for future use
-            }
-          }, 100); // Adjust timing as needed
-        }
-      }
-
-      /**
-       * Called when the game detects a game over condition.
-       */
-      function onGameOver() {
-        document.getElementById("game-over").style.display = "flex";
-
-        // Stop "ineedsome.mp3" if it is playing
-        const level6Music = document.getElementById("level-6-music");
-        level6Music.pause();
-        level6Music.currentTime = 0;
-      }
-
-      /**
-       * Render the battlefield by drawing it from the battle engine.
-       */
-      function renderBattlefield() {
-        document.getElementById("battlefield").innerHTML =
-          battleEngine.drawBattlefield();
-        document.getElementById("status").textContent =
-          "Wall HP: " +
-          battleEngine.wallHP +
-          " | " +
-          party[battleEngine.currentUnit].name +
-          "'s Turn (Moves Left: " +
-          battleEngine.movePoints +
-          ")";
-      }
-
-      /**
-       * Log messages to the game log area.
-       */
-      function logMessage(message) {
-        const logDiv = document.getElementById("log");
-        logDiv.innerHTML += `<p>${message}</p>`;
-        logDiv.scrollTop = logDiv.scrollHeight;
-      }
-
-      /**
-       * Record attack interactions and display hero-specific messages.
-       */
-      async function recordAttack(message) {
-        recordInteraction(message);
-        const hero = party[battleEngine.currentUnit];
-        if (hero.joke) {
-          const joke = await fetchJoke();
-          logMessage(joke);
-        } else if (hero.meat) {
-          const meatMsg = await fetchBaconIpsum();
-          logMessage(meatMsg);
-        } else if (hero.tarot) {
-          const tarot = await fetchTarotCard();
-          logMessage(tarot);
-        } else if (hero.nonseq) {
-          const fact = await fetchNonseqFact();
-          logMessage(fact);
-        } else if (hero.shrink) {
-          const advice = await fetchShrinkAdvice();
-          logMessage(`Advice: ${advice}`);
-        } else if (hero.recipe) {
-          const recipe = await fetchRandomRecipe();
-          logMessage(recipe);
-        } else if (hero.reactsToHistory) {
-          const reaction = await getGriotReaction();
-          logMessage(reaction);
-        }
-      }
-
-      /**
-       * Restart the game and reset all global variables.
-       */
-      function restartGame() {
-        level = 1;
-        selectedHeroes = [];
-        party = [];
-        heroIndex = 0;
-        cheatActive = false;
-        document.getElementById("log").innerHTML = "";
-        document.getElementById("game-over").style.display = "none";
-
-        // Stop DarkAnoid music
-        const backgroundMusic = document.getElementById("background-music");
-        backgroundMusic.pause();
-        backgroundMusic.currentTime = 0;
-
-        // Stop Level 5 music
-        const level5Music = document.getElementById("level-5-music");
-        level5Music.pause();
-        level5Music.currentTime = 0;
-
-        // Stop "ineedsome.mp3"
-        const level6Music = document.getElementById("level-6-music");
-        level6Music.pause();
-        level6Music.currentTime = 0;
-
-        // Start Hero Select music (WoodenPath.mp3)
-        const heroSelectMusic = document.getElementById("hero-select-music");
-        heroSelectMusic.currentTime = 0;
-        heroSelectMusic.volume = 1;
-        heroSelectMusic.play().catch(() => {});
-
-        showScreen("title");
-      }
-
-      /**
-       * Activate the cheat code branch (Level 99: The Hidden Arena).
-       */
-      function activateCheat() {
-        if (!cheatActive) {
-          cheatActive = true;
-          console.log("Cheat code detected! Activating Level 99: The Hidden Arena!");
-          level = 99;
-          initializeBattle();
-        }
-      }
-
-      /**
-       * Activate the world map screen.
-       */
-      function worldMapCheatCode() {
-          console.log("World Map cheat code detected! Opening THE BROADLANDS!");
-          showScreen("worldMap");
-      }
-
-      // Global keydown listener handling various game screens and actions.
-      document.addEventListener("keydown", async (event) => {
-        cheatBuffer.push(event.code);
-        if (cheatBuffer.length > Math.max(cheatSequence.length, worldMapCheat.length)) {
-          cheatBuffer.shift();
-        }
-        if (cheatBuffer.join() === cheatSequence.join()) {
-          activateCheat();
-          cheatBuffer = [];
-          return;
-        }
-
-        // Check for the world map cheat code
-        if (cheatBuffer.slice(-worldMapCheat.length).join() === worldMapCheat.join()) {
-            worldMapCheatCode();
-            cheatBuffer = [];
-            return;
-        }
-
-
-        // Handle key actions for game-over
-        if (document.getElementById("game-over").style.display === "flex") {
-          const action =
-            keyActions["game-over"][event.code] ||
-            keyActions["game-over"][event.key];
-          if (action) {
-            event.preventDefault();
-            await action();
-          }
-          return;
-        }
-        const actions = keyActions[currentScreen];
-        const action = actions && (actions[event.code] || actions[event.key]);
-        if (action) {
-          event.preventDefault();
-          await action();
-        }
-      });
-
-      // Mapping key codes to actions based on current screen context.
-      const keyActions = {
-        title: {
-          Space: () => {
-            showScreen("party");
-            updateHeroDisplay();
-            document.getElementById("hero-select-music").play().catch(() => {});
-          }
-        },
-        party: {
-          ArrowLeft: () => {
-            heroIndex = (heroIndex - 1 + allHeroes.length) % allHeroes.length;
-            updateHeroDisplay();
-          },
-          ArrowRight: () => {
-            heroIndex = (heroIndex + 1) % allHeroes.length;
-            updateHeroDisplay();
-          },
-          Space: () => {
-            if (
-              selectedHeroes.length < 3 ||
-              !selectedHeroes.includes(heroIndex)
-            ) {
-              selectHero();
-            } else {
-              startGame();
-            }
-            updateHeroDisplay();
-          }
-        },
-        battle: {
-          Space: () => {
-            battleEngine.awaitingAttackDirection = true;
-            logMessage(
-              `${party[battleEngine.currentUnit].name} is ready to attack! Choose a direction.`
-            );
-            renderBattlefield();
-          },
-          ArrowUp: async () => {
-            if (battleEngine.awaitingAttackDirection) {
-              await battleEngine.attackInDirection(
-                0,
-                -1,
-                party[battleEngine.currentUnit],
-                recordAttack
-              );
-            } else {
-              battleEngine.moveUnit(0, -1);
-            }
-            renderBattlefield();
-          },
-          ArrowDown: async () => {
-            if (battleEngine.awaitingAttackDirection) {
-              await battleEngine.attackInDirection(
-                0,
-                1,
-                party[battleEngine.currentUnit],
-                recordAttack
-              );
-            } else {
-              battleEngine.moveUnit(0, 1);
-            }
-            renderBattlefield();
-          },
-          ArrowLeft: async () => {
-            if (battleEngine.awaitingAttackDirection) {
-              await battleEngine.attackInDirection(
-                -1,
-                0,
-                party[battleEngine.currentUnit],
-                recordAttack
-              );
-            } else {
-              battleEngine.moveUnit(-1, 0);
-            }
-            renderBattlefield();
-          },
-          ArrowRight: async () => {
-            if (battleEngine.awaitingAttackDirection) {
-              await battleEngine.attackInDirection(
-                1,
-                0,
-                party[battleEngine.currentUnit],
-                recordAttack
-              );
-            } else {
-              battleEngine.moveUnit(1, 0);
-            }
-            renderBattlefield();
-          }
-        },
-        victory: {
-          Space: () => restartGame()
-        },
-        "game-over": {
-          Space: () => restartGame()
-        },
-        modeUp: {
-          ArrowLeft: () => {
-            if (livingHeroes.length > 0) {
-              modeUpIndex =
-                (modeUpIndex - 1 + livingHeroes.length) % livingHeroes.length;
-              updateModeUpHeroDisplay();
-            }
-          },
-          ArrowRight: () => {
-            if (livingHeroes.length > 0) {
-              modeUpIndex = (modeUpIndex + 1) % livingHeroes.length;
-              updateModeUpHeroDisplay();
-            }
-          },
-          Space: () => {
-            applyCurrentModeUp();
-          }
-        },
-        worldMap: {
-          ArrowLeft: () => {
-            moveSelectionLeft();
-          },
-          ArrowRight: () => {
-            moveSelectionRight();
-          },
-          Space: () => {
-            selectCurrentNode(activateCheat);
-          }
-        }
-
-      };
-
-      // Minimal mobile support: Map a simple touch tap to a key event based on touch location.
-      if ("ontouchstart" in window) {
-        document.addEventListener("touchend", function (e) {
-          e.preventDefault();
-          const touch = e.changedTouches[0];
-          const x = touch.clientX;
-          const y = touch.clientY;
-          const w = window.innerWidth;
-          const h = window.innerHeight;
-
-          let code = "Space";
-          let key = " ";
-
-          if (x < w * 0.2) {
-            code = "ArrowLeft";
-            key = "ArrowLeft";
-          } else if (x > w * 0.8) {
-            code = "ArrowRight";
-            key = "ArrowRight";
-          } else if (y < h * 0.2) {
-            code = "ArrowUp";
-            key = "ArrowUp";
-          } else if (y > h * 0.8) {
-            code = "ArrowDown";
-            key = "ArrowDown";
-          }
-
-          const keyEvent = new KeyboardEvent("keydown", { code, key });
-          document.dispatchEvent(keyEvent);
-        });
-      }
-
-      // Initialize griot narrative and show title screen when ready.
-      initializeGriot("fantasy_narrative.txt").then(() => {
-        showScreen("title");
+      Promise.all([
+        initializeGriot('content/fantasy_narrative.txt'),
+        loadContent().then(({ manifest, heroes, getLevel }) => {
+          state.loadedManifest = manifest;
+          state.allHeroes = heroes;
+          state.getLevel = getLevel;
+        }).catch(() => {
+          console.warn('Content loading failed; using static fallback data.');
+        }),
+      ]).then(() => {
+        showScreen('title');
+        initInputHandler();
+        // Seed title screen with a Griot line
+        getGriotReaction().then(line => {
+          const el = document.getElementById('title-griot');
+          if (el) el.textContent = line;
+        }).catch(() => {});
       });
     </script>
   </body>

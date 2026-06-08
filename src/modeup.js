@@ -20,7 +20,17 @@
 
 /**
  * Computes the mode up buff values for the chosen hero based on the level.
- * The function uses the hero's name to determine which stats get boosted.
+ *
+ * The function keys off `chosenHero.id` when present (preferred for data-driven
+ * heroes loaded from JSON content packs) and falls back to `chosenHero.name`
+ * for backwards compatibility with heroes that do not yet carry an `id`.
+ *
+ * Contract for content pack authors:
+ *   - Assign a stable, lowercase, alphanumeric `id` field to every hero in
+ *     your JSON pack (e.g. `"id": "knight"`).
+ *   - Add a corresponding `case` in this switch to define the hero's buff
+ *     behavior.  Heroes without a matching case receive the default `ghis`
+ *     fallback buff.
  *
  * @param {Object} chosenHero - the hero that has been chosen for mode up.
  * @param {number} level - the level of mode up (used as increment multiplier).
@@ -28,32 +38,45 @@
  */
 export function getModeUpBuff(chosenHero, level) {
   const buffIncrement = level;
-  // Use a switch for cleaner structure.
-  switch (chosenHero.name) {
+  // Prefer stable `id` over display `name` so content packs can rename heroes
+  // without breaking their mode-up rules.
+  const heroKey = chosenHero.id ?? chosenHero.name;
+  // Each hero has two cases: the stable `id` (preferred, from JSON content packs)
+  // and the display `name` (fallback for heroes loaded from static heroes.js).
+  switch (heroKey) {
+    case "knight":
     case "Knight":
       // Knight gets increased attack and HP.
       return { attack: 1 * buffIncrement, hp: 2 * buffIncrement };
+    case "archer":
     case "Archer":
       // Archer gets increased range.
       return { range: 1 * buffIncrement };
+    case "berserker":
     case "Berserker":
       // Berserker gets a boost to attack and increases his rage stat.
       return { attack: 3 * buffIncrement, rage: 1 * buffIncrement };
+    case "rogue":
     case "Rogue":
       // Rogue receives additional agility.
       return { agility: 2 * buffIncrement };
+    case "torcher":
     case "Torcher":
       // Torcher's burn damage increases.
       return { burn: 1 * buffIncrement };
+    case "slujier":
     case "Slüjier":
       // Slüjier's "sluj" increases.
       return { sluj: 1 * buffIncrement };
+    case "cleric":
     case "Cleric":
       // Cleric's healing power increases.
       return { heal: 2 * buffIncrement };
+    case "jester":
     case "Jester":
       // Jester's trick stat increases.
       return { trick: 1 * buffIncrement };
+    case "sycophant":
     case "Sycophant":
       // Sycophant gains +1 in every stat.
       return {
@@ -75,49 +98,100 @@ export function getModeUpBuff(chosenHero, level) {
         fate: 1 * buffIncrement,
         rage: 1 * buffIncrement,
       };
+    case "yeetrian":
     case "Yeetrian":
       // Yeetrian's knockback increases.
       return { yeet: 1 * buffIncrement };
+    case "mellitron":
     case "Mellitron":
       // Mellitron's swarm increases.
       return { swarm: 1 * buffIncrement };
+    case "gastronomer":
     case "Gastronomer":
       // Gastronomer's spicy stat increases.
       return { spicy: 1 * buffIncrement };
+    case "palisade":
     case "Palisade":
       // Palisade's armor increases.
       return { armor: 1 * buffIncrement };
+    case "mycelian":
     case "Mycelian":
       // Mycelian's spore increases.
       return { spore: 1 * buffIncrement };
+    case "wizard":
     case "Wizard":
       // The Wizard's chain stat increases.
       return { chain: 1 * buffIncrement };
+    case "nonsequiteur":
     case "Nonsequiteur":
       // Nonsequiteur's caprice increases.
       return { caprice: 1 * buffIncrement };
+    case "soothscribe":
     case "Soothscribe":
       // Soothscribe's fate increases.
       return { fate: 1 * buffIncrement };
+    case "meatwalker":
     case "Meatwalker":
       // Meatwalker's bulk increases.
       return { bulk: 1 * buffIncrement };
+    case "shrink":
     case "Shrink":
       // Shrink's psych stat increases.
       return { psych: 1 * buffIncrement };
+    case "kemetic":
     case "Kemetic":
       // Kemetic gets a boost in his ankh stat.
       return { ankh: 1 * buffIncrement };
+    case "greenjay":
     case "Greenjay":
       // Greenjay gains an increase to his rise stat.
       return { rise: 1 * buffIncrement };
+    case "sysiphuge":
     case "Sysiphuge":
       // Sysiphuge's dodge increases.
       return { dodge: 1 * buffIncrement };
+    case "bombador":
+    case "Bombador":
+      // Bombador's bomba stat increases.
+      return { bomba: 1 * buffIncrement };
     default:
       // Fallback for heroes with no defined buff – boost a generic stat.
       return { ghis: 1 * buffIncrement };
   }
+}
+
+/**
+ * Derives an emergent buff from the hero's current stat distribution.
+ * The highest nonzero stat gets +2; the lowest nonzero stat gets +1.
+ * This gives players a second option driven by how the hero has actually grown.
+ *
+ * @param {Object} hero
+ * @returns {Object} buff
+ */
+export function getEmergentBuff(hero) {
+  const STAT_KEYS = [
+    'attack','hp','range','agility','heal','burn','sluj','trick',
+    'yeet','swarm','spicy','armor','spore','chain','caprice','fate',
+    'rage','psych','ankh','rise','dodge','bomba','ghis',
+  ];
+  const nonzero = STAT_KEYS.filter(s => (hero[s] || 0) > 0);
+  if (nonzero.length === 0) return { attack: 1 };
+  const sorted = [...nonzero].sort((a, b) => (hero[b] || 0) - (hero[a] || 0));
+  const result = {};
+  result[sorted[0]] = 2; // highest stat: +2
+  if (sorted.length > 1) result[sorted[sorted.length - 1]] = 1; // lowest: +1
+  return result;
+}
+
+/**
+ * Returns both upgrade options for a hero: [prescribedBuff, emergentBuff].
+ *
+ * @param {Object} hero
+ * @param {number} level
+ * @returns {[Object, Object]}
+ */
+export function getModeUpOptions(hero, level) {
+  return [getModeUpBuff(hero, level), getEmergentBuff(hero)];
 }
 
 /**
@@ -128,8 +202,8 @@ export function getModeUpBuff(chosenHero, level) {
  * @param {Array} party - the array of heroes in the party.
  * @param {function} logCallback - function used to log messages.
  */
-export function applyModeUp(chosenHero, level, party, logCallback) {
-  const buff = getModeUpBuff(chosenHero, level);
+export function applyModeUp(chosenHero, level, party, logCallback, precomputedBuff = null) {
+  const buff = precomputedBuff || getModeUpBuff(chosenHero, level);
   const messageParts = [];
 
   if (buff.hp) messageParts.push(`+${buff.hp} HP`);
@@ -155,6 +229,8 @@ export function applyModeUp(chosenHero, level, party, logCallback) {
   if (buff.ankh) messageParts.push(`+${buff.ankh} Ankh`);
   if (buff.rise) messageParts.push(`+${buff.rise} Rise`);
   if (buff.dodge) messageParts.push(`+${buff.dodge} Dodge`);
+  if (buff.bomba) messageParts.push(`+${buff.bomba} Bomba`);
+
 
   const message = messageParts.length > 0
     ? `${chosenHero.name} empowers the party with ${messageParts.join(", ")}!`
