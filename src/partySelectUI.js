@@ -193,6 +193,10 @@ export async function updateHeroDisplay() {
   // Party-assembled state
   const screen = document.getElementById('party-select');
   if (screen) screen.classList.toggle('party-assembled', selCount === 3);
+
+  // Show/hide the start button (visible once ≥1 hero is cast)
+  const startBtn = document.getElementById('start-btn');
+  if (startBtn) startBtn.style.display = selCount >= 1 ? '' : 'none';
 }
 
 // ── Select / deselect ─────────────────────────────────────────────────────────

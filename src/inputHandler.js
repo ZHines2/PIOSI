@@ -86,14 +86,24 @@ const keyActions = {
     ArrowLeft: () => {
       if (state.livingHeroes.length > 0) {
         state.modeUpIndex = (state.modeUpIndex - 1 + state.livingHeroes.length) % state.livingHeroes.length;
+        state.modeUpOptionIndex = 0;
         updateModeUpHeroDisplay();
       }
     },
     ArrowRight: () => {
       if (state.livingHeroes.length > 0) {
         state.modeUpIndex = (state.modeUpIndex + 1) % state.livingHeroes.length;
+        state.modeUpOptionIndex = 0;
         updateModeUpHeroDisplay();
       }
+    },
+    ArrowUp: () => {
+      state.modeUpOptionIndex = 0;
+      updateModeUpHeroDisplay();
+    },
+    ArrowDown: () => {
+      state.modeUpOptionIndex = 1;
+      updateModeUpHeroDisplay();
     },
     Space: () => applyCurrentModeUp(),
   },
@@ -141,6 +151,12 @@ export function initInputHandler() {
     const action = actions && (actions[event.code] || actions[event.key]);
     if (action) { event.preventDefault(); await action(); }
   });
+
+  // Auto-show d-pad on touch devices (Newell: remove barriers)
+  if ('ontouchstart' in window) {
+    const dpad = document.getElementById('mobile-dpad');
+    if (dpad) dpad.classList.add('dpad-visible');
+  }
 
   if ('ontouchstart' in window) {
     document.addEventListener('touchend', (e) => {
@@ -197,6 +213,10 @@ export function initInputHandler() {
       if (state.battleEngine && state.currentScreen === 'battle') renderBattlefield();
     });
   }
+
+  // Party select: start button
+  const startBtn = document.getElementById('start-btn');
+  if (startBtn) startBtn.addEventListener('click', () => startGame());
 
   // Party select nav arrows
   const navPrev = document.getElementById('nav-prev');

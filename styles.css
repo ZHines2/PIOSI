@@ -1171,3 +1171,142 @@ button:active {
   0%, 100% { opacity: 1; }
   50%       { opacity: 0.35; }
 }
+
+/* ── Start button ────────────────────────────────────────── */
+
+#start-btn {
+  margin-top: 12px;
+  padding: 12px 40px;
+  background: linear-gradient(135deg, #c8a84a 0%, #8a6a20 100%);
+  color: #080608;
+  font-family: 'Sono', monospace;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  box-shadow: 0 0 24px rgba(200,168,74,0.35);
+  transition: box-shadow 0.3s, transform 0.15s;
+}
+
+#start-btn:hover {
+  box-shadow: 0 0 40px rgba(200,168,74,0.7);
+  transform: scale(1.04);
+}
+
+#start-btn:active {
+  transform: scale(0.98);
+}
+
+/* ── Griot narrative lines (title / victory / game-over) ─── */
+
+.title-griot {
+  font-size: 0.82rem;
+  color: rgba(255,255,255,0.55);
+  letter-spacing: 0.06em;
+  font-style: italic;
+  max-width: 420px;
+  text-align: center;
+  margin: 0 0 12px;
+  text-shadow: 0 1px 6px rgba(0,0,0,0.8);
+  min-height: 1.4em;
+}
+
+.griot-line {
+  font-size: 0.82rem;
+  color: rgba(200,180,140,0.75);
+  letter-spacing: 0.05em;
+  font-style: italic;
+  max-width: 500px;
+  margin: 10px auto;
+  min-height: 1.4em;
+}
+
+/* ── Mode Up — option cards ──────────────────────────────── */
+
+.modeup-options {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin: 10px 0 14px;
+}
+
+.modeup-option {
+  flex: 1;
+  max-width: 220px;
+  padding: 10px 14px;
+  border: 1px solid #404058;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.04);
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, transform 0.15s;
+  text-align: left;
+}
+
+.modeup-option:hover {
+  border-color: #7070a0;
+  background: rgba(255,255,255,0.08);
+}
+
+.modeup-option.active {
+  border-color: #c8a84a;
+  background: rgba(200,168,74,0.12);
+  transform: translateY(-2px);
+  box-shadow: 0 3px 12px rgba(200,168,74,0.25);
+}
+
+.modeup-option-label {
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #a8a0c0;
+  margin-bottom: 4px;
+}
+
+.modeup-option.active .modeup-option-label {
+  color: #c8a84a;
+}
+
+.modeup-option-buff {
+  font-size: 0.9rem;
+  color: #d4e8f0;
+}
+
+.modeup-hint {
+  font-size: 0.72rem;
+  color: #484868;
+  letter-spacing: 0.1em;
+  margin-top: 6px;
+}
+
+/* ── Mode Up ceremony pulse ───────────────────────────────── */
+
+@keyframes modeup-pulse {
+  0%   { box-shadow: 0 0 0px rgba(200,168,74,0); }
+  40%  { box-shadow: 0 0 60px rgba(200,168,74,0.7); }
+  100% { box-shadow: 0 0 0px rgba(200,168,74,0); }
+}
+
+#mode-up-window.modeup-pulse {
+  animation: modeup-pulse 0.6s ease-out forwards;
+}
+
+/* ── Interaction log entries (⚡ multi-stat combos) ────────── */
+
+#log .interaction-log-entry {
+  color: #f0d060;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  background: rgba(240,200,50,0.07);
+  border-left: 2px solid #c8a84a;
+  padding-left: 6px;
+  margin: 2px 0;
+}
+
+/* ── Grid cell movement easing ───────────────────────────── */
+
+.grid-cell {
+  transition: background-color 0.12s ease, opacity 0.12s ease;
+}

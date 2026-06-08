@@ -17,6 +17,7 @@
       <div class="image-container">
         <div class="static-noise"></div>
       </div>
+      <p id="title-griot" class="title-griot"></p>
       <p>PRESS SPACE</p>
     </div>
 
@@ -32,6 +33,7 @@
         <div id="party-slots"></div>
         <div id="synergy-hint" style="display:none;"></div>
         <p id="selection-info"></p>
+        <button id="start-btn" style="display:none;" aria-label="Begin the saga">BEGIN THE SAGA</button>
       </div>
     </div>
 
@@ -63,10 +65,6 @@
       <div id="enemy-intent" class="battle-info-panel"></div>
       <p id="status"></p>
       <div id="log"></div>
-      <p>
-        Use Arrow Keys to Move | Press Spacebar to Attack, then choose attack
-        direction.
-      </p>
       <!-- On-screen D-pad for touch/mobile — toggled via #dpad-toggle-btn -->
       <div id="mobile-dpad" aria-hidden="true">
         <button class="dpad-btn" data-key="ArrowUp" aria-label="Move Up">▲</button>
@@ -83,6 +81,7 @@
     <div id="victory">
       <h1>Victory!</h1>
       <p>Congratulations! All levels have been completed!</p>
+      <p id="victory-griot" class="griot-line"></p>
       <p>Press Spacebar to Restart</p>
     </div>
 
@@ -115,6 +114,7 @@
     <div id="game-over">
       <h1>Game Over</h1>
       <p>All your heroes have been defeated.<br />Press Spacebar to Restart.</p>
+      <p id="game-over-griot" class="griot-line"></p>
     </div>
 
     <!-- Mode Up Window -->
@@ -122,7 +122,7 @@
       <h2>MODE UP THE SQUAD</h2>
       <div id="mode-up-hero-display"></div>
       <p id="mode-up-instructions">
-        Use Left/Right to select. Press Space to confirm.
+        ◀ ▶ change hero · ▲ ▼ change path · Space confirm
       </p>
     </div>
 
@@ -143,7 +143,7 @@
     <script type="module">
       import { state } from './src/state.js';
       import { loadContent } from './src/contentLoader.js';
-      import { initializeGriot } from './src/griot.js';
+      import { initializeGriot, getGriotReaction } from './src/griot.js';
       import { showScreen } from './src/screenManager.js';
       import { initInputHandler } from './src/inputHandler.js';
 
@@ -159,6 +159,11 @@
       ]).then(() => {
         showScreen('title');
         initInputHandler();
+        // Seed title screen with a Griot line
+        getGriotReaction().then(line => {
+          const el = document.getElementById('title-griot');
+          if (el) el.textContent = line;
+        }).catch(() => {});
       });
     </script>
   </body>

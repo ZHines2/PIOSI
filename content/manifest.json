@@ -4,9 +4,9 @@
   "modes": {
     "battle": true,
     "modeUp": true,
-    "worldMap": false,
+    "worldMap": true,
     "summit": false,
     "emanations": false
   },
-  "coreLevels": 3
+  "coreLevels": 6
 }

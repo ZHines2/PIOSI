@@ -161,6 +161,40 @@ export function getModeUpBuff(chosenHero, level) {
 }
 
 /**
+ * Derives an emergent buff from the hero's current stat distribution.
+ * The highest nonzero stat gets +2; the lowest nonzero stat gets +1.
+ * This gives players a second option driven by how the hero has actually grown.
+ *
+ * @param {Object} hero
+ * @returns {Object} buff
+ */
+export function getEmergentBuff(hero) {
+  const STAT_KEYS = [
+    'attack','hp','range','agility','heal','burn','sluj','trick',
+    'yeet','swarm','spicy','armor','spore','chain','caprice','fate',
+    'rage','psych','ankh','rise','dodge','bomba','ghis',
+  ];
+  const nonzero = STAT_KEYS.filter(s => (hero[s] || 0) > 0);
+  if (nonzero.length === 0) return { attack: 1 };
+  const sorted = [...nonzero].sort((a, b) => (hero[b] || 0) - (hero[a] || 0));
+  const result = {};
+  result[sorted[0]] = 2; // highest stat: +2
+  if (sorted.length > 1) result[sorted[sorted.length - 1]] = 1; // lowest: +1
+  return result;
+}
+
+/**
+ * Returns both upgrade options for a hero: [prescribedBuff, emergentBuff].
+ *
+ * @param {Object} hero
+ * @param {number} level
+ * @returns {[Object, Object]}
+ */
+export function getModeUpOptions(hero, level) {
+  return [getModeUpBuff(hero, level), getEmergentBuff(hero)];
+}
+
+/**
  * Applies the mode up buffs to every hero in the party and logs a message.
  *
  * @param {Object} chosenHero - the hero chosen for mode up (determines the buff scheme).
@@ -168,8 +202,8 @@ export function getModeUpBuff(chosenHero, level) {
  * @param {Array} party - the array of heroes in the party.
  * @param {function} logCallback - function used to log messages.
  */
-export function applyModeUp(chosenHero, level, party, logCallback) {
-  const buff = getModeUpBuff(chosenHero, level);
+export function applyModeUp(chosenHero, level, party, logCallback, precomputedBuff = null) {
+  const buff = precomputedBuff || getModeUpBuff(chosenHero, level);
   const messageParts = [];
 
   if (buff.hp) messageParts.push(`+${buff.hp} HP`);

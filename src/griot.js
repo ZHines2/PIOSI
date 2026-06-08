@@ -20,11 +20,23 @@ export async function loadTrainingCorpus(corpusUrl = "content/fantasy_narrative.
   }
 }
 
-// Record a recent interaction and update the Markov chain.
+// Interaction type tags for contextual reactions
+const INTERACTION_TYPES = [];
+const MAX_TYPES = 10;
+
+/**
+ * Record a recent interaction. Accepts either a plain string (legacy)
+ * or an object { text, type } where type is 'kill' | 'damage' | 'death' |
+ * 'ability' | 'survive'. The type is used to bias getGriotReaction().
+ */
 export function recordInteraction(interaction) {
-  recentInteractions.push(interaction);
-  if (recentInteractions.length > MAX_INTERACTIONS) {
-    recentInteractions.shift();
+  const text = typeof interaction === 'string' ? interaction : interaction.text;
+  const type = typeof interaction === 'object' ? interaction.type : null;
+  recentInteractions.push(text);
+  if (recentInteractions.length > MAX_INTERACTIONS) recentInteractions.shift();
+  if (type) {
+    INTERACTION_TYPES.push(type);
+    if (INTERACTION_TYPES.length > MAX_TYPES) INTERACTION_TYPES.shift();
   }
   refreshMarkovChain();
 }
@@ -152,9 +164,21 @@ export async function fetchRandomRecipe() {
   }
 }
 
-// Generates narrative text for the Griot special character.
+// Generates narrative text for the Griot, biased by recent interaction context.
 export async function getGriotReaction() {
-  return generateText(20);
+  const recent = INTERACTION_TYPES.slice(-5);
+  const kills   = recent.filter(t => t === 'kill').length;
+  const deaths  = recent.filter(t => t === 'death').length;
+  const survives = recent.filter(t => t === 'survive').length;
+
+  let prefix = '';
+  if (deaths >= 2)    prefix = 'The fallen cry out — ';
+  else if (kills >= 3) prefix = 'Blood begets blood — ';
+  else if (kills >= 1) prefix = 'Victory rings — ';
+  else if (survives >= 2) prefix = 'They endure — ';
+
+  const base = generateText(18);
+  return prefix ? prefix + base : base;
 }
 
 // Initialization function to be called during startup.

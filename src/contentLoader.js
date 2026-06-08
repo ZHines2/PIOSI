@@ -24,6 +24,7 @@
 
 import { heroes as staticHeroes } from "./heroes.js";
 import { getLevel as getStaticLevel } from "./levels.js";
+import { state } from "./state.js";
 
 /** Default manifest used when content/manifest.json cannot be fetched. */
 const DEFAULT_MANIFEST = {
@@ -120,7 +121,15 @@ export async function loadContent() {
   const allLoadedHeroes = heroArrays
     .filter(Boolean)
     .flatMap(data => data.heroes || []);
-  const heroes = allLoadedHeroes.length > 0 ? allLoadedHeroes : staticHeroes;
+  let heroes;
+  if (allLoadedHeroes.length > 0) {
+    heroes = allLoadedHeroes;
+  } else {
+    // Fetch failed — running without a server (file:// or offline)
+    console.warn('[contentLoader] Hero JSON unavailable; using static fallback. offlineMode = true');
+    if (typeof state !== 'undefined') state.offlineMode = true;
+    heroes = staticHeroes;
+  }
 
   // 3. Load levels from each enabled pack, merging into one array
   const levelArrays = await Promise.all(

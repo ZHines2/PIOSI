@@ -4,9 +4,10 @@ import { renderBattlefield } from './renderer.js';
 import { showScreen } from './screenManager.js';
 import { fadeOut, stopAudio } from './audioManager.js';
 import { updateModeUpHeroDisplay } from './modeUpUI.js';
-import { applyModeUp } from './modeup.js';
+import { applyModeUp, getModeUpOptions } from './modeup.js';
 import { BattleEngine } from './battleEngine.js';
 import { SummitMode } from './summitMode.js';
+import { getGriotReaction } from './griot.js';
 
 export function initializeBattle() {
   const settings = state.getLevel(state.level);
@@ -38,7 +39,7 @@ export function onLevelComplete() {
   if (state.level === 99) {
     logMessage('The veil of introspection lifts...');
     logMessage("You've broken through! The eternal wall falls!");
-    showScreen('victory');
+    _showVictoryWithGriot();
   } else if (state.level === 20 && worldMapEnabled) {
     logMessage('Level 20 complete! Entering the world map...');
     showScreen('worldMap');
@@ -50,8 +51,20 @@ export function onLevelComplete() {
 }
 
 export function onGameOver() {
-  document.getElementById('game-over').style.display = 'flex';
   stopAudio(document.getElementById('level-6-music'));
+  getGriotReaction().then(line => {
+    const el = document.getElementById('game-over-griot');
+    if (el) el.textContent = line;
+  }).catch(() => {});
+  document.getElementById('game-over').style.display = 'flex';
+}
+
+function _showVictoryWithGriot() {
+  getGriotReaction().then(line => {
+    const el = document.getElementById('victory-griot');
+    if (el) el.textContent = line;
+  }).catch(() => {});
+  showScreen('victory');
 }
 
 export function showModeUpWindow() {
@@ -61,6 +74,7 @@ export function showModeUpWindow() {
     return;
   }
   state.modeUpIndex = 0;
+  state.modeUpOptionIndex = 0;
   showScreen('modeUp');
   updateModeUpHeroDisplay();
   if (state.level === 4) fadeOut(document.getElementById('background-music'));
@@ -68,23 +82,32 @@ export function showModeUpWindow() {
 
 export function applyCurrentModeUp() {
   if (state.livingHeroes.length > 0) {
-    applyModeUp(state.livingHeroes[state.modeUpIndex], state.level, state.party, logMessage);
-    showScreen('battle');
-    state.level++;
-    setTimeout(initializeBattle, 2000);
+    const hero = state.livingHeroes[state.modeUpIndex];
+    const options = getModeUpOptions(hero, state.level);
+    const chosenBuff = options[state.modeUpOptionIndex] || options[0];
+    applyModeUp(hero, state.level, state.party, logMessage, chosenBuff);
+
+    // Mode Up ceremony: pulse the window before transitioning
+    const win = document.getElementById('mode-up-window');
+    if (win) win.classList.add('modeup-pulse');
+    setTimeout(() => {
+      if (win) win.classList.remove('modeup-pulse');
+      showScreen('battle');
+      state.level++;
+      setTimeout(initializeBattle, 2000);
+    }, 600);
   }
 }
 
 export function startGame() {
-  if (state.selectedHeroes.length !== 3) {
-    alert('Select exactly 3 heroes!');
-    return;
+  if (state.selectedHeroes.length < 1) {
+    return; // Start button only appears when ≥1 hero selected; no alert needed
   }
   const heroSelectMusic = document.getElementById('hero-select-music');
   const backgroundMusic = document.getElementById('background-music');
   fadeOut(heroSelectMusic, () => backgroundMusic.play().catch(() => {}));
   state.party = state.selectedHeroes.map(i => Object.assign({}, state.allHeroes[i]));
-  state.party.sort((a, b) => b.agility - a.agility);
+  state.party.sort((a, b) => (b.agility || 0) - (a.agility || 0));
   initializeBattle();
   showScreen('battle');
 }
@@ -94,6 +117,7 @@ export function restartGame() {
   state.selectedHeroes = [];
   state.party = [];
   state.heroIndex = 0;
+  state.modeUpOptionIndex = 0;
   state.cheatActive = false;
   clearLog();
   document.getElementById('game-over').style.display = 'none';
@@ -104,7 +128,9 @@ export function restartGame() {
   heroSelectMusic.currentTime = 0;
   heroSelectMusic.volume = 1;
   heroSelectMusic.play().catch(() => {});
-  showScreen('title');
+  showScreen('party');
+  // Re-import updateHeroDisplay dynamically to avoid circular dep
+  import('./partySelectUI.js').then(m => m.updateHeroDisplay()).catch(() => {});
 }
 
 export function activateCheat() {
@@ -131,7 +157,7 @@ export function startSummitMode() {
     logDiv.innerHTML += `<p>${message}</p>`;
     logDiv.scrollTop = logDiv.scrollHeight;
   };
-  const summitMode = new SummitMode(logCallback, onGameOver, () => showScreen('victory'));
+  const summitMode = new SummitMode(logCallback, onGameOver, () => _showVictoryWithGriot());
   summitMode.start();
   showScreen('summitMode');
 }

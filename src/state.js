@@ -12,6 +12,8 @@ export const state = {
   cheatActive: false,
   isometricMode: false,
   modeUpIndex: 0,
+  modeUpOptionIndex: 0,   // 0 = prescribed path, 1 = emergent (stat-derived)
+  offlineMode: false,
   livingHeroes: [],
   loadedManifest: null,
   allHeroes: staticHeroes,
