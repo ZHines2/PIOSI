@@ -5,6 +5,12 @@ THE SAGAS CONTINUE
 
 PIOSI CORE is a clean, data-driven version of the game designed to be wrapped with [Tauri](https://tauri.app/) and shipped, then expanded over time by updating content data files — no engine changes required.
 
+The runtime now also includes:
+
+- `gameModel.js` for normalized combat state, stable IDs, battle phases, and deterministic RNG
+- `battleRules.js` for lifecycle-driven ability resolution (`onBattleStart`, `onMove`, `onAttackTargetAlly`, `onAttackTargetEnemy`, `onTakeDamage`, `onKill`, `onTurnEnd`, `onDeath`, `onRevive`, `onLevelComplete`)
+- `contentSchema.js` for load-time normalization and validation of manifest, hero, and level data
+
 ### How CORE works
 
 1. At startup the game reads `content/manifest.json` to discover which content packs and modes are enabled.
@@ -39,9 +45,11 @@ Then add `"mypack"` to the `packs` array in `content/manifest.json`:
 { "packs": ["core", "mypack"] }
 ```
 
-Add a matching `case "paladin":` entry in `modeup.js` to define Mode Up behaviour for the new hero.  Heroes without a case receive the default `ghis` fallback buff.
+Add a matching `case "paladin":` entry in `modeup.js` to define Mode Up behaviour for the new hero. Heroes without a case receive the default `ghis` fallback buff.
 
 > **Tip:** Always set a stable lowercase `id` field. Mode Up logic (and future save/persistence systems) key off `hero.id` first, then fall back to `hero.name`.
+>
+> **Runtime note:** `ghis` is currently a progression fallback stat, not a battle hook. If you want a new combat behavior, add it to `battleRules.js`.
 
 ### Adding levels
 
@@ -95,6 +103,17 @@ Edit `content/manifest.json`:
 
 Setting `worldMap: true` re-enables the world map and its entry points without any engine changes.
 
+### Runtime truth first
+
+Supplementary docs in this branch should be read against the code, with these files as the primary source of truth:
+
+- `/home/runner/work/PIOSI/PIOSI/index.html`
+- `/home/runner/work/PIOSI/PIOSI/battleEngine.js`
+- `/home/runner/work/PIOSI/PIOSI/battleRules.js`
+- `/home/runner/work/PIOSI/PIOSI/gameModel.js`
+- `/home/runner/work/PIOSI/PIOSI/contentLoader.js`
+- `/home/runner/work/PIOSI/PIOSI/contentSchema.js`
+
 ### Wrapping / shipping with Tauri
 
 The CORE build is a self-contained HTML/JS application with no build step required.  To wrap it with Tauri:
@@ -125,4 +144,3 @@ For detailed gameplay instructions, refer to the [Player's Manual](docs/players-
 * "DarkAnoid" by PHIctitious5
 * "5GiMaxVision" by Skinnyy Hendrixx
 * "INeedSome" by PHIctitious5
-

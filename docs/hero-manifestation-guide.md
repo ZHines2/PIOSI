@@ -1,11 +1,12 @@
 # Hero Manifestation Guide
 
-This document provides guidelines and best practices for creating new heroes in the game. Follow these steps to ensure your heroes are balanced, engaging, and fun.
+This document provides guidelines and best practices for creating new heroes in the game. It is written against the current runtime in `/home/runner/work/PIOSI/PIOSI/battleEngine.js`, `/home/runner/work/PIOSI/PIOSI/battleRules.js`, and `/home/runner/work/PIOSI/PIOSI/modeup.js`.
 
 ## Hero Properties
 
 Each hero is defined by a set of properties. Here are the key properties you need to define:
 
+- `id`: A stable lowercase identifier used by Mode Up and runtime systems.
 - `name`: The name of the hero.
 - `symbol`: The symbol representing the hero on the grid.
 - `attack`: The attack power of the hero.
@@ -14,6 +15,20 @@ Each hero is defined by a set of properties. Here are the key properties you nee
 - `hp`: The health points of the hero.
 - `armor`: The armor points of the hero, which absorb damage before HP is affected.
 - `special abilities`: Any special abilities the hero possesses.
+
+## Runtime Ability Lifecycle
+
+Combat abilities are resolved through named hooks in `/home/runner/work/PIOSI/PIOSI/battleRules.js`:
+
+- `onBattleStart`: battle-start stat changes such as `caprice` and `fate`
+- `onMove`: pickup interactions such as `spicy` and `spore`
+- `onAttackTargetAlly`: support interactions such as `heal` and `psych`
+- `onAttackTargetEnemy`: offensive interactions such as `burn`, `sluj`, `trick`, `yeet`, `chain`, and `bomba`
+- `onTakeDamage`: retaliation or survival reactions such as `rage`
+- `onKill`: kill-trigger effects such as `bulk`
+- `onTurnEnd`: turn-progression effects such as `swarm`
+- `onDeath`: death-trigger effects such as `ankh`
+- `onRevive`: revive-trigger effects that should stay distinct from permanent death
 
 ## Special Properties
 
@@ -32,7 +47,9 @@ Some heroes have special properties that give them unique abilities. Here are so
 - `psych`: The hero can boost ally stats.
 - `ankh`: The hero can provide boosts on hero deaths.
 - `rise`: The hero can revive with HP equal to the rise value.
+- `dodge`: The hero can dodge attacks using a diminishing-returns chance capped at 50%.
 - `bomba`: When a hero with a bomba stat is adjacent to an enemy attacked by another hero, the enemy takes additional damage equal to the bomba stat.
+- `ghis`: The default Mode Up fallback stat. It currently has no dedicated battle hook in the runtime.
 
 ## Best Practices
 
@@ -137,6 +154,7 @@ Here are some examples of hero configurations:
 
 ```javascript
 {
+  id: "paeg",
   name: "Pæg",
   symbol: "ꚤ",
   attack: 1,
@@ -149,12 +167,11 @@ Here are some examples of hero configurations:
   ghis: 1,
   yeet: 1,
   swarm: 1,
-  charm: 1,
   spicy: 1,
   armor: 1,
   spore: 1,
   chain: 1,
-  description: "Pæg is a versatile hero with 1 in every stat, making him a jack-of-all-trades but master of none."
+  description: "Pæg is a compact catalog of many current PIOSI stats, including progression-only ghis and active battle hooks such as burn, sluj, yeet, swarm, spicy, spore, and chain."
 }
 ```
 

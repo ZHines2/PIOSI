@@ -47,6 +47,7 @@ export const ABILITY_HOOKS = Object.freeze({
   ON_KILL: "onKill",
   ON_TURN_END: "onTurnEnd",
   ON_DEATH: "onDeath",
+  ON_REVIVE: "onRevive",
   ON_LEVEL_COMPLETE: "onLevelComplete"
 });
 

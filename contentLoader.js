@@ -46,6 +46,18 @@ const DEFAULT_MANIFEST = {
   coreLevels: 3
 };
 
+function getStaticLevels() {
+  const levels = [];
+  const seen = new Set();
+  for (let levelNumber = 1; levelNumber <= 99; levelNumber++) {
+    const level = getStaticLevel(levelNumber);
+    if (!level || seen.has(level.level)) continue;
+    levels.push(level);
+    seen.add(level.level);
+  }
+  return levels;
+}
+
 /**
  * Resolves enemy positions from a level definition.
  * Enemies with `enemyXOffset` are placed relative to the right edge of the
@@ -143,7 +155,8 @@ export async function loadContent() {
   const allLoadedLevels = levelArrays
     .filter(Boolean)
     .flatMap(data => data.levels || []);
-  const normalizedLevels = normalizeLevelCollection(allLoadedLevels);
+  const runtimeLevels = allLoadedLevels.length > 0 ? allLoadedLevels : getStaticLevels();
+  const normalizedLevels = normalizeLevelCollection(runtimeLevels);
   validateLevelCollection(normalizedLevels).forEach(warning => console.warn(`[content] ${warning}`));
 
   // makeLevelGetter falls back to static levels.js for anything not in JSON

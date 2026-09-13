@@ -551,7 +551,7 @@ export class BattleEngine {
       this.logCallback(`Hero ${hero.name} falls but rises with ${hero.rise} HP!`);
       hero.hp = hero.rise;
       hero.rise = 0;
-      runBattleHook(this, ABILITY_HOOKS.ON_DEATH, { hero, outcome: 'revived' });
+      runBattleHook(this, ABILITY_HOOKS.ON_REVIVE, { hero, outcome: 'revived' });
       return;
     }
     if (hero.persistentDeath) return;

@@ -233,9 +233,14 @@ const RULES = [
       });
     }
   },
-  {
+  createAnkhRule(ABILITY_HOOKS.ON_DEATH),
+  createAnkhRule(ABILITY_HOOKS.ON_REVIVE)
+];
+
+function createAnkhRule(hook) {
+  return {
     id: "ankh",
-    hook: ABILITY_HOOKS.ON_DEATH,
+    hook,
     when: ({ hero }) => Boolean(hero),
     execute: ({ hero }, engine) => {
       engine.getLiveHeroes().forEach(liveHero => {
@@ -248,8 +253,8 @@ const RULES = [
         }
       });
     }
-  }
-];
+  };
+}
 
 export function runBattleHook(engine, hook, context = {}) {
   const applied = [];

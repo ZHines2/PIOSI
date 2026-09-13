@@ -330,12 +330,16 @@
         Bulk is part of the intended combat language. Meatwalker carries the
         stat in roster data, Mode Up can increase it, and March 2025 production
         history explicitly records a fix whose stated purpose was to make bulk
-        raise a random stat when an enemy is defeated. That historical intent is
-        unambiguous and should be preserved in future review.
+        raise a random stat when an enemy is defeated. The current branch now
+        restores that behavior through the formal <code>onKill</code> lifecycle
+        hook in <code>battleRules.js</code>, so the code and the documentation
+        agree again.
       </p>
       <p>
         Ghïs appears mainly as a fallback progression stat and default mode-up
-        behavior for heroes without a bespoke progression rule.
+        behavior for heroes without a bespoke progression rule. It remains part
+        of the stat surface, but there is still no dedicated battle hook for it
+        in the current runtime.
       </p>
     </section>
 
@@ -397,14 +401,19 @@
       <ul>
         <li><strong>index.html</strong>: runtime entry, UI flow, input, audio, orchestration</li>
         <li><strong>battleEngine.js</strong>: combat engine</li>
+        <li><strong>battleRules.js</strong>: lifecycle-based ability rules and kill/death hooks</li>
+        <li><strong>gameModel.js</strong>: normalized state, stable IDs, RNG, and battle phases</li>
         <li><strong>heroes.js</strong> / <strong>levels.js</strong>: static fallback content</li>
         <li><strong>contentLoader.js</strong>: manifest and JSON pack loading</li>
+        <li><strong>contentSchema.js</strong>: content normalization and validation</li>
         <li><strong>modeup.js</strong>: progression rules</li>
         <li><strong>worldMap.js</strong>, <strong>summitMode.js</strong>, <strong>emanations.js</strong>: side modes</li>
         <li><strong>griot.js</strong>: flavor APIs and Markov text logic</li>
       </ul>
       <p>
-        The code is modular by file, but still centralized in orchestration.
+        The code is still centralized in orchestration, but this branch now adds
+        a formal rules layer, deterministic RNG, battle phases, and load-time
+        content normalization to reduce drift between intent, data, and runtime.
       </p>
     </section>
 
@@ -465,7 +474,6 @@
 
       <h3>Verify carefully</h3>
       <ul>
-        <li>Bulk behavior in current runtime review</li>
         <li>Ghïs meaning and future role</li>
         <li>World Map progression relevance</li>
         <li>Summit Mode’s intended product status</li>
@@ -497,17 +505,20 @@
       <div class="appendix-entry">
         <strong>Manifest and content loading</strong><br />
         /home/runner/work/PIOSI/PIOSI/content/manifest.json:1-12<br />
-        /home/runner/work/PIOSI/PIOSI/contentLoader.js:28-40, 50-87, 111-137
+        /home/runner/work/PIOSI/PIOSI/contentLoader.js:25-33, 35-59, 124-153<br />
+        /home/runner/work/PIOSI/PIOSI/contentSchema.js:1-108
       </div>
 
       <div class="appendix-entry">
         <strong>Main runtime loop and screen flow</strong><br />
-        /home/runner/work/PIOSI/PIOSI/index.html:15-33, 201-249, 375-407, 457-562, 840-994
+        /home/runner/work/PIOSI/PIOSI/index.html:15-33, 378-407, 459-520, 840-994
       </div>
 
       <div class="appendix-entry">
         <strong>Battle engine and status systems</strong><br />
-        /home/runner/work/PIOSI/PIOSI/battleEngine.js:24-69, 76-116, 145-175, 211-387, 418-633
+        /home/runner/work/PIOSI/PIOSI/battleEngine.js:31-85, 115-132, 168-191, 227-347, 379-565<br />
+        /home/runner/work/PIOSI/PIOSI/battleRules.js:8-271<br />
+        /home/runner/work/PIOSI/PIOSI/gameModel.js:1-120
       </div>
 
       <div class="appendix-entry">

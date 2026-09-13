@@ -3,7 +3,7 @@
 ## Introduction
 
 ### Overview of the Game
-Welcome to PIOSI - THE SAGAS CONTINUE! This game is a strategic, turn-based RPG where you control a party of heroes to defeat enemies and progress through levels. Each hero has unique abilities and stats that you can use to your advantage.
+Welcome to PIOSI - THE SAGAS CONTINUE! This game is a strategic, turn-based RPG where you control a party of three heroes to break through walls, survive enemy pressure, and progress through levels. This manual is aligned to the current runtime rather than older design assumptions.
 
 ### Basic Controls and Navigation
 - **Arrow Keys**: Move your hero or select an attack direction.
@@ -19,13 +19,13 @@ Your main objective is to defeat enemies and progress through levels. Each level
 The game is turn-based, meaning each hero and enemy takes turns to move and attack. Heroes have different stats that determine their abilities, such as attack power, range, agility, and health points (HP).
 
 ### Combat System
-Combat involves moving your heroes on a grid and attacking enemies within range. Each hero has a limited number of moves per turn, determined by their agility. Use the arrow keys to move and the spacebar to attack.
+Combat involves moving your heroes on a grid and attacking in one of the four cardinal directions. Each hero has a limited number of moves per turn, determined by their agility. Press Spacebar to enter attack mode, then use an arrow key to resolve the attack in that direction.
 
 ### Special Abilities and Effects
 Heroes have special abilities that can affect combat in various ways. For example, some heroes can heal others, inflict burn damage, or knock back enemies. These abilities are determined by the hero's stats and can be used strategically to gain an advantage.
 
 ### Agility-Based Turn Order
-In the game, the turn order of heroes is determined by their agility stat. Heroes with higher agility take their turns before those with lower agility. If two heroes have the same agility, the turn order can be randomized or based on their initial placement.
+At the start of a run, heroes are sorted by agility in descending order. During battle, the active hero receives move points equal to their agility, and enemies also move a number of times equal to their agility during the enemy phase.
 
 ## Heroes
 
@@ -37,7 +37,7 @@ In the game, the turn order of heroes is determined by their agility stat. Heroe
 - **Rogue**: A stealthy hero with high agility and moderate attack.
 - **Cleric**: A healer with the ability to restore HP to other heroes.
 - **Jester**: A trickster with humorous interactions and special abilities.
-- **Meatwalker**: A strong hero with meat-related interactions and bulk stat.
+- **Meatwalker**: A strong hero with meat-related interactions, light healing, and a bulk stat that can grow him after kills.
 - **Soothscribe**: A hero with tarot card abilities and fate stat.
 - **Nonsequiteur**: A hero with random, non-sequitur interactions and caprice stat.
 - **Griot**: A hero that reacts uniquely to historical events.
@@ -65,7 +65,7 @@ Refer to the [Hero Manifestation Guide](docs/hero-manifestation-guide.md) for de
 - **Rogue**: Use the Rogue's high agility to move quickly and avoid enemy attacks.
 - **Cleric**: Keep the Cleric close to other heroes to heal them when needed.
 - **Jester**: Use the Jester's trick abilities to confuse and disrupt enemies.
-- **Meatwalker**: Take advantage of the Meatwalker's bulk stat to increase strength with each victory.
+- **Meatwalker**: Take advantage of the Meatwalker's bulk stat to raise a random core stat whenever he defeats an enemy.
 - **Soothscribe**: Use the Soothscribe's tarot abilities to gain random buffs or debuffs.
 - **Nonsequiteur**: Utilize the Nonsequiteur's caprice stat to randomly boost stats.
 - **Griot**: Use the Griot's unique reactions to historical events for strategic advantages.
@@ -122,8 +122,8 @@ The game consists of multiple levels, each with unique challenges and objectives
 - **Mushroom (ඉ)**: Heals the hero for 5 HP and provides random stat boosts.
 
 ### Effects and Usage of Each Item
-- **Vittle**: Pick up the vittle to heal 10 HP. Heroes with the spicy stat will heal for more.
-- **Mushroom**: Pick up the mushroom to heal 5 HP. Heroes with the spore stat will gain random stat boosts.
+- **Vittle**: Pick up the vittle to heal 10 HP, plus `spicy × 2` if the hero has spicy.
+- **Mushroom**: Pick up the mushroom to heal 5 HP. Heroes with the spore stat also gain a random boost to attack, range, agility, or HP.
 
 ### Tips for Maximizing Item Usage
 - **Use Items Strategically**: Save healing items for when your heroes are low on HP.
@@ -150,7 +150,7 @@ The game consists of multiple levels, each with unique challenges and objectives
 
 ### Overview
 
-Summit Mode is a new game mode where all heroes compete at the same time on a large 50x50 map. The player controls one hero of their choice, while the others are controlled by the computer.
+Summit Mode is an experimental large-map mode implemented separately from the main battle loop. It is present in the repository, but its flow and support level differ from the main campaign systems.
 
 ### Rules
 
@@ -197,10 +197,13 @@ Summit Mode is a new game mode where all heroes compete at the same time on a la
 - **Caprice**: A stat that randomly boosts one of the hero's stats.
 - **Fate**: A stat that randomly buffs or debuffs stats for all heroes.
 - **Rage**: A stat that increases a random stat when the hero is attacked.
-- **Bulk**: A stat that increases a random stat when the hero defeats an enemy.
-- **Psych**: A stat that boosts ally stats.
-- **Ankh**: A stat that provides boosts on hero deaths.
+- **Bulk**: A stat that increases one random core stat when the hero defeats an enemy.
+- **Psych**: A stat that boosts a random ally core stat when the hero targets an ally and does not heal.
+- **Ankh**: A stat that provides random core-stat boosts to live heroes when a hero death resolves.
 - **Rise**: A stat that allows a hero to revive with HP equal to the rise value.
+- **Dodge**: A diminishing-returns evasion stat capped at 50% chance.
+- **Bomba**: Bonus damage from adjacent allied heroes when another hero attacks an enemy.
+- **Ghïs**: The default Mode Up fallback stat; it currently has no dedicated combat hook.
 
 ### Credits and Acknowledgments
 - **Game Design**: Zachary Hines, II
@@ -209,4 +212,3 @@ Summit Mode is a new game mode where all heroes compete at the same time on a la
 ### Legal Information and Disclaimers
 - **License**: This game is licensed under the MIT License. See the [LICENSE](../LICENSE) file for more information.
 - **Disclaimer**: This game is provided "as is" without warranty of any kind. The developers are not responsible for any damages or issues that may arise from playing the game.
-
