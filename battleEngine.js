@@ -660,7 +660,11 @@ export class BattleEngine {
     this.logCallback('The Wall Collapses!');
     this.transitioningLevel = true;
     this.setPhase(BATTLE_PHASES.VICTORY);
-    runBattleHook(this, ABILITY_HOOKS.ON_LEVEL_COMPLETE, { party: this.party, wallHP: this.wallHP });
+    runBattleHook(this, ABILITY_HOOKS.ON_LEVEL_COMPLETE, {
+      party: this.party,
+      wallHP: this.wallHP,
+      levelSettings: this.levelSettings
+    });
     setTimeout(() => { if (typeof this.onLevelComplete === 'function') this.onLevelComplete(); }, 1500);
   }
 }

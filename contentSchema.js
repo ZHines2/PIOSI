@@ -57,7 +57,7 @@ export function normalizeManifest(manifest = {}) {
 }
 
 export function normalizeHeroCollection(heroes = []) {
-  return Array.isArray(heroes) ? heroes.map(normalizeHeroDefinition) : [];
+  return Array.isArray(heroes) ? heroes.map((hero, index) => normalizeHeroDefinition(hero, index)) : [];
 }
 
 export function normalizeLevelCollection(levels = []) {
