@@ -114,7 +114,7 @@ const RULES = [
     hook: ABILITY_HOOKS.ON_ATTACK_TARGET_ENEMY,
     when: ({ attacker }) => attacker?.burn > 0,
     execute: ({ attacker, target }, engine) => {
-      target.statusEffects.burn = { damage: attacker.burn, duration: 3 };
+      target.statusEffects.burn = { damage: attacker.burn, duration: 3, sourceId: attacker.id };
       engine.logCallback(`${target.name} is burning for ${attacker.burn} damage for 3 turns!`);
       engine.emitEvent("status.applied", { unitId: target.id, status: "burn", source: attacker.id });
     }
@@ -125,10 +125,11 @@ const RULES = [
     when: ({ attacker }) => attacker?.sluj > 0,
     execute: ({ attacker, target }, engine) => {
       if (!target.statusEffects.sluj) {
-        target.statusEffects.sluj = { level: attacker.sluj, duration: 4, counter: 0 };
+        target.statusEffects.sluj = { level: attacker.sluj, duration: 4, counter: 0, sourceId: attacker.id };
       } else {
         target.statusEffects.sluj.level += attacker.sluj;
         target.statusEffects.sluj.duration = 4;
+        target.statusEffects.sluj.sourceId = attacker.id;
       }
       engine.logCallback(`${target.name} is afflicted with slüj (level ${target.statusEffects.sluj.level}) for 4 turns!`);
       engine.emitEvent("status.applied", { unitId: target.id, status: "sluj", source: attacker.id });
@@ -152,7 +153,7 @@ const RULES = [
       const initialChainDamage = Math.round(attacker.attack * effectiveMultiplier);
       if (initialChainDamage > 0) {
         engine.logCallback(`${target.name} takes ${initialChainDamage} chain damage!`);
-        engine.applyChainDamage(target, initialChainDamage, effectiveMultiplier, new Set());
+        engine.applyChainDamage(target, initialChainDamage, effectiveMultiplier, new Set(), attacker);
         engine.emitEvent("damage.applied", { unitId: target.id, amount: initialChainDamage, source: "chain" });
       }
     }
@@ -225,9 +226,11 @@ const RULES = [
           engine.logCallback(`${hero.name}'s swarm deals ${hero.swarm} damage to ${enemy.name} at (${targetX},${targetY}) (HP left: ${enemy.hp})`);
           engine.emitEvent("damage.applied", { unitId: enemy.id, amount: hero.swarm, source: "swarm", actorId: hero.id });
           if (enemy.hp <= 0) {
-            engine.logCallback(`${enemy.name} is defeated by swarm damage!`);
-            engine.battlefield[targetY][targetX] = ".";
-            engine.enemies = engine.enemies.filter(e => e !== enemy);
+            engine.handleEnemyDefeat(enemy, {
+              attacker: hero,
+              cause: "swarm",
+              message: `${enemy.name} is defeated by swarm damage!`
+            });
           }
         });
       });
@@ -240,7 +243,7 @@ function createAnkhRule(hook) {
   return {
     id: "ankh",
     hook,
-    when: ({ hero }) => Boolean(hero),
+    when: ({ hero, outcome }) => Boolean(hero) && outcome === "permanent",
     execute: ({ hero }, engine) => {
       engine.getLiveHeroes().forEach(liveHero => {
         if (liveHero.ankh > 0) {

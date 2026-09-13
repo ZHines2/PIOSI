@@ -317,12 +317,7 @@ export class BattleEngine {
         this.logCallback(`${unit.name} attacks ${enemy.name} for ${unit.attack} damage! (HP left: ${enemy.hp})`);
         runBattleHook(this, ABILITY_HOOKS.ON_ATTACK_TARGET_ENEMY, { attacker: unit, target: enemy, dx, dy });
         // Check for enemy defeat
-        if (enemy.hp <= 0) {
-          this.logCallback(`${enemy.name} is defeated!`);
-          this.battlefield[enemy.y][enemy.x] = '.';
-          this.enemies = this.enemies.filter(e => e !== enemy);
-          runBattleHook(this, ABILITY_HOOKS.ON_KILL, { attacker: unit, target: enemy, cause: 'attack' });
-        }
+        if (enemy.hp <= 0) this.handleEnemyDefeat(enemy, { attacker: unit, cause: 'attack' });
         this.awaitingAttackDirection = false;
         await this.shortPause();
         this.nextTurn();
@@ -347,7 +342,7 @@ export class BattleEngine {
     this.nextTurn();
   }
 
-  applyChainDamage(enemy, damage, effectiveMultiplier, visited = new Set()) {
+  applyChainDamage(enemy, damage, effectiveMultiplier, visited = new Set(), attacker = null) {
     visited.add(enemy);
     const adjacentOffsets = [
       { x: -1, y: 0 }, { x: 1, y: 0 },
@@ -363,14 +358,16 @@ export class BattleEngine {
         adjacentEnemy.hp -= damage;
         this.logCallback(`${adjacentEnemy.name} takes ${damage} chain damage! (HP left: ${adjacentEnemy.hp})`);
         if (adjacentEnemy.hp <= 0) {
-          this.logCallback(`${adjacentEnemy.name} is defeated by chain damage!`);
-          this.battlefield[adjY][adjX] = '.';
-          this.enemies = this.enemies.filter(e => e !== adjacentEnemy);
+          this.handleEnemyDefeat(adjacentEnemy, {
+            attacker,
+            cause: 'chain',
+            message: `${adjacentEnemy.name} is defeated by chain damage!`
+          });
         }
         const nextDamage = Math.round(damage * effectiveMultiplier);
         if (nextDamage > 0 && nextDamage < damage) {
           this.logCallback(`${adjacentEnemy.name} takes ${nextDamage} chain propagation damage!`);
-          this.applyChainDamage(adjacentEnemy, nextDamage, effectiveMultiplier, visited);
+          this.applyChainDamage(adjacentEnemy, nextDamage, effectiveMultiplier, visited, attacker);
         }
       }
     }
@@ -390,9 +387,12 @@ export class BattleEngine {
       
       // Kill logic for enemies affected by slüj damage.
       if (enemy.hp <= 0 && enemy.statusEffects.sluj && enemy.statusEffects.sluj.level > 0) {
-        this.logCallback(`${enemy.name} is defeated by its slüj effect!`);
-        this.battlefield[enemy.y][enemy.x] = '.';
-        this.enemies = this.enemies.filter(e => e !== enemy);
+        const attacker = this.party.find(hero => hero.id === enemy.statusEffects.sluj.sourceId) ?? null;
+        this.handleEnemyDefeat(enemy, {
+          attacker,
+          cause: 'sluj',
+          message: `${enemy.name} is defeated by its slüj effect!`
+        });
         return;
       }
       
@@ -536,13 +536,24 @@ export class BattleEngine {
         enemy.hp -= enemy.statusEffects.burn.damage;
         enemy.statusEffects.burn.duration--;
         if (enemy.hp <= 0) {
-          this.logCallback(`${enemy.name} died from burn damage!`);
-          this.battlefield[enemy.y][enemy.x] = '.';
-          this.enemies = this.enemies.filter(e => e !== enemy);
+          const attacker = this.party.find(hero => hero.id === enemy.statusEffects.burn.sourceId) ?? null;
+          this.handleEnemyDefeat(enemy, {
+            attacker,
+            cause: 'burn',
+            message: `${enemy.name} died from burn damage!`
+          });
         }
       }
       // The slüj effect is handled via the imported applySlujEffect() in enemyTurn().
     });
+  }
+
+  handleEnemyDefeat(enemy, { attacker = null, cause = 'unknown', message = `${enemy.name} is defeated!` } = {}) {
+    if (!enemy || !this.enemies.includes(enemy)) return;
+    this.logCallback(message);
+    this.battlefield[enemy.y][enemy.x] = '.';
+    this.enemies = this.enemies.filter(e => e !== enemy);
+    if (attacker) runBattleHook(this, ABILITY_HOOKS.ON_KILL, { attacker, target: enemy, cause });
   }
 
   // Updated handleHeroDeath method to ensure a dead hero's cell is cleared.
