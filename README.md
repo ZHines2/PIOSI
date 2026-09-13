@@ -8,7 +8,7 @@ PIOSI CORE is a clean, data-driven version of the game designed to be wrapped wi
 The runtime now also includes:
 
 - `gameModel.js` for normalized combat state, stable IDs, battle phases, and deterministic RNG
-- `battleRules.js` for lifecycle-driven ability resolution (`onBattleStart`, `onMove`, `onAttackTargetAlly`, `onAttackTargetEnemy`, `onTakeDamage`, `onKill`, `onTurnEnd`, `onDeath`, `onRevive`, `onLevelComplete`)
+- `battleRules.js` for lifecycle-driven ability resolution (`onBattleStart`, `onMove`, `onAttackTargetAlly`, `onAttackTargetEnemy`, `onTakeDamage`, `onKill`, `onTurnEnd`, `onDeath`, `onRevive`)
 - `contentSchema.js` for load-time normalization and validation of manifest, hero, and level data
 
 ### How CORE works
