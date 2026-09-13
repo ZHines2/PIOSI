@@ -82,7 +82,7 @@ export function validateHeroCollection(heroes = []) {
     if (!hero.name) warnings.push(`Hero ${index + 1} is missing a name.`);
     if (!hero.symbol) warnings.push(`Hero ${hero.name ?? index + 1} is missing a symbol.`);
     NUMERIC_UNIT_STATS.forEach(stat => {
-      if (!Number.isFinite(hero[stat])) {
+      if (hero[stat] !== undefined && !Number.isFinite(hero[stat])) {
         warnings.push(`Hero ${hero.name ?? index + 1} has a non-numeric ${stat}.`);
       }
     });

@@ -107,12 +107,12 @@ Setting `worldMap: true` re-enables the world map and its entry points without a
 
 Supplementary docs in this branch should be read against the code, with these files as the primary source of truth:
 
-- `/home/runner/work/PIOSI/PIOSI/index.html`
-- `/home/runner/work/PIOSI/PIOSI/battleEngine.js`
-- `/home/runner/work/PIOSI/PIOSI/battleRules.js`
-- `/home/runner/work/PIOSI/PIOSI/gameModel.js`
-- `/home/runner/work/PIOSI/PIOSI/contentLoader.js`
-- `/home/runner/work/PIOSI/PIOSI/contentSchema.js`
+- `index.html`
+- `battleEngine.js`
+- `battleRules.js`
+- `gameModel.js`
+- `contentLoader.js`
+- `contentSchema.js`
 
 ### Wrapping / shipping with Tauri
 

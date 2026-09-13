@@ -145,8 +145,9 @@ export async function loadContent() {
   const allLoadedHeroes = heroArrays
     .filter(Boolean)
     .flatMap(data => data.heroes || []);
-  const heroes = normalizeHeroCollection(allLoadedHeroes.length > 0 ? allLoadedHeroes : staticHeroes);
-  validateHeroCollection(heroes).forEach(warning => console.warn(`[content] ${warning}`));
+  const runtimeHeroes = allLoadedHeroes.length > 0 ? allLoadedHeroes : staticHeroes;
+  validateHeroCollection(runtimeHeroes).forEach(warning => console.warn(`[content] ${warning}`));
+  const heroes = normalizeHeroCollection(runtimeHeroes);
 
   // 3. Load levels from each enabled pack, merging into one array
   const levelArrays = await Promise.all(
@@ -156,8 +157,8 @@ export async function loadContent() {
     .filter(Boolean)
     .flatMap(data => data.levels || []);
   const runtimeLevels = allLoadedLevels.length > 0 ? allLoadedLevels : getStaticLevels();
+  validateLevelCollection(runtimeLevels).forEach(warning => console.warn(`[content] ${warning}`));
   const normalizedLevels = normalizeLevelCollection(runtimeLevels);
-  validateLevelCollection(normalizedLevels).forEach(warning => console.warn(`[content] ${warning}`));
 
   // makeLevelGetter falls back to static levels.js for anything not in JSON
   const getLevel = makeLevelGetter(normalizedLevels);
