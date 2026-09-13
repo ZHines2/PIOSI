@@ -1,6 +1,6 @@
 # Hero Manifestation Guide
 
-This document provides guidelines and best practices for creating new heroes in the game. It is written against the current runtime in `/home/runner/work/PIOSI/PIOSI/battleEngine.js`, `/home/runner/work/PIOSI/PIOSI/battleRules.js`, and `/home/runner/work/PIOSI/PIOSI/modeup.js`.
+This document provides guidelines and best practices for creating new heroes in the game. It is written against the current runtime in `battleEngine.js`, `battleRules.js`, and `modeup.js`.
 
 ## Hero Properties
 
@@ -18,7 +18,7 @@ Each hero is defined by a set of properties. Here are the key properties you nee
 
 ## Runtime Ability Lifecycle
 
-Combat abilities are resolved through named hooks in `/home/runner/work/PIOSI/PIOSI/battleRules.js`:
+Combat abilities are resolved through named hooks in `battleRules.js`:
 
 - `onBattleStart`: battle-start stat changes such as `caprice` and `fate`
 - `onMove`: pickup interactions such as `spicy` and `spore`
