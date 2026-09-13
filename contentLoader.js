@@ -156,12 +156,17 @@ export async function loadContent() {
   const allLoadedLevels = levelArrays
     .filter(Boolean)
     .flatMap(data => data.levels || []);
-  const runtimeLevels = allLoadedLevels.length > 0 ? allLoadedLevels : getStaticLevels();
+  const staticFallbackLevels = getStaticLevels();
+  const runtimeLevels = allLoadedLevels.length > 0 ? allLoadedLevels : staticFallbackLevels;
   validateLevelCollection(runtimeLevels).forEach(warning => console.warn(`[content] ${warning}`));
   const normalizedLevels = normalizeLevelCollection(runtimeLevels);
 
-  // makeLevelGetter falls back to static levels.js for anything not in JSON
-  const getLevel = makeLevelGetter(normalizedLevels);
+  // When JSON levels are present, use the normalized pack levels and fall back
+  // to static levels.js for anything missing. Without JSON levels, keep the
+  // dynamic static getter behavior while still validating fallback content.
+  const getLevel = allLoadedLevels.length > 0
+    ? makeLevelGetter(normalizedLevels)
+    : makeLevelGetter([]);
 
   return { manifest, heroes, getLevel };
 }
