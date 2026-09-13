@@ -233,8 +233,7 @@ const RULES = [
       });
     }
   },
-  createAnkhRule(ABILITY_HOOKS.ON_DEATH),
-  createAnkhRule(ABILITY_HOOKS.ON_REVIVE)
+  createAnkhRule(ABILITY_HOOKS.ON_DEATH)
 ];
 
 function createAnkhRule(hook) {
