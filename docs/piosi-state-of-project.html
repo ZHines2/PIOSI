@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PIOSI — State of the Project</title>
+    <style>
+      @page {
+        size: letter;
+        margin: 0.75in;
+      }
+
+      :root {
+        --ink: #1f2430;
+        --muted: #5b6472;
+        --rule: #d9dee7;
+        --accent: #283347;
+        --accent-soft: #eef2f7;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Georgia", "Times New Roman", serif;
+        color: var(--ink);
+        line-height: 1.45;
+        background: #fff;
+      }
+
+      .cover {
+        min-height: 9.2in;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        border: 1px solid var(--rule);
+        padding: 0.9in 0.8in;
+        background: linear-gradient(180deg, #fafbfd 0%, #f2f5f9 100%);
+        page-break-after: always;
+      }
+
+      .eyebrow {
+        font-size: 11pt;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 0.35in;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 28pt;
+        line-height: 1.1;
+        letter-spacing: 0.02em;
+        color: var(--accent);
+      }
+
+      .subtitle {
+        margin-top: 0.2in;
+        font-size: 14pt;
+        color: var(--muted);
+      }
+
+      .cover-note {
+        margin-top: 0.75in;
+        max-width: 5.8in;
+        font-size: 12pt;
+      }
+
+      .meta {
+        margin-top: auto;
+        padding-top: 0.5in;
+        font-size: 10.5pt;
+        color: var(--muted);
+      }
+
+      .page {
+        page-break-after: always;
+      }
+
+      .page:last-child {
+        page-break-after: auto;
+      }
+
+      h2 {
+        font-size: 17pt;
+        margin: 0 0 0.18in;
+        color: var(--accent);
+        border-bottom: 1px solid var(--rule);
+        padding-bottom: 0.08in;
+      }
+
+      h3 {
+        font-size: 12.5pt;
+        margin: 0.22in 0 0.06in;
+        color: var(--accent);
+      }
+
+      p, li {
+        font-size: 11pt;
+      }
+
+      p {
+        margin: 0 0 0.12in;
+      }
+
+      ul {
+        margin: 0.06in 0 0.14in 0.22in;
+        padding: 0;
+      }
+
+      .summary-box {
+        background: var(--accent-soft);
+        border-left: 4px solid var(--accent);
+        padding: 0.16in 0.18in;
+        margin: 0.18in 0 0.2in;
+      }
+
+      .toc {
+        columns: 2;
+        column-gap: 0.5in;
+      }
+
+      .toc li {
+        margin-bottom: 0.06in;
+      }
+
+      .timeline li {
+        margin-bottom: 0.08in;
+      }
+
+      .small {
+        color: var(--muted);
+        font-size: 10pt;
+      }
+
+      .appendix-entry {
+        margin-bottom: 0.12in;
+        padding-bottom: 0.08in;
+        border-bottom: 1px solid #eef1f5;
+      }
+
+      .callout {
+        font-style: italic;
+        color: var(--muted);
+      }
+
+      .pillars {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 0.14in;
+        margin: 0.14in 0 0.18in;
+      }
+
+      .pillar {
+        border: 1px solid var(--rule);
+        padding: 0.14in;
+      }
+
+      @media print {
+        a {
+          color: inherit;
+          text-decoration: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <section class="cover">
+      <div class="eyebrow">Internal Review Document</div>
+      <h1>PIOSI<br />State of the Project</h1>
+      <div class="subtitle">Printable design bible and production review</div>
+      <p class="cover-note">
+        This document summarizes the current state of PIOSI for new team members:
+        vision, systems, content architecture, production history, current risks,
+        and review recommendations.
+      </p>
+      <div class="meta">
+        Repository: ZHines2/PIOSI<br />
+        Source reviewed from: /home/runner/work/PIOSI/PIOSI<br />
+        Prepared: 2026-09-13
+      </div>
+    </section>
+
+    <section class="page">
+      <h2>Executive Summary</h2>
+      <div class="summary-box">
+        <p>
+          PIOSI is a turn-based tactical RPG whose central loop is simple and
+          strong: choose a party of three heroes, survive enemy pressure, break
+          through the wall, and empower the squad between stages.
+        </p>
+        <p>
+          The repository also shows a second ambition: evolving that playable
+          tactical core into a data-driven content platform built around
+          manifest-loaded hero and level packs.
+        </p>
+      </div>
+      <p>
+        The project is best understood as a playable combat game with a vivid
+        hero vocabulary, layered with an active but incomplete productization
+        effort. The tactical heart is real and reviewable. The content system is
+        real and promising. Several adjacent systems remain transitional.
+      </p>
+
+      <h3>Contents</h3>
+      <ul class="toc">
+        <li>I. Vision and design philosophy</li>
+        <li>II. Core game structure</li>
+        <li>III. Battle engine and special mechanics</li>
+        <li>IV. Hero roster and stat language</li>
+        <li>V. Levels and progression</li>
+        <li>VI. Content architecture</li>
+        <li>VII. Modes</li>
+        <li>VIII. Codebase organization</li>
+        <li>IX. Production state and limitations</li>
+        <li>X. Production history timeline</li>
+        <li>XI. Review guidance</li>
+        <li>XII. Citations appendix</li>
+      </ul>
+    </section>
+
+    <section class="page">
+      <h2>I. Vision and Design Philosophy</h2>
+      <p>
+        PIOSI frames battle as myth, endurance, and passage. The Gratt is more
+        than scenery; it is a recurring symbol of resistance, memory, and
+        survival. The heroes are defined less as classes in a formal RPG system
+        than as strong archetypes with compact but expressive stat identities.
+      </p>
+      <div class="pillars">
+        <div class="pillar">
+          <h3>Identity through stats</h3>
+          <p>
+            Many hero concepts are expressed through terse properties such as
+            <em>burn</em>, <em>slüj</em>, <em>yeet</em>, <em>chain</em>,
+            <em>psych</em>, <em>ankh</em>, and <em>rise</em>.
+          </p>
+        </div>
+        <div class="pillar">
+          <h3>Progress through breach</h3>
+          <p>
+            The game’s decisive objective is often not total elimination but
+            wall destruction and continued advance.
+          </p>
+        </div>
+        <div class="pillar">
+          <h3>Content over engine churn</h3>
+          <p>
+            The CORE direction aims to let new heroes and levels arrive through
+            content packs instead of repeated engine rewrites.
+          </p>
+        </div>
+      </div>
+      <p class="callout">
+        In short: PIOSI is a tactical wall-breaker with a lore-forward tone and
+        a growing content-platform ambition.
+      </p>
+    </section>
+
+    <section class="page">
+      <h2>II. Core Game Structure</h2>
+      <p>
+        The main runtime flow is title screen, party selection, battle, mode-up
+        selection, next level, then victory, defeat, or optional mode
+        transitions. The player must choose exactly three heroes before the run
+        begins.
+      </p>
+      <ul>
+        <li>Party members are cloned from the master roster.</li>
+        <li>Turn order is initially sorted by agility descending.</li>
+        <li>Each active hero receives movement points equal to agility.</li>
+        <li>Enemy turns occur after the party cycle completes.</li>
+        <li>Completing a level typically opens Mode Up.</li>
+      </ul>
+      <p>
+        This loop is the most stable and product-defining part of the project.
+      </p>
+
+      <h2>III. Battle Engine and Special Mechanics</h2>
+      <p>
+        The battle engine builds a grid battlefield, places heroes and enemies,
+        lays a wall row, and spawns one vittle plus one mushroom. Combat is
+        directional and spatial: movement is orthogonal, attacks are line-based,
+        and enemy AI is greedy and adjacency-driven.
+      </p>
+      <ul>
+        <li><strong>Heal</strong>: ally-target healing</li>
+        <li><strong>Psych</strong>: random ally stat boost</li>
+        <li><strong>Trick</strong>: random enemy stat reduction</li>
+        <li><strong>Burn</strong>: three-turn damage over time</li>
+        <li><strong>Slüj</strong>: stacking timed damage</li>
+        <li><strong>Yeet</strong>: knockback with collision damage</li>
+        <li><strong>Chain</strong>: diminishing splash propagation</li>
+        <li><strong>Swarm</strong>: adjacent aura damage</li>
+        <li><strong>Spicy</strong>: stronger vittle healing</li>
+        <li><strong>Armor</strong>: charge-based hit negation</li>
+        <li><strong>Spore</strong>: mushroom-based random growth</li>
+        <li><strong>Caprice</strong>, <strong>Fate</strong>, <strong>Rage</strong>, <strong>Ankh</strong>, <strong>Rise</strong>, <strong>Dodge</strong>, <strong>Bomba</strong></li>
+      </ul>
+      <p>
+        These mechanics form the game’s actual design language: terse names,
+        high recognizability, and high variance from a small set of rules.
+      </p>
+    </section>
+
+    <section class="page">
+      <h2>IV. Hero Roster and Stat Language</h2>
+      <p>
+        The current CORE roster contains twenty-five heroes and is mirrored in a
+        static fallback roster. The cast spans foundational melee and ranged
+        units, support specialists, random-effect units, death-linked units, and
+        experimental edge-case designs.
+      </p>
+      <p>
+        Representative anchors include Knight, Archer, Wizard, Cleric,
+        Berserker, Jester, Meatwalker, Soothscribe, Nonsequiteur, Griot,
+        Torcher, Slüjier, Shrink, Yeetrian, Mellitron, Gastronomer, Palisade,
+        Mycelian, Pæg, Kemetic, Greenjay, Sysiphuge, and Bombador.
+      </p>
+      <p>
+        Pæg is especially revealing: it acts almost like a compact catalog of
+        the project’s broader stat vocabulary.
+      </p>
+
+      <h3>Bulk and Ghïs</h3>
+      <p>
+        Bulk is part of the intended combat language. Meatwalker carries the
+        stat in roster data, Mode Up can increase it, and March 2025 production
+        history explicitly records a fix whose stated purpose was to make bulk
+        raise a random stat when an enemy is defeated. That historical intent is
+        unambiguous and should be preserved in future review.
+      </p>
+      <p>
+        Ghïs appears mainly as a fallback progression stat and default mode-up
+        behavior for heroes without a bespoke progression rule.
+      </p>
+    </section>
+
+    <section class="page">
+      <h2>V. Levels and Progression</h2>
+      <p>
+        The static campaign defines levels 1 through 20 plus a special level 99.
+        The currently surfaced CORE content pack exposes levels 1 through 3.
+        This means the repository contains more authored battle content than the
+        active manifest currently serves by default.
+      </p>
+      <p>
+        Difficulty and atmosphere scale through larger battlefields, stronger
+        enemy formations, greater wall health, more elaborate stage titles, and
+        occasional procedural generation. The later campaign shifts from direct
+        military conflict toward more surreal or symbolic encounters.
+      </p>
+
+      <h2>VI. Content Architecture</h2>
+      <p>
+        The CORE build loads a manifest, then fetches hero and level JSON packs,
+        merges them, and falls back to static built-in content if loading fails.
+        This is the clearest sign of long-term architectural intent.
+      </p>
+      <ul>
+        <li>Manifest declares version, pack list, and mode flags.</li>
+        <li>Heroes load from <code>content/heroes.&lt;pack&gt;.json</code>.</li>
+        <li>Levels load from <code>content/levels.&lt;pack&gt;.json</code>.</li>
+        <li>Fallback content remains available for no-server operation.</li>
+      </ul>
+      <p>
+        The abstraction is meaningful, but not total: adding a new hero still
+        requires a corresponding Mode Up case in code.
+      </p>
+    </section>
+
+    <section class="page">
+      <h2>VII. Modes</h2>
+      <p><strong>Battle</strong> is the primary and most complete mode.</p>
+      <p>
+        <strong>Mode Up</strong> is a between-level party empowerment system in
+        which one living hero determines the squad-wide buff profile.
+      </p>
+      <p>
+        <strong>World Map</strong> is a hardcoded branching shell labeled “THE
+        BROADLANDS,” with some future-facing placeholder logic still present.
+      </p>
+      <p>
+        <strong>Summit Mode</strong> is an auto-resolving battle royale
+        simulation on a large map. It is imaginative but presently diverges from
+        the player manual’s description.
+      </p>
+      <p>
+        <strong>Emanations</strong> is a lightweight music-player mode that
+        extends the project’s atmosphere more than its tactics.
+      </p>
+
+      <h2>VIII. Codebase Organization</h2>
+      <ul>
+        <li><strong>index.html</strong>: runtime entry, UI flow, input, audio, orchestration</li>
+        <li><strong>battleEngine.js</strong>: combat engine</li>
+        <li><strong>heroes.js</strong> / <strong>levels.js</strong>: static fallback content</li>
+        <li><strong>contentLoader.js</strong>: manifest and JSON pack loading</li>
+        <li><strong>modeup.js</strong>: progression rules</li>
+        <li><strong>worldMap.js</strong>, <strong>summitMode.js</strong>, <strong>emanations.js</strong>: side modes</li>
+        <li><strong>griot.js</strong>: flavor APIs and Markov text logic</li>
+      </ul>
+      <p>
+        The code is modular by file, but still centralized in orchestration.
+      </p>
+    </section>
+
+    <section class="page">
+      <h2>IX. Production State and Limitations</h2>
+      <h3>Strong, stable areas</h3>
+      <ul>
+        <li>The 3-hero tactical loop</li>
+        <li>Mode Up progression</li>
+        <li>The broad hero-stat vocabulary</li>
+        <li>Manifest-based content loading</li>
+        <li>Recent HUD, isometric view, and mobile D-pad polish</li>
+      </ul>
+
+      <h3>Known limitations</h3>
+      <ul>
+        <li>Enemy AI attacks adjacency even when enemy range stats are higher.</li>
+        <li>Level layout plumbing is present but not fully coherent end-to-end.</li>
+        <li><code>coreLevels</code> is documented but not clearly used at runtime.</li>
+        <li>Some manifest flags are more declarative than enforced.</li>
+        <li>Summit documentation and implementation do not fully match.</li>
+        <li>The build file still references Parcel paths not present in the repo.</li>
+      </ul>
+    </section>
+
+    <section class="page">
+      <h2>X. Production History Timeline</h2>
+      <ul class="timeline">
+        <li><strong>2025-01-30</strong> — Initial commit establishes the repository.</li>
+        <li><strong>2025-02-07</strong> — Cleric and healing enter the roster and UI.</li>
+        <li><strong>2025-02-10</strong> — Sycophant is added.</li>
+        <li><strong>2025-02-23</strong> — Chain stat work lands.</li>
+        <li><strong>2025-02-25</strong> — Rage support and later-campaign levels expand the core game.</li>
+        <li><strong>2025-02-26</strong> — Trick and Bulk are added in the roster/progression era.</li>
+        <li><strong>2025-02-27</strong> — Psych and supporting battle changes arrive.</li>
+        <li><strong>2025-02-28</strong> — Level 99 access is corrected.</li>
+        <li><strong>2025-03-04</strong> — Kemetic and Ankh mechanics enter production.</li>
+        <li><strong>2025-03-05</strong> — Greenjay/Rise and Sysiphuge/Dodge are integrated.</li>
+        <li><strong>2025-03-06</strong> — Bulk-on-defeat behavior is explicitly fixed in history.</li>
+        <li><strong>2025-03-08</strong> — Bombador and Bomba are added.</li>
+        <li><strong>2025-03-09</strong> — Summit Mode is introduced.</li>
+        <li><strong>2025-03-13</strong> — Emanations Mode is introduced.</li>
+        <li><strong>2025-03-05</strong> — Documentation is refreshed to reflect expanded content.</li>
+        <li><strong>2026-03-11</strong> — CORE data-driven content loading arrives.</li>
+        <li><strong>2026-02 to 2026-03</strong> — Isometric view, mobile D-pad, and battle HUD polish the experience.</li>
+      </ul>
+    </section>
+
+    <section class="page">
+      <h2>XI. Review Guidance</h2>
+      <h3>Preserve</h3>
+      <ul>
+        <li>The tactical 3-hero wall-breaker loop</li>
+        <li>The distinctive stat vocabulary</li>
+        <li>Mode Up as identity and progression</li>
+        <li>The content-pack direction</li>
+      </ul>
+
+      <h3>Verify carefully</h3>
+      <ul>
+        <li>Bulk behavior in current runtime review</li>
+        <li>Ghïs meaning and future role</li>
+        <li>World Map progression relevance</li>
+        <li>Summit Mode’s intended product status</li>
+        <li>Layout support and manifest flag enforcement</li>
+      </ul>
+
+      <h3>Potential cleanup targets</h3>
+      <ul>
+        <li>Dead or disconnected Summit hero-selection path</li>
+        <li>Stale Parcel build references</li>
+        <li>Legacy archival artifacts if no longer authoritative</li>
+      </ul>
+
+      <p class="callout">
+        PIOSI’s next challenge is less invention than consolidation. The project
+        already has a strong center; the work ahead is to make its edges equally
+        coherent.
+      </p>
+    </section>
+
+    <section class="page">
+      <h2>XII. Citations Appendix</h2>
+
+      <div class="appendix-entry">
+        <strong>Project overview and CORE direction</strong><br />
+        /home/runner/work/PIOSI/PIOSI/README.md:4-13, 71-106
+      </div>
+
+      <div class="appendix-entry">
+        <strong>Manifest and content loading</strong><br />
+        /home/runner/work/PIOSI/PIOSI/content/manifest.json:1-12<br />
+        /home/runner/work/PIOSI/PIOSI/contentLoader.js:28-40, 50-87, 111-137
+      </div>
+
+      <div class="appendix-entry">
+        <strong>Main runtime loop and screen flow</strong><br />
+        /home/runner/work/PIOSI/PIOSI/index.html:15-33, 201-249, 375-407, 457-562, 840-994
+      </div>
+
+      <div class="appendix-entry">
+        <strong>Battle engine and status systems</strong><br />
+        /home/runner/work/PIOSI/PIOSI/battleEngine.js:24-69, 76-116, 145-175, 211-387, 418-633
+      </div>
+
+      <div class="appendix-entry">
+        <strong>Knockback and slüj modules</strong><br />
+        /home/runner/work/PIOSI/PIOSI/applyKnockback.js:1-45<br />
+        /home/runner/work/PIOSI/PIOSI/sluj.js:1-65
+      </div>
+
+      <div class="appendix-entry">
+        <strong>Hero roster</strong><br />
+        /home/runner/work/PIOSI/PIOSI/heroes.js:9-286<br />
+        /home/runner/work/PIOSI/PIOSI/content/heroes.core.json:2-291
+      </div>
+
+      <div class="appendix-entry">
+        <strong>Levels and progression content</strong><br />
+        /home/runner/work/PIOSI/PIOSI/levels.js:70-546<br />
+        /home/runner/work/PIOSI/PIOSI/content/levels.core.json:2-87
+      </div>
+
+      <div class="appendix-entry">
+        <strong>Player docs and lore</strong><br />
+        /home/runner/work/PIOSI/PIOSI/docs/players-manual.md:6-25, 149-204<br />
+        /home/runner/work/PIOSI/PIOSI/docs/hero-manifestation-guide.md:18-36, 271-318<br />
+        /home/runner/work/PIOSI/PIOSI/fantasy_narrative.txt:17-35
+      </div>
+
+      <div class="appendix-entry">
+        <strong>World Map, Summit, and Emanations</strong><br />
+        /home/runner/work/PIOSI/PIOSI/worldMap.js:1-72<br />
+        /home/runner/work/PIOSI/PIOSI/summitMode.js:1-266<br />
+        /home/runner/work/PIOSI/PIOSI/emanations.js:1-146
+      </div>
+
+      <div class="appendix-entry">
+        <strong>Build and presentation layers</strong><br />
+        /home/runner/work/PIOSI/PIOSI/package.json:1-17<br />
+        /home/runner/work/PIOSI/PIOSI/styles.css:1-520
+      </div>
+
+      <div class="appendix-entry">
+        <strong>Production history references</strong><br />
+        Commits reviewed include:<br />
+        97e3c41d059a013617eb22b30c5d703f98da7724, 3e5bbb82a5a694a175cd0de23ad0165e1ec56644,
+        6e188e9847cbc90535afd3aa3f6737942e659fbb, 2cb96849e5bd69b47a9424fe847666c4e24beec6,
+        a9c7a4048cddb46755c3402b23831f2b9005ba7b, 57dfdc5b57ff0e4a308aab4a4e2ed3c9f96d705e,
+        53fe7bcbf3dc963e341fddf4b48a4b04460b6c5f, fd963c16111d696ccf36424d6c9f36d7ae4e1cc9,
+        e424fa70d126962d2ea6467f196b55181646d69f, 77025f8f99748c95fc6ebf5537c16a291c7c2c30,
+        ea18069399f63a1ddbd410ef6142a60af1061c1e, 724201198bcd40a3395d2c30a6a01deaac94583a,
+        650fc6a39c5be0b602fa12d3b480ba040b5581be, 23dd3e0c7095cbf3e65cd0b1bb5a9392cb4d3deb,
+        91c30fd12673fe59826cb1b587bdbc0ffc44b35d, 538b2664010c19a687a21f1e54f2fe9ec34f11c3,
+        20f11bcbb212448c6f3d08e0c56ecdb676d95dff, 60fa7b0a4ef57cbffa78c52068d796f2eb84ac0f,
+        581ee59dd413dddc7bfc1ff2290ca695bdf9b56a, df71ed9125302cbb90ef2f6d71ca8a9b3ff7d31d
+      </div>
+
+      <p class="small">
+        Prepared from repository source and commit history review only.
+      </p>
+    </section>
+  </body>
+</html>
