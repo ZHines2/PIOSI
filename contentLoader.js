@@ -24,6 +24,13 @@
 
 import { heroes as staticHeroes } from "./heroes.js";
 import { getLevel as getStaticLevel } from "./levels.js";
+import {
+  normalizeHeroCollection,
+  normalizeLevelCollection,
+  normalizeManifest,
+  validateHeroCollection,
+  validateLevelCollection
+} from "./contentSchema.js";
 
 /** Default manifest used when content/manifest.json cannot be fetched. */
 const DEFAULT_MANIFEST = {
@@ -82,7 +89,13 @@ function makeLevelGetter(levels) {
       };
     }
     // Fall back to statically-defined levels (includes level 99 cheat level).
-    return getStaticLevel(levelNumber);
+    const staticLevel = getStaticLevel(levelNumber);
+    if (!staticLevel) return staticLevel;
+    const [normalizedStaticLevel] = normalizeLevelCollection([staticLevel]);
+    return {
+      ...normalizedStaticLevel,
+      enemies: resolveEnemies(normalizedStaticLevel)
+    };
   };
 }
 
@@ -111,7 +124,7 @@ async function fetchJSON(url) {
 export async function loadContent() {
   // 1. Load manifest
   const manifestData = await fetchJSON("./content/manifest.json");
-  const manifest = manifestData || DEFAULT_MANIFEST;
+  const manifest = normalizeManifest(manifestData || DEFAULT_MANIFEST);
 
   // 2. Load heroes from each enabled pack, merging into one array
   const heroArrays = await Promise.all(
@@ -120,7 +133,8 @@ export async function loadContent() {
   const allLoadedHeroes = heroArrays
     .filter(Boolean)
     .flatMap(data => data.heroes || []);
-  const heroes = allLoadedHeroes.length > 0 ? allLoadedHeroes : staticHeroes;
+  const heroes = normalizeHeroCollection(allLoadedHeroes.length > 0 ? allLoadedHeroes : staticHeroes);
+  validateHeroCollection(heroes).forEach(warning => console.warn(`[content] ${warning}`));
 
   // 3. Load levels from each enabled pack, merging into one array
   const levelArrays = await Promise.all(
@@ -129,9 +143,11 @@ export async function loadContent() {
   const allLoadedLevels = levelArrays
     .filter(Boolean)
     .flatMap(data => data.levels || []);
+  const normalizedLevels = normalizeLevelCollection(allLoadedLevels);
+  validateLevelCollection(normalizedLevels).forEach(warning => console.warn(`[content] ${warning}`));
 
   // makeLevelGetter falls back to static levels.js for anything not in JSON
-  const getLevel = makeLevelGetter(allLoadedLevels);
+  const getLevel = makeLevelGetter(normalizedLevels);
 
   return { manifest, heroes, getLevel };
 }
