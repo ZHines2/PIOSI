@@ -5,9 +5,8 @@
  * - Unit movement and attack logic (including knockback, chain, and swarm abilities).
  * - Healing item (vittle) and mushroom pickup.
  * - Hero death handling that triggers persistent death effects with the "rise" stat.
- *   If a hero has points in the rise stat when they die, they are resurrected on the next
- *   level with HP equal to the rise value, the rise stat is reset to zero, and they still
- *   trigger ankh boosts to all live heroes.
+ *   If a hero has points in the rise stat when they die, they revive with HP equal to the
+ *   rise value and the rise stat is reset to zero.
  * - The ankh stat boost now enhances one of attack, hp, agility, or range.
  */
 
@@ -34,13 +33,13 @@ export class BattleEngine {
     // NOTE: Heroes with persistent death will no longer be referenced in the battlefield.
     this.party = party;
     this.enemies = enemies;
-    this.rows = fieldRows;
-    this.cols = fieldCols;
-    this.wallHP = wallHP;
+    this.levelSettings = normalizeLevelSettings(options.levelSettings ?? { rows: fieldRows, cols: fieldCols, wallHP });
+    this.rows = this.levelSettings.rows;
+    this.cols = this.levelSettings.cols;
+    this.wallHP = this.levelSettings.wallHP;
     this.logCallback = logCallback;
     this.onLevelComplete = onLevelComplete;
     this.onGameOver = onGameOver;
-    this.levelSettings = normalizeLevelSettings(options.levelSettings ?? { rows: fieldRows, cols: fieldCols, wallHP });
     this.rng = options.rng ?? createSeededRng(options.seed);
     this.eventLog = [];
     this.phase = BATTLE_PHASES.BATTLE_START;
@@ -377,6 +376,7 @@ export class BattleEngine {
     if (this.transitioningLevel) return;
     this.setPhase(BATTLE_PHASES.ENEMY_PHASE);
     this.enemies.forEach(enemy => {
+      if (!this.enemies.includes(enemy)) return;
       for (let moves = 0; moves < enemy.agility; moves++) this.moveEnemy(enemy);
       this.enemyAttackAdjacent(enemy);
       
@@ -491,23 +491,21 @@ export class BattleEngine {
     if (this.transitioningLevel) return;
     this.setPhase(BATTLE_PHASES.PLAYER_TURN_END);
     this.turnCounter++;
-    this.applyStatusEffects();
-    const liveHeroes = this.getLiveHeroes();
-    if (liveHeroes.length === 0) {
-      this.logCallback('All heroes defeated! Game Over.');
-      this.setPhase(BATTLE_PHASES.DEFEAT);
-      if (typeof this.onGameOver === 'function') this.onGameOver();
-      return;
-    }
     this.awaitingAttackDirection = false;
     do {
       this.currentUnit++;
       if (this.currentUnit >= this.party.length) {
         this.currentUnit = 0;
+        this.applyStatusEffects();
+        if (this.getLiveHeroes().length === 0) {
+          this.logCallback('All heroes defeated! Game Over.');
+          this.setPhase(BATTLE_PHASES.DEFEAT);
+          if (typeof this.onGameOver === 'function') this.onGameOver();
+          return;
+        }
         runBattleHook(this, ABILITY_HOOKS.ON_TURN_END, { heroes: this.getLiveHeroes() });
         this.logCallback('Enemy turn begins.');
         this.enemyTurn();
-        this.applyStatusEffects();
         if (this.getLiveHeroes().length === 0) {
           this.logCallback('All heroes defeated! Game Over.');
           this.setPhase(BATTLE_PHASES.DEFEAT);
