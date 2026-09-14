@@ -98,8 +98,11 @@ export function validateHeroCollection(heroes = []) {
 export function validateLevelCollection(levels = []) {
   const warnings = [];
   levels.forEach(level => {
-    if (!Number.isFinite(level.level)) warnings.push("A level is missing a numeric level value.");
-    if (!Number.isFinite(level.rows) || !Number.isFinite(level.cols)) {
+    const normalizedLevel = Number(level?.level);
+    const normalizedRows = Number(level?.rows);
+    const normalizedCols = Number(level?.cols);
+    if (!Number.isFinite(normalizedLevel)) warnings.push("A level is missing a numeric level value.");
+    if (!Number.isFinite(normalizedRows) || !Number.isFinite(normalizedCols)) {
       warnings.push(`Level ${level.level ?? "unknown"} is missing grid dimensions.`);
     }
   });

@@ -203,7 +203,7 @@ Summit Mode is an experimental large-map mode implemented separately from the ma
 - **Rise**: A stat that allows a hero to revive with HP equal to the rise value.
 - **Dodge**: A diminishing-returns evasion stat capped at 50% chance.
 - **Bomba**: Bonus damage from adjacent allied heroes when another hero attacks an enemy.
-- **Ghïs**: The default Mode Up fallback stat; it currently has no dedicated combat hook.
+- **ghis**: The default Mode Up fallback stat; it currently has no dedicated combat hook.
 
 ### Credits and Acknowledgments
 - **Game Design**: Zachary Hines, II
