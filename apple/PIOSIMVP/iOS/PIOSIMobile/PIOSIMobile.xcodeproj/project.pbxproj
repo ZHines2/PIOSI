@@ -1,0 +1,295 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A00000010000000000000000 /* PIOSIMobileApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000110000000000000000 /* PIOSIMobileApp.swift */; };
+		A00000020000000000000000 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000120000000000000000 /* ContentView.swift */; };
+		A00000030000000000000000 /* BattleViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000130000000000000000 /* BattleViewModel.swift */; };
+		A00000040000000000000000 /* GridPoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000140000000000000000 /* GridPoint.swift */; };
+		A00000050000000000000000 /* Combatant.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000150000000000000000 /* Combatant.swift */; };
+		A00000060000000000000000 /* GameContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000160000000000000000 /* GameContent.swift */; };
+		A00000070000000000000000 /* GameSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000170000000000000000 /* GameSession.swift */; };
+		A00000080000000000000000 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A00000180000000000000000 /* Assets.xcassets */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		A00000110000000000000000 /* PIOSIMobileApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PIOSIMobileApp.swift; sourceTree = "<group>"; };
+		A00000120000000000000000 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		A00000130000000000000000 /* BattleViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BattleViewModel.swift; sourceTree = "<group>"; };
+		A00000140000000000000000 /* GridPoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GridPoint.swift; sourceTree = "<group>"; };
+		A00000150000000000000000 /* Combatant.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Combatant.swift; sourceTree = "<group>"; };
+		A00000160000000000000000 /* GameContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameContent.swift; sourceTree = "<group>"; };
+		A00000170000000000000000 /* GameSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameSession.swift; sourceTree = "<group>"; };
+		A00000180000000000000000 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A00000190000000000000000 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A00000200000000000000000 /* PIOSIMobile.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PIOSIMobile.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A00000210000000000000000 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		A00000220000000000000000 = {
+			isa = PBXGroup;
+			children = (
+				A00000230000000000000000 /* PIOSIMobile */,
+				A00000240000000000000000 /* Shared */,
+				A00000250000000000000000 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		A00000230000000000000000 /* PIOSIMobile */ = {
+			isa = PBXGroup;
+			children = (
+				A00000110000000000000000 /* PIOSIMobileApp.swift */,
+				A00000120000000000000000 /* ContentView.swift */,
+				A00000130000000000000000 /* BattleViewModel.swift */,
+				A00000180000000000000000 /* Assets.xcassets */,
+				A00000190000000000000000 /* Info.plist */,
+			);
+			path = PIOSIMobile;
+			sourceTree = "<group>";
+		};
+		A00000240000000000000000 /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				A00000140000000000000000 /* GridPoint.swift */,
+				A00000150000000000000000 /* Combatant.swift */,
+				A00000160000000000000000 /* GameContent.swift */,
+				A00000170000000000000000 /* GameSession.swift */,
+			);
+			path = ../../Shared/PIOSICore;
+			sourceTree = "<group>";
+		};
+		A00000250000000000000000 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A00000200000000000000000 /* PIOSIMobile.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		A00000260000000000000000 /* PIOSIMobile */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A00000270000000000000000 /* Build configuration list for PBXNativeTarget "PIOSIMobile" */;
+			buildPhases = (
+				A00000280000000000000000 /* Sources */,
+				A00000210000000000000000 /* Frameworks */,
+				A00000290000000000000000 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = PIOSIMobile;
+			productName = PIOSIMobile;
+			productReference = A00000200000000000000000 /* PIOSIMobile.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A00000300000000000000000 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1600;
+				LastUpgradeCheck = 1600;
+				TargetAttributes = {
+					A00000260000000000000000 = {
+						CreatedOnToolsVersion = 16.0;
+					};
+				};
+			};
+			buildConfigurationList = A00000310000000000000000 /* Build configuration list for PBXProject "PIOSIMobile" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = A00000220000000000000000;
+			productRefGroup = A00000250000000000000000 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A00000260000000000000000 /* PIOSIMobile */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		A00000290000000000000000 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A00000080000000000000000 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A00000280000000000000000 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A00000010000000000000000 /* PIOSIMobileApp.swift in Sources */,
+				A00000020000000000000000 /* ContentView.swift in Sources */,
+				A00000030000000000000000 /* BattleViewModel.swift in Sources */,
+				A00000040000000000000000 /* GridPoint.swift in Sources */,
+				A00000050000000000000000 /* Combatant.swift in Sources */,
+				A00000060000000000000000 /* GameContent.swift in Sources */,
+				A00000070000000000000000 /* GameSession.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		A00000320000000000000000 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		A00000330000000000000000 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		A00000340000000000000000 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = PIOSIMobile/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.zhines2.piosi.mobilemvp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		A00000350000000000000000 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = PIOSIMobile/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.zhines2.piosi.mobilemvp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		A00000270000000000000000 /* Build configuration list for PBXNativeTarget "PIOSIMobile" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A00000340000000000000000 /* Debug */,
+				A00000350000000000000000 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A00000310000000000000000 /* Build configuration list for PBXProject "PIOSIMobile" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A00000320000000000000000 /* Debug */,
+				A00000330000000000000000 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = A00000300000000000000000 /* Project object */;
+}
