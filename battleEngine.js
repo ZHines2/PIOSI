@@ -63,6 +63,8 @@ export class BattleEngine {
     }
     this.awaitingAttackDirection = false;
     this.transitioningLevel = false;
+    this.deferKillHooks = false;
+    this.deferredKillEvents = [];
 
     // Initialize status effects for all heroes and enemies.
     this.party.forEach(hero => {
@@ -496,14 +498,16 @@ export class BattleEngine {
       this.currentUnit++;
       if (this.currentUnit >= this.party.length) {
         this.currentUnit = 0;
+        this.deferKillHooks = true;
+        runBattleHook(this, ABILITY_HOOKS.ON_TURN_END, { heroes: this.getLiveHeroes() });
         this.applyStatusEffects();
+        this.flushDeferredKillHooks();
         if (this.getLiveHeroes().length === 0) {
           this.logCallback('All heroes defeated! Game Over.');
           this.setPhase(BATTLE_PHASES.DEFEAT);
           if (typeof this.onGameOver === 'function') this.onGameOver();
           return;
         }
-        runBattleHook(this, ABILITY_HOOKS.ON_TURN_END, { heroes: this.getLiveHeroes() });
         this.logCallback('Enemy turn begins.');
         this.enemyTurn();
         if (this.getLiveHeroes().length === 0) {
@@ -551,7 +555,20 @@ export class BattleEngine {
     this.logCallback(message);
     this.battlefield[enemy.y][enemy.x] = '.';
     this.enemies = this.enemies.filter(e => e !== enemy);
-    if (attacker) runBattleHook(this, ABILITY_HOOKS.ON_KILL, { attacker, target: enemy, cause });
+    if (!attacker) return;
+    const killContext = { attacker, target: enemy, cause };
+    if (this.deferKillHooks) {
+      this.deferredKillEvents.push(killContext);
+      return;
+    }
+    runBattleHook(this, ABILITY_HOOKS.ON_KILL, killContext);
+  }
+
+  flushDeferredKillHooks() {
+    const deferredEvents = this.deferredKillEvents;
+    this.deferredKillEvents = [];
+    this.deferKillHooks = false;
+    deferredEvents.forEach(context => runBattleHook(this, ABILITY_HOOKS.ON_KILL, context));
   }
 
   // Updated handleHeroDeath method to ensure a dead hero's cell is cleared.
