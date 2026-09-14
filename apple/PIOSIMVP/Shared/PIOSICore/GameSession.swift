@@ -56,14 +56,14 @@ public struct EncounterState: Equatable, Sendable {
     }
 
     public func tile(at point: GridPoint) -> BoardTile {
-        if point.y == level.rows - 1 {
-            return .wall
-        }
         if let hero = heroes.first(where: { $0.isAlive && $0.position == point }) {
             return .hero(hero, isActive: hero.id == activeHero?.id)
         }
         if let enemy = enemies.first(where: { $0.isAlive && $0.position == point }) {
             return .enemy(enemy)
+        }
+        if point.y == level.rows - 1 {
+            return .wall
         }
         return .empty
     }
@@ -250,7 +250,10 @@ public struct GameSession: Equatable, Sendable {
             Combatant(
                 blueprint: enemy,
                 team: .enemy,
-                position: enemy.startingPosition ?? GridPoint(x: level.columns - 2, y: max(0, level.rows / 2 - 1))
+                position: sanitizedEnemyStart(
+                    enemy.startingPosition ?? GridPoint(x: level.columns - 2, y: max(0, level.rows / 2 - 1)),
+                    level: level
+                )
             )
         }
         let firstActiveIndex = seededHeroes.firstIndex(where: \.isAlive) ?? 0
@@ -305,6 +308,13 @@ public struct GameSession: Equatable, Sendable {
         !isWall(point, level: encounter.level)
             && !encounter.heroes.contains(where: { $0.isAlive && $0.position == point })
             && !encounter.enemies.contains(where: { $0.isAlive && $0.position == point })
+    }
+
+    private func sanitizedEnemyStart(_ point: GridPoint, level: LevelDefinition) -> GridPoint {
+        let safeX = min(max(point.x, 0), max(level.columns - 1, 0))
+        let highestWalkableRow = max(level.rows - 2, 0)
+        let safeY = min(max(point.y, 0), highestWalkableRow)
+        return GridPoint(x: safeX, y: safeY)
     }
 
     private mutating func damageWall(with amount: Int, heroName: String, encounter: inout EncounterState) {

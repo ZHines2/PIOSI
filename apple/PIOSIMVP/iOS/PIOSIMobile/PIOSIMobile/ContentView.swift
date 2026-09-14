@@ -116,7 +116,7 @@ private struct BattleScreen: View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Move")
                 .font(.headline)
-            DPad(centerTitle: "Wait") { direction in
+            DPad(centerTitle: "Wait", actionLabelPrefix: "Move") { direction in
                 if let direction {
                     viewModel.move(direction)
                 } else {
@@ -126,7 +126,7 @@ private struct BattleScreen: View {
 
             Text("Attack")
                 .font(.headline)
-            DPad(centerTitle: "End") { direction in
+            DPad(centerTitle: "End", actionLabelPrefix: "Attack") { direction in
                 if let direction {
                     viewModel.attack(direction)
                 } else {
@@ -166,6 +166,8 @@ private struct BattleScreen: View {
         }
         .padding(14)
         .background(RoundedRectangle(cornerRadius: 18, style: .continuous).fill(Color.white.opacity(0.06)))
+        .accessibilityElement(children: .contain)
+        .accessibilityLiveRegion(.polite)
     }
 }
 
@@ -224,24 +226,27 @@ private struct BoardCell: View {
 
 private struct DPad: View {
     let centerTitle: String
+    let actionLabelPrefix: String
     let action: (GridPoint?) -> Void
 
     var body: some View {
         VStack(spacing: 8) {
-            padButton(title: "▲", direction: .up)
+            padButton(title: "▲", direction: .up, accessibilityLabel: "\(actionLabelPrefix) up")
             HStack(spacing: 8) {
-                padButton(title: "◀", direction: .left)
+                padButton(title: "◀", direction: .left, accessibilityLabel: "\(actionLabelPrefix) left")
                 Button(centerTitle) { action(nil) }
                     .buttonStyle(ControlPadButtonStyle())
-                padButton(title: "▶", direction: .right)
+                    .accessibilityLabel(centerTitle == "Wait" ? "Wait and end turn" : "End turn")
+                padButton(title: "▶", direction: .right, accessibilityLabel: "\(actionLabelPrefix) right")
             }
-            padButton(title: "▼", direction: .down)
+            padButton(title: "▼", direction: .down, accessibilityLabel: "\(actionLabelPrefix) down")
         }
     }
 
-    private func padButton(title: String, direction: GridPoint) -> some View {
+    private func padButton(title: String, direction: GridPoint, accessibilityLabel: String) -> some View {
         Button(title) { action(direction) }
             .buttonStyle(ControlPadButtonStyle())
+            .accessibilityLabel(accessibilityLabel)
     }
 }
 

@@ -96,4 +96,31 @@ final class GameSessionTests: XCTestCase {
         XCTAssertEqual(session.encounter?.enemies.first?.position, GridPoint(x: 0, y: 1))
         XCTAssertEqual(session.encounter?.heroes.first?.hp, 9)
     }
+
+    func testEnemySpawnIsClampedOffWallRow() {
+        let content = GameContent(
+            starterHeroes: [
+                CombatantBlueprint(id: "hero", name: "Hero", symbol: "H", attack: 2, range: 1, agility: 1, maxHP: 10)
+            ],
+            levels: [
+                LevelDefinition(
+                    id: 1,
+                    title: "Spawn Clamp",
+                    summary: "Enemies should never begin inside the wall row.",
+                    rows: 4,
+                    columns: 4,
+                    wallHP: 20,
+                    enemies: [
+                        CombatantBlueprint(id: "enemy", name: "Enemy", symbol: "E", attack: 1, range: 1, agility: 1, maxHP: 5, startingPosition: GridPoint(x: 2, y: 3))
+                    ]
+                )
+            ]
+        )
+        var session = GameSession(content: content)
+        session.continuePrimaryAction()
+        session.continuePrimaryAction()
+
+        XCTAssertEqual(session.encounter?.enemies.first?.position, GridPoint(x: 2, y: 2))
+        XCTAssertEqual(session.encounter?.tile(at: GridPoint(x: 2, y: 2)), .enemy(session.encounter!.enemies.first!))
+    }
 }
