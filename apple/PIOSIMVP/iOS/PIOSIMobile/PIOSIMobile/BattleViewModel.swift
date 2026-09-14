@@ -26,18 +26,24 @@ final class BattleViewModel: ObservableObject {
     }
 
     func triggerPrimaryAction() {
-        session.continuePrimaryAction()
+        updateSession { $0.continuePrimaryAction() }
     }
 
     func move(_ delta: GridPoint) {
-        session.moveActiveHero(by: delta)
+        updateSession { $0.moveActiveHero(by: delta) }
     }
 
     func attack(_ delta: GridPoint) {
-        session.attack(in: delta)
+        updateSession { $0.attack(in: delta) }
     }
 
     func endTurn() {
-        session.endTurn()
+        updateSession { $0.endTurn() }
+    }
+
+    private func updateSession(_ mutate: (inout GameSession) -> Void) {
+        var updatedSession = session
+        mutate(&updatedSession)
+        session = updatedSession
     }
 }
