@@ -377,7 +377,7 @@ export class BattleEngine {
   enemyTurn() {
     if (this.transitioningLevel) return;
     this.setPhase(BATTLE_PHASES.ENEMY_PHASE);
-    this.enemies.forEach(enemy => {
+    [...this.enemies].forEach(enemy => {
       if (!this.enemies.includes(enemy)) return;
       for (let moves = 0; moves < enemy.agility; moves++) this.moveEnemy(enemy);
       this.enemyAttackAdjacent(enemy);
@@ -494,6 +494,12 @@ export class BattleEngine {
     this.setPhase(BATTLE_PHASES.PLAYER_TURN_END);
     this.turnCounter++;
     this.awaitingAttackDirection = false;
+    if (this.getLiveHeroes().length === 0) {
+      this.logCallback('All heroes defeated! Game Over.');
+      this.setPhase(BATTLE_PHASES.DEFEAT);
+      if (typeof this.onGameOver === 'function') this.onGameOver();
+      return;
+    }
     do {
       this.currentUnit++;
       if (this.currentUnit >= this.party.length) {

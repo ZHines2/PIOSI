@@ -104,7 +104,7 @@ export function createSeededRng(seed = Date.now()) {
 export function normalizeCombatant(unit, { fallbackId = "unit", team = "neutral" } = {}) {
   const source = unit ?? {};
   const normalized = { ...source };
-  normalized.id = normalized.id ?? slugifyId(normalized.name, fallbackId);
+  normalized.id = slugifyId(normalized.id ?? normalized.name, fallbackId);
   normalized.team = normalized.team ?? team;
   normalized.statusEffects = normalized.statusEffects && typeof normalized.statusEffects === "object"
     ? { ...normalized.statusEffects }
