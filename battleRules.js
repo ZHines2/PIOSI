@@ -162,7 +162,7 @@ const RULES = [
     id: "bomba",
     hook: ABILITY_HOOKS.ON_ATTACK_TARGET_ENEMY,
     when: () => true,
-    execute: ({ target }, engine) => {
+    execute: ({ attacker, target }, engine) => {
       const adjacentOffsets = [
         { x: -1, y: 0 }, { x: 1, y: 0 },
         { x: 0, y: -1 }, { x: 0, y: 1 }
@@ -170,7 +170,7 @@ const RULES = [
       adjacentOffsets.forEach(offset => {
         const adjX = target.x + offset.x;
         const adjY = target.y + offset.y;
-        const adjacentHero = engine.getLiveHeroes().find(h => h.x === adjX && h.y === adjY && h.bomba > 0);
+        const adjacentHero = engine.getLiveHeroes().find(h => h.x === adjX && h.y === adjY && h.bomba > 0 && h !== attacker);
         if (adjacentHero) {
           target.hp -= adjacentHero.bomba;
           engine.logCallback(`${adjacentHero.name}'s bomba deals ${adjacentHero.bomba} additional damage to ${target.name}! (HP left: ${target.hp})`);
