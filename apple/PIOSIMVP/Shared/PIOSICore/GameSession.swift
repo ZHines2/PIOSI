@@ -104,7 +104,7 @@ public struct GameSession: Equatable, Sendable {
     public mutating func moveActiveHero(by delta: GridPoint) {
         guard screen == .battle, var encounter else { return }
         guard let activeHero = encounter.activeHero, activeHero.isAlive else {
-            finishDefeat(levelIndex: currentLevelIndex ?? 0)
+            finishDefeat(levelIndex: currentLevelIndex ?? 0, encounter: encounter)
             return
         }
         guard encounter.remainingMovePoints > 0 else {
@@ -329,7 +329,7 @@ public struct GameSession: Equatable, Sendable {
 
     private mutating func advanceTurn(encounter: inout EncounterState) {
         if encounter.liveHeroes.isEmpty {
-            finishDefeat(levelIndex: currentLevelIndex ?? 0)
+            finishDefeat(levelIndex: currentLevelIndex ?? 0, encounter: encounter)
             return
         }
 
@@ -339,7 +339,7 @@ public struct GameSession: Equatable, Sendable {
                 encounter.turnCount += 1
                 runEnemyPhase(encounter: &encounter)
                 if encounter.liveHeroes.isEmpty {
-                    finishDefeat(levelIndex: currentLevelIndex ?? 0)
+                    finishDefeat(levelIndex: currentLevelIndex ?? 0, encounter: encounter)
                     return
                 }
                 nextIndex = 0
@@ -397,7 +397,18 @@ public struct GameSession: Equatable, Sendable {
 
     private func nearestHero(to enemy: Combatant, in encounter: EncounterState) -> Combatant? {
         encounter.liveHeroes.min { lhs, rhs in
-            lhs.position.manhattanDistance(to: enemy.position) < rhs.position.manhattanDistance(to: enemy.position)
+            let lhsDistance = lhs.position.manhattanDistance(to: enemy.position)
+            let rhsDistance = rhs.position.manhattanDistance(to: enemy.position)
+            if lhsDistance != rhsDistance {
+                return lhsDistance < rhsDistance
+            }
+            if lhs.position.y != rhs.position.y {
+                return lhs.position.y < rhs.position.y
+            }
+            if lhs.position.x != rhs.position.x {
+                return lhs.position.x < rhs.position.x
+            }
+            return lhs.id < rhs.id
         }
     }
 
@@ -442,8 +453,10 @@ public struct GameSession: Equatable, Sendable {
         screen = .briefing(levelIndex: nextLevelIndex)
     }
 
-    private mutating func finishDefeat(levelIndex: Int) {
-        encounter = nil
+    private mutating func finishDefeat(levelIndex: Int, encounter: EncounterState? = nil) {
+        if let encounter {
+            self.encounter = encounter
+        }
         screen = .defeat(levelIndex: levelIndex)
     }
 

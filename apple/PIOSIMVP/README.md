@@ -43,5 +43,5 @@ swift test
 To open the iPhone shell in Xcode on macOS, use:
 
 ```bash
-open /home/runner/work/PIOSI/PIOSI/apple/PIOSIMVP/iOS/PIOSIMobile/PIOSIMobile.xcodeproj
+open apple/PIOSIMVP/iOS/PIOSIMobile/PIOSIMobile.xcodeproj
 ```

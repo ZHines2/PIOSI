@@ -65,4 +65,35 @@ final class GameSessionTests: XCTestCase {
         XCTAssertEqual(session.encounter?.enemies.first?.position, GridPoint(x: 1, y: 0))
         XCTAssertEqual(session.encounter?.heroes.first?.hp, 7)
     }
+
+    func testEnemyTargetingBreaksDistanceTiesDeterministically() {
+        let content = GameContent(
+            starterHeroes: [
+                CombatantBlueprint(id: "left-hero", name: "Left", symbol: "L", attack: 2, range: 1, agility: 1, maxHP: 10),
+                CombatantBlueprint(id: "right-hero", name: "Right", symbol: "R", attack: 2, range: 1, agility: 1, maxHP: 10)
+            ],
+            levels: [
+                LevelDefinition(
+                    id: 1,
+                    title: "Tie Test",
+                    summary: "Enemy should favor the upper-left hero when distance ties.",
+                    rows: 4,
+                    columns: 3,
+                    wallHP: 99,
+                    enemies: [
+                        CombatantBlueprint(id: "enemy", name: "Enemy", symbol: "E", attack: 1, range: 1, agility: 1, maxHP: 5, startingPosition: GridPoint(x: 1, y: 1))
+                    ]
+                )
+            ]
+        )
+        var session = GameSession(content: content)
+        session.continuePrimaryAction()
+        session.continuePrimaryAction()
+
+        session.endTurn()
+        session.moveActiveHero(by: .right)
+
+        XCTAssertEqual(session.encounter?.enemies.first?.position, GridPoint(x: 0, y: 1))
+        XCTAssertEqual(session.encounter?.heroes.first?.hp, 9)
+    }
 }

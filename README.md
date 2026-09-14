@@ -7,7 +7,7 @@ PIOSI CORE is a clean, data-driven version of the game designed to be wrapped wi
 
 ## Swift MVP
 
-A first-pass, mobile-first Swift starter now lives in `/home/runner/work/PIOSI/PIOSI/apple/PIOSIMVP`.
+A first-pass, mobile-first Swift starter now lives in `apple/PIOSIMVP`.
 
 - `Shared/PIOSICore/` contains the lite campaign state/model layer.
 - `iOS/PIOSIMobile/` contains the SwiftUI iPhone shell.
