@@ -46,7 +46,10 @@ const DEFAULT_MANIFEST = {
   coreLevels: 3
 };
 
+let staticLevelsCache = null;
+
 function getStaticLevels() {
+  if (staticLevelsCache) return staticLevelsCache;
   const levels = [];
   const seen = new Set();
   for (let levelNumber = 1; levelNumber <= 99; levelNumber++) {
@@ -55,7 +58,8 @@ function getStaticLevels() {
     levels.push(level);
     seen.add(level.level);
   }
-  return levels;
+  staticLevelsCache = levels;
+  return staticLevelsCache;
 }
 
 /**

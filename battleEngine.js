@@ -516,6 +516,7 @@ export class BattleEngine {
         }
         this.logCallback('Enemy turn begins.');
         this.enemyTurn();
+        this.flushDeferredKillHooks();
         if (this.getLiveHeroes().length === 0) {
           this.logCallback('All heroes defeated! Game Over.');
           this.setPhase(BATTLE_PHASES.DEFEAT);
