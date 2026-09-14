@@ -492,7 +492,6 @@ export class BattleEngine {
     this.setPhase(BATTLE_PHASES.PLAYER_TURN_END);
     this.turnCounter++;
     this.applyStatusEffects();
-    runBattleHook(this, ABILITY_HOOKS.ON_TURN_END, { heroes: this.getLiveHeroes() });
     const liveHeroes = this.getLiveHeroes();
     if (liveHeroes.length === 0) {
       this.logCallback('All heroes defeated! Game Over.');
@@ -505,6 +504,7 @@ export class BattleEngine {
       this.currentUnit++;
       if (this.currentUnit >= this.party.length) {
         this.currentUnit = 0;
+        runBattleHook(this, ABILITY_HOOKS.ON_TURN_END, { heroes: this.getLiveHeroes() });
         this.logCallback('Enemy turn begins.');
         this.enemyTurn();
         this.applyStatusEffects();
