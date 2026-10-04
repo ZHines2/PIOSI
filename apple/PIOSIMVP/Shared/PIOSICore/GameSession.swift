@@ -119,7 +119,14 @@ public struct GameSession: Equatable, Sendable {
         self.completedEncounterCount = savedWins
         self.screen = .title
         self.encounter = nil
-        persistCampaignProgress()
+        let restoredProgress = CampaignProgress(
+            selectedHeroIDs: selectedHeroes.map(\.id),
+            unlockedHeroIDs: unlockedHeroes.map(\.id),
+            completedEncounterCount: completedEncounterCount
+        )
+        if restoredProgress != savedProgress {
+            progressStore.save(restoredProgress)
+        }
     }
 
     public static func == (lhs: GameSession, rhs: GameSession) -> Bool {
@@ -546,6 +553,7 @@ public struct GameSession: Equatable, Sendable {
     }
 
     private mutating func restartCampaign() {
+        let previousSelection = selectedHeroes
         let availableHeroIDs = Set(availableHeroes.map(\.id))
         selectedHeroes = Array(selectedHeroes
             .filter { availableHeroIDs.contains($0.id) }
@@ -560,6 +568,9 @@ public struct GameSession: Equatable, Sendable {
         currentLevelIndex = nil
         encounter = nil
         screen = .title
+        if selectedHeroes != previousSelection {
+            persistCampaignProgress()
+        }
     }
 
     private func persistCampaignProgress() {

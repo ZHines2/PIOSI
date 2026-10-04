@@ -65,6 +65,22 @@ final class GameSessionTests: XCTestCase {
         XCTAssertEqual(session.selectedHeroes.map(\.id), ["archer", "wizard", "rogue"])
     }
 
+    func testCorruptStoredProgressFallsBackToStarterParty() throws {
+        let suiteName = "PIOSIProgressCorruptTests-\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        defaults.set(Data("invalid progress".utf8), forKey: UserDefaultsCampaignProgressStore.storageKey)
+
+        let session = GameSession(
+            content: .mvp,
+            progressStore: UserDefaultsCampaignProgressStore(suiteName: suiteName)
+        )
+
+        XCTAssertEqual(session.selectedHeroes.map(\.id), ["knight", "archer", "rogue"])
+        XCTAssertTrue(session.unlockedHeroes.isEmpty)
+        XCTAssertEqual(session.completedEncounterCount, 0)
+    }
+
     func testUnlockableHeroClampsRequiredWinsToMinimumOfOne() {
         let wizard = GameContent.mvp.unlockableHeroes[0].hero
 

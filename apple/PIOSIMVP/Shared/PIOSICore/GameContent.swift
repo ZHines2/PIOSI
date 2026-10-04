@@ -39,11 +39,20 @@ public struct UnlockableHero: Equatable, Sendable {
 }
 
 public struct CampaignProgress: Codable, Equatable, Sendable {
+    public static let currentSchemaVersion = 1
+
+    public let schemaVersion: Int
     public let selectedHeroIDs: [String]
     public let unlockedHeroIDs: [String]
     public let completedEncounterCount: Int
 
-    public init(selectedHeroIDs: [String], unlockedHeroIDs: [String], completedEncounterCount: Int) {
+    public init(
+        schemaVersion: Int = CampaignProgress.currentSchemaVersion,
+        selectedHeroIDs: [String],
+        unlockedHeroIDs: [String],
+        completedEncounterCount: Int
+    ) {
+        self.schemaVersion = schemaVersion
         self.selectedHeroIDs = selectedHeroIDs
         self.unlockedHeroIDs = unlockedHeroIDs
         self.completedEncounterCount = max(0, completedEncounterCount)
@@ -63,7 +72,7 @@ public struct NoopCampaignProgressStore: CampaignProgressStore {
 }
 
 public struct UserDefaultsCampaignProgressStore: CampaignProgressStore {
-    private static let storageKey = "p_ios_i_campaign_progress_v1"
+    static let storageKey = "p_ios_i_campaign_progress_v1"
     private let suiteName: String?
 
     public init(suiteName: String? = nil) {
@@ -72,7 +81,11 @@ public struct UserDefaultsCampaignProgressStore: CampaignProgressStore {
 
     public func load() -> CampaignProgress? {
         guard let data = defaults?.data(forKey: Self.storageKey) else { return nil }
-        return try? JSONDecoder().decode(CampaignProgress.self, from: data)
+        guard let progress = try? JSONDecoder().decode(CampaignProgress.self, from: data),
+              progress.schemaVersion == CampaignProgress.currentSchemaVersion else {
+            return nil
+        }
+        return progress
     }
 
     public func save(_ progress: CampaignProgress) {
