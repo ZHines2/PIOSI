@@ -93,6 +93,8 @@ public final class UserDefaultsCampaignProgressStore: CampaignProgressStore, @un
     }
 
     public func load() -> CampaignProgress? {
+        lock.lock()
+        defer { lock.unlock() }
         guard let data = defaults?.data(forKey: Self.storageKey) else { return nil }
         guard let progress = try? JSONDecoder().decode(CampaignProgress.self, from: data),
               progress.schemaVersion == CampaignProgress.currentSchemaVersion else {

@@ -96,11 +96,8 @@ public struct GameSession: Equatable, Sendable {
         let savedProgress = progressStore.load()
         let savedWins = max(0, savedProgress?.completedEncounterCount ?? 0)
         let savedUnlockIDs = Set(savedProgress?.unlockedHeroIDs ?? [])
-        self.unlockedHeroes = Self.resolvedUnlockedHeroes(
-            in: content,
-            unlockedHeroIDs: savedUnlockIDs,
-            completedEncounterCount: savedWins
-        )
+        let eligibleHeroes = Self.unlockableHeroes(in: content, completedEncounterCount: savedWins)
+        self.unlockedHeroes = eligibleHeroes.filter { savedUnlockIDs.contains($0.id) }
         let availableHeroes = content.starterHeroes + self.unlockedHeroes
         let heroesByID = Dictionary(availableHeroes.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
         var selected: [CombatantBlueprint] = []
@@ -529,10 +526,10 @@ public struct GameSession: Equatable, Sendable {
         partyRoster = stableHeroSort(encounter.heroes.filter(\.isAlive))
         completedEncounterCount += 1
         let completedLevelIndex = currentLevelIndex ?? 0
-        unlockedHeroes = Self.resolvedUnlockedHeroes(
-            in: content,
-            unlockedHeroIDs: Set(unlockedHeroes.map(\.id)),
-            completedEncounterCount: completedEncounterCount
+        let unlockedHeroIDs = Set(unlockedHeroes.map(\.id))
+        unlockedHeroes.append(
+            contentsOf: Self.unlockableHeroes(in: content, completedEncounterCount: completedEncounterCount)
+                .filter { !unlockedHeroIDs.contains($0.id) }
         )
         persistCampaignProgress()
         self.encounter = encounter
@@ -586,13 +583,12 @@ public struct GameSession: Equatable, Sendable {
         )
     }
 
-    private static func resolvedUnlockedHeroes(
+    private static func unlockableHeroes(
         in content: GameContent,
-        unlockedHeroIDs: Set<String>,
         completedEncounterCount: Int
     ) -> [CombatantBlueprint] {
         content.unlockableHeroes
-            .filter { unlockedHeroIDs.contains($0.hero.id) || $0.requiredEncounterWins <= completedEncounterCount }
+            .filter { $0.requiredEncounterWins <= completedEncounterCount }
             .map(\.hero)
     }
 

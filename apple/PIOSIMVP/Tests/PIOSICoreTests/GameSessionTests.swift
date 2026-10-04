@@ -65,6 +65,22 @@ final class GameSessionTests: XCTestCase {
         XCTAssertEqual(session.selectedHeroes.map(\.id), ["archer", "wizard", "rogue"])
     }
 
+    func testSavedUnlockIDDoesNotBypassWinRequirement() {
+        let store = FixedCampaignProgressStore(
+            progress: CampaignProgress(
+                selectedHeroIDs: ["wizard", "archer", "rogue"],
+                unlockedHeroIDs: ["wizard"],
+                completedEncounterCount: 0
+            )
+        )
+
+        let session = GameSession(content: wizardUnlockContent(), progressStore: store)
+
+        XCTAssertTrue(session.unlockedHeroes.isEmpty)
+        XCTAssertFalse(session.availableHeroes.contains(where: { $0.id == "wizard" }))
+        XCTAssertFalse(session.selectedHeroes.contains(where: { $0.id == "wizard" }))
+    }
+
     func testCorruptStoredProgressFallsBackToStarterParty() throws {
         let suiteName = "PIOSIProgressCorruptTests-\(UUID().uuidString)"
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
@@ -92,6 +108,7 @@ final class GameSessionTests: XCTestCase {
             unlockedHeroIDs: ["wizard"],
             completedEncounterCount: 2
         )
+        // The pre-existing instance must notice a newer record written after initialization.
         UserDefaultsCampaignProgressStore(suiteName: suiteName).save(unsupportedProgress)
 
         var session = GameSession(content: .mvp, progressStore: store)
