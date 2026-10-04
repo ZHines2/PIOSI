@@ -71,16 +71,20 @@ public struct NoopCampaignProgressStore: CampaignProgressStore {
     public func save(_ progress: CampaignProgress) {}
 }
 
-public struct UserDefaultsCampaignProgressStore: CampaignProgressStore {
+public final class UserDefaultsCampaignProgressStore: CampaignProgressStore, @unchecked Sendable {
     static let storageKey = "piosi.campaignProgress"
-    private let suiteName: String?
+    private let defaults: UserDefaults
 
     public init(suiteName: String? = nil) {
-        self.suiteName = suiteName
+        if let suiteName {
+            self.defaults = UserDefaults(suiteName: suiteName) ?? .standard
+        } else {
+            self.defaults = .standard
+        }
     }
 
     public func load() -> CampaignProgress? {
-        guard let data = defaults?.data(forKey: Self.storageKey) else { return nil }
+        guard let data = defaults.data(forKey: Self.storageKey) else { return nil }
         guard let progress = try? JSONDecoder().decode(CampaignProgress.self, from: data),
               progress.schemaVersion == CampaignProgress.currentSchemaVersion else {
             return nil
@@ -89,13 +93,20 @@ public struct UserDefaultsCampaignProgressStore: CampaignProgressStore {
     }
 
     public func save(_ progress: CampaignProgress) {
-        guard let defaults, let data = try? JSONEncoder().encode(progress) else { return }
+        if let data = defaults.data(forKey: Self.storageKey),
+           let existingVersion = try? JSONDecoder().decode(CampaignProgressSchema.self, from: data).schemaVersion,
+           existingVersion > CampaignProgress.currentSchemaVersion {
+            return
+        }
+        guard let data = try? JSONEncoder().encode(progress) else {
+            assertionFailure("Campaign progress could not be encoded.")
+            return
+        }
         defaults.set(data, forKey: Self.storageKey)
     }
 
-    private var defaults: UserDefaults? {
-        guard let suiteName else { return .standard }
-        return UserDefaults(suiteName: suiteName)
+    private struct CampaignProgressSchema: Decodable {
+        let schemaVersion: Int
     }
 }
 
