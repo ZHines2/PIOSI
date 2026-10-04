@@ -82,6 +82,7 @@ struct ContentView: View {
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("\(isSelected ? "Remove" : "Add") \(hero.name) \(isSelected ? "from" : "to") squad")
+                .accessibilityAddTraits(isSelected ? .isSelected : [])
             }
         }
     }

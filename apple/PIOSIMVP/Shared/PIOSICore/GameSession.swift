@@ -70,8 +70,6 @@ public struct EncounterState: Equatable, Sendable {
 }
 
 public struct GameSession: Equatable, Sendable {
-    private static let maxPartySize = 3
-
     public let content: GameContent
     public private(set) var selectedHeroes: [CombatantBlueprint]
     public private(set) var unlockedHeroes: [CombatantBlueprint]
@@ -85,12 +83,12 @@ public struct GameSession: Equatable, Sendable {
         content.starterHeroes + unlockedHeroes
     }
     public var partySizeLimit: Int {
-        min(Self.maxPartySize, availableHeroes.count)
+        min(content.partySizeLimit, availableHeroes.count)
     }
 
     public init(content: GameContent = .mvp) {
         self.content = content
-        self.selectedHeroes = Array(content.starterHeroes.prefix(Self.maxPartySize))
+        self.selectedHeroes = Array(content.starterHeroes.prefix(content.partySizeLimit))
         self.unlockedHeroes = []
         self.partyRoster = []
         self.currentLevelIndex = nil

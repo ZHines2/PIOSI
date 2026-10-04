@@ -40,15 +40,18 @@ public struct UnlockableHero: Equatable, Sendable {
 
 public struct GameContent: Equatable, Sendable {
     public let starterHeroes: [CombatantBlueprint]
+    public let partySizeLimit: Int
     public let unlockableHeroes: [UnlockableHero]
     public let levels: [LevelDefinition]
 
     public init(
         starterHeroes: [CombatantBlueprint],
+        partySizeLimit: Int = 3,
         unlockableHeroes: [UnlockableHero] = [],
         levels: [LevelDefinition]
     ) {
         self.starterHeroes = starterHeroes
+        self.partySizeLimit = max(1, min(partySizeLimit, starterHeroes.count))
         self.unlockableHeroes = unlockableHeroes
         self.levels = levels
     }

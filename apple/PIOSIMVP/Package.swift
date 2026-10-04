@@ -19,5 +19,6 @@ let package = Package(
             dependencies: ["PIOSICore"],
             path: "Tests/PIOSICoreTests"
         )
-    ]
+    ],
+    swiftLanguageModes: [.v5]
 )

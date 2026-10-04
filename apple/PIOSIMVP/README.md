@@ -11,7 +11,7 @@ This folder contains a first-pass, mobile-first Swift starter that sits beside t
 
 ## Lite campaign scope
 
-The MVP keeps one narrow playable path from the current web app. The starting squad is Knight, Archer, and Rogue; winning the first two encounters unlocks Wizard for later squad selection.
+The MVP keeps one narrow playable path from the current web app. The starting squad is Knight, Archer, and Rogue; winning the first two encounters unlocks Wizard for later squad selection. Unlocks and win progress survive campaign restarts during the current app session; persistent save data remains deferred.
 
 1. Title card
 2. Level briefing
