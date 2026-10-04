@@ -46,6 +46,8 @@ final class GameSessionTests: XCTestCase {
         XCTAssertEqual(restoredSession.unlockedHeroes.map(\.id), ["wizard"])
         XCTAssertEqual(restoredSession.selectedHeroes.map(\.id), ["archer", "rogue", "wizard"])
         XCTAssertEqual(restoredSession.completedEncounterCount, 2)
+        XCTAssertEqual(restoredSession.screen, .title)
+        XCTAssertNil(restoredSession.encounter)
     }
 
     func testRestoredProgressIgnoresUnknownAndDuplicateHeroIDs() {
