@@ -124,7 +124,7 @@ public struct GameSession: Equatable, Sendable {
             unlockedHeroIDs: unlockedHeroes.map(\.id),
             completedEncounterCount: completedEncounterCount
         )
-        if restoredProgress != savedProgress {
+        if let savedProgress, restoredProgress != savedProgress {
             progressStore.save(restoredProgress)
         }
     }

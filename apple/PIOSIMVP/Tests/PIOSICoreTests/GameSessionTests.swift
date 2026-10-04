@@ -81,6 +81,29 @@ final class GameSessionTests: XCTestCase {
         XCTAssertEqual(session.completedEncounterCount, 0)
     }
 
+    func testUnsupportedProgressVersionFallsBackWithoutOverwritingData() throws {
+        let suiteName = "PIOSIProgressVersionTests-\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let store = UserDefaultsCampaignProgressStore(suiteName: suiteName)
+        let unsupportedProgress = CampaignProgress(
+            schemaVersion: CampaignProgress.currentSchemaVersion + 1,
+            selectedHeroIDs: ["wizard"],
+            unlockedHeroIDs: ["wizard"],
+            completedEncounterCount: 2
+        )
+        store.save(unsupportedProgress)
+
+        let session = GameSession(content: .mvp, progressStore: store)
+
+        XCTAssertEqual(session.selectedHeroes.map(\.id), ["knight", "archer", "rogue"])
+        XCTAssertTrue(session.unlockedHeroes.isEmpty)
+        XCTAssertEqual(session.completedEncounterCount, 0)
+        let storedData = try XCTUnwrap(defaults.data(forKey: UserDefaultsCampaignProgressStore.storageKey))
+        let storedProgress = try JSONDecoder().decode(CampaignProgress.self, from: storedData)
+        XCTAssertEqual(storedProgress.schemaVersion, CampaignProgress.currentSchemaVersion + 1)
+    }
+
     func testUnlockableHeroClampsRequiredWinsToMinimumOfOne() {
         let wizard = GameContent.mvp.unlockableHeroes[0].hero
 

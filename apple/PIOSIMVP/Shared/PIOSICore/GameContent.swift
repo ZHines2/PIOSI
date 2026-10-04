@@ -72,7 +72,7 @@ public struct NoopCampaignProgressStore: CampaignProgressStore {
 }
 
 public struct UserDefaultsCampaignProgressStore: CampaignProgressStore {
-    static let storageKey = "p_ios_i_campaign_progress_v1"
+    static let storageKey = "piosi.campaignProgress"
     private let suiteName: String?
 
     public init(suiteName: String? = nil) {
