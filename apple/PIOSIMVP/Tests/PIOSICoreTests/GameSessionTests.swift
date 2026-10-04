@@ -27,6 +27,42 @@ final class GameSessionTests: XCTestCase {
         XCTAssertEqual(wizardUnlock.requiredEncounterWins, 2)
     }
 
+    func testSessionRecreationRestoresUnlockedWizardAndSelectedParty() throws {
+        let suiteName = "PIOSIProgressTests-\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let store = UserDefaultsCampaignProgressStore(suiteName: suiteName)
+        let content = wizardUnlockContent()
+
+        var firstSession = GameSession(content: content, progressStore: store)
+        winNextEncounter(&firstSession)
+        winNextEncounter(&firstSession)
+        firstSession.continuePrimaryAction()
+        firstSession.toggleHeroSelection("knight")
+        firstSession.toggleHeroSelection("wizard")
+
+        let restoredSession = GameSession(content: content, progressStore: store)
+
+        XCTAssertEqual(restoredSession.unlockedHeroes.map(\.id), ["wizard"])
+        XCTAssertEqual(restoredSession.selectedHeroes.map(\.id), ["archer", "rogue", "wizard"])
+        XCTAssertEqual(restoredSession.completedEncounterCount, 2)
+    }
+
+    func testRestoredProgressIgnoresUnknownAndDuplicateHeroIDs() {
+        let store = FixedCampaignProgressStore(
+            progress: CampaignProgress(
+                selectedHeroIDs: ["archer", "unknown", "archer", "wizard", "rogue"],
+                unlockedHeroIDs: ["unknown", "wizard"],
+                completedEncounterCount: 2
+            )
+        )
+
+        let session = GameSession(content: wizardUnlockContent(), progressStore: store)
+
+        XCTAssertEqual(session.unlockedHeroes.map(\.id), ["wizard"])
+        XCTAssertEqual(session.selectedHeroes.map(\.id), ["archer", "wizard", "rogue"])
+    }
+
     func testUnlockableHeroClampsRequiredWinsToMinimumOfOne() {
         let wizard = GameContent.mvp.unlockableHeroes[0].hero
 
@@ -473,4 +509,11 @@ final class GameSessionTests: XCTestCase {
             levels: levels
         )
     }
+}
+
+private struct FixedCampaignProgressStore: CampaignProgressStore {
+    let progress: CampaignProgress
+
+    func load() -> CampaignProgress? { progress }
+    func save(_ progress: CampaignProgress) {}
 }

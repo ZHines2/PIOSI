@@ -11,7 +11,7 @@ This folder contains a first-pass, mobile-first Swift starter that sits beside t
 
 ## Lite campaign scope
 
-The MVP keeps one narrow playable path from the current web app. The starting squad is Knight, Archer, and Rogue; winning the first two encounters unlocks Wizard for later squad selection. Unlocks and win progress survive campaign restarts during the current app session; persistent save data remains deferred.
+The MVP keeps one narrow playable path from the current web app. The starting squad is Knight, Archer, and Rogue; winning the first two encounters unlocks Wizard for later squad selection. The mobile app saves unlocked heroes, selected squad, and encounter wins across launches. An in-progress battle is not saved.
 
 1. Title card
 2. Level briefing
@@ -31,7 +31,7 @@ Intentionally deferred for phase 2:
 - the rest of the hero roster and advanced party-management options
 - Mode Up, world map, summit mode, and emanations mode
 - advanced ability hooks from `battleRules.js`
-- asset/audio loading, save data, and broader iPad/macOS layouts
+- battle-state saves, asset/audio loading, and broader iPad/macOS layouts
 
 ## Validation
 

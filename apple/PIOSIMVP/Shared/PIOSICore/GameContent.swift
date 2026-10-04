@@ -38,6 +38,54 @@ public struct UnlockableHero: Equatable, Sendable {
     }
 }
 
+public struct CampaignProgress: Codable, Equatable, Sendable {
+    public let selectedHeroIDs: [String]
+    public let unlockedHeroIDs: [String]
+    public let completedEncounterCount: Int
+
+    public init(selectedHeroIDs: [String], unlockedHeroIDs: [String], completedEncounterCount: Int) {
+        self.selectedHeroIDs = selectedHeroIDs
+        self.unlockedHeroIDs = unlockedHeroIDs
+        self.completedEncounterCount = max(0, completedEncounterCount)
+    }
+}
+
+public protocol CampaignProgressStore: Sendable {
+    func load() -> CampaignProgress?
+    func save(_ progress: CampaignProgress)
+}
+
+public struct NoopCampaignProgressStore: CampaignProgressStore {
+    public init() {}
+
+    public func load() -> CampaignProgress? { nil }
+    public func save(_ progress: CampaignProgress) {}
+}
+
+public struct UserDefaultsCampaignProgressStore: CampaignProgressStore {
+    private static let storageKey = "p_ios_i_campaign_progress_v1"
+    private let suiteName: String?
+
+    public init(suiteName: String? = nil) {
+        self.suiteName = suiteName
+    }
+
+    public func load() -> CampaignProgress? {
+        guard let data = defaults?.data(forKey: Self.storageKey) else { return nil }
+        return try? JSONDecoder().decode(CampaignProgress.self, from: data)
+    }
+
+    public func save(_ progress: CampaignProgress) {
+        guard let defaults, let data = try? JSONEncoder().encode(progress) else { return }
+        defaults.set(data, forKey: Self.storageKey)
+    }
+
+    private var defaults: UserDefaults? {
+        guard let suiteName else { return .standard }
+        return UserDefaults(suiteName: suiteName)
+    }
+}
+
 public struct GameContent: Equatable, Sendable {
     public let starterHeroes: [CombatantBlueprint]
     public let partySizeLimit: Int

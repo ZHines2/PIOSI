@@ -3,7 +3,10 @@ import SwiftUI
 
 @MainActor
 final class BattleViewModel: ObservableObject {
-    @Published private(set) var session = GameSession(content: .mvp)
+    @Published private(set) var session = GameSession(
+        content: .mvp,
+        progressStore: UserDefaultsCampaignProgressStore()
+    )
 
     var screen: SessionScreen { session.screen }
     var encounter: EncounterState? { session.encounter }

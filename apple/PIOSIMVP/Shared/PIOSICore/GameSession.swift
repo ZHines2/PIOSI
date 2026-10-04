@@ -78,6 +78,7 @@ public struct GameSession: Equatable, Sendable {
     public private(set) var completedEncounterCount: Int
     public private(set) var screen: SessionScreen
     public private(set) var encounter: EncounterState?
+    private let progressStore: any CampaignProgressStore
 
     public var availableHeroes: [CombatantBlueprint] {
         content.starterHeroes + unlockedHeroes
@@ -86,15 +87,50 @@ public struct GameSession: Equatable, Sendable {
         content.partySizeLimit
     }
 
-    public init(content: GameContent = .mvp) {
+    public init(
+        content: GameContent = .mvp,
+        progressStore: any CampaignProgressStore = NoopCampaignProgressStore()
+    ) {
         self.content = content
-        self.selectedHeroes = Array(content.starterHeroes.prefix(content.partySizeLimit))
-        self.unlockedHeroes = []
+        self.progressStore = progressStore
+        let savedProgress = progressStore.load()
+        let savedWins = max(0, savedProgress?.completedEncounterCount ?? 0)
+        let savedUnlockIDs = Set(savedProgress?.unlockedHeroIDs ?? [])
+        self.unlockedHeroes = content.unlockableHeroes
+            .filter { savedUnlockIDs.contains($0.hero.id) || $0.requiredEncounterWins <= savedWins }
+            .map(\.hero)
+        let availableHeroes = content.starterHeroes + self.unlockedHeroes
+        let heroesByID = Dictionary(availableHeroes.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+        var selected: [CombatantBlueprint] = []
+        var selectedIDs = Set<String>()
+        for heroID in savedProgress?.selectedHeroIDs ?? [] {
+            if let hero = heroesByID[heroID], selectedIDs.insert(heroID).inserted {
+                selected.append(hero)
+            }
+        }
+        for hero in content.starterHeroes where selected.count < content.partySizeLimit {
+            if selectedIDs.insert(hero.id).inserted {
+                selected.append(hero)
+            }
+        }
+        self.selectedHeroes = Array(selected.prefix(content.partySizeLimit))
         self.partyRoster = []
         self.currentLevelIndex = nil
-        self.completedEncounterCount = 0
+        self.completedEncounterCount = savedWins
         self.screen = .title
         self.encounter = nil
+        persistCampaignProgress()
+    }
+
+    public static func == (lhs: GameSession, rhs: GameSession) -> Bool {
+        lhs.content == rhs.content
+            && lhs.selectedHeroes == rhs.selectedHeroes
+            && lhs.unlockedHeroes == rhs.unlockedHeroes
+            && lhs.partyRoster == rhs.partyRoster
+            && lhs.currentLevelIndex == rhs.currentLevelIndex
+            && lhs.completedEncounterCount == rhs.completedEncounterCount
+            && lhs.screen == rhs.screen
+            && lhs.encounter == rhs.encounter
     }
 
     public mutating func toggleHeroSelection(_ heroID: String) {
@@ -102,8 +138,10 @@ public struct GameSession: Equatable, Sendable {
         guard let hero = availableHeroes.first(where: { $0.id == heroID }) else { return }
         if let selectedIndex = selectedHeroes.firstIndex(where: { $0.id == heroID }) {
             selectedHeroes.remove(at: selectedIndex)
+            persistCampaignProgress()
         } else if selectedHeroes.count < partySizeLimit {
             selectedHeroes.append(hero)
+            persistCampaignProgress()
         }
     }
 
@@ -486,6 +524,7 @@ public struct GameSession: Equatable, Sendable {
                 unlockedHeroes.append(unlock.hero)
             }
         }
+        persistCampaignProgress()
         self.encounter = encounter
         if completedLevelIndex + 1 < content.levels.count {
             screen = .encounterVictory(levelIndex: completedLevelIndex)
@@ -521,6 +560,16 @@ public struct GameSession: Equatable, Sendable {
         currentLevelIndex = nil
         encounter = nil
         screen = .title
+    }
+
+    private func persistCampaignProgress() {
+        progressStore.save(
+            CampaignProgress(
+                selectedHeroIDs: selectedHeroes.map(\.id),
+                unlockedHeroIDs: unlockedHeroes.map(\.id),
+                completedEncounterCount: completedEncounterCount
+            )
+        )
     }
 
     private mutating func finishDefeat(levelIndex: Int, encounter: EncounterState? = nil) {
