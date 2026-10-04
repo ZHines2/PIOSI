@@ -59,16 +59,24 @@ public struct CampaignProgress: Codable, Equatable, Sendable {
     }
 }
 
+public enum CampaignProgressLoadResult: Equatable, Sendable {
+    case missing
+    case valid(CampaignProgress)
+    case corrupt
+    case unsupportedSchema
+    case unavailable
+}
+
 public protocol CampaignProgressStore: Sendable {
-    func load() -> CampaignProgress?
-    func save(_ progress: CampaignProgress)
+    func load() -> CampaignProgressLoadResult
+    func save(_ progress: CampaignProgress) -> Bool
 }
 
 public struct NoopCampaignProgressStore: CampaignProgressStore {
     public init() {}
 
-    public func load() -> CampaignProgress? { nil }
-    public func save(_ progress: CampaignProgress) {}
+    public func load() -> CampaignProgressLoadResult { .missing }
+    public func save(_ progress: CampaignProgress) -> Bool { true }
 }
 
 // UserDefaults is thread-safe; the store's cached schema state is protected by this lock.
@@ -97,41 +105,46 @@ public final class UserDefaultsCampaignProgressStore: CampaignProgressStore, @un
         }
     }
 
-    public func load() -> CampaignProgress? {
+    public func load() -> CampaignProgressLoadResult {
         lock.lock()
         defer { lock.unlock() }
-        let data = defaults?.data(forKey: Self.storageKey)
+        guard let defaults else { return .unavailable }
+        let data = defaults.data(forKey: Self.storageKey)
         cachedData = data
         preservesUnsupportedSchema = Self.hasUnsupportedSchema(data)
-        guard let data else { return nil }
-        guard let progress = try? JSONDecoder().decode(CampaignProgress.self, from: data),
-              progress.schemaVersion == CampaignProgress.currentSchemaVersion else {
-            return nil
+        guard let data else { return .missing }
+        guard let progress = try? JSONDecoder().decode(CampaignProgress.self, from: data) else {
+            return .corrupt
         }
-        return progress
+        guard progress.schemaVersion == CampaignProgress.currentSchemaVersion else {
+            return .unsupportedSchema
+        }
+        return .valid(progress)
     }
 
     /// Saves current-version progress unless the stored record uses an unsupported schema.
-    public func save(_ progress: CampaignProgress) {
+    @discardableResult
+    public func save(_ progress: CampaignProgress) -> Bool {
         lock.lock()
         defer { lock.unlock() }
-        guard let defaults else { return }
+        guard let defaults else { return false }
         let currentData = defaults.data(forKey: Self.storageKey)
         if currentData != cachedData {
             cachedData = currentData
             preservesUnsupportedSchema = Self.hasUnsupportedSchema(currentData)
         }
-        guard !preservesUnsupportedSchema else { return }
+        guard !preservesUnsupportedSchema else { return false }
         let data: Data
         do {
             data = try JSONEncoder().encode(progress)
         } catch {
             NSLog("PIOSI campaign progress could not be encoded: %@", String(describing: error))
             assertionFailure("Campaign progress could not be encoded.")
-            return
+            return false
         }
         defaults.set(data, forKey: Self.storageKey)
         cachedData = data
+        return true
     }
 
     private struct CampaignProgressSchema: Decodable {

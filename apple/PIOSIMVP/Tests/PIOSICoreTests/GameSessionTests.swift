@@ -142,7 +142,11 @@ final class GameSessionTests: XCTestCase {
         let session = GameSession(content: .mvp, progressStore: store)
 
         XCTAssertEqual(session.completedEncounterCount, 0)
-        XCTAssertEqual(store.load()?.completedEncounterCount, 0)
+        XCTAssertEqual(store.load(), .valid(CampaignProgress(
+            selectedHeroIDs: ["knight", "archer", "rogue"],
+            unlockedHeroIDs: [],
+            completedEncounterCount: 0
+        )))
     }
 
     func testCorruptStoredProgressFallsBackAndRecoversOnSelection() throws {
@@ -152,9 +156,11 @@ final class GameSessionTests: XCTestCase {
         let corruptData = Data("invalid progress".utf8)
         defaults.set(corruptData, forKey: UserDefaultsCampaignProgressStore.storageKey)
         let store = UserDefaultsCampaignProgressStore(suiteName: suiteName)
+        XCTAssertEqual(store.load(), .corrupt)
 
         var session = GameSession(content: .mvp, progressStore: store)
 
+        XCTAssertTrue(session.canPersistCampaignProgress)
         XCTAssertEqual(session.selectedHeroes.map(\.id), ["knight", "archer", "rogue"])
         XCTAssertTrue(session.unlockedHeroes.isEmpty)
         XCTAssertEqual(session.completedEncounterCount, 0)
@@ -182,9 +188,11 @@ final class GameSessionTests: XCTestCase {
 
         var session = GameSession(content: .mvp, progressStore: store)
 
+        XCTAssertEqual(store.load(), .unsupportedSchema)
         XCTAssertEqual(session.selectedHeroes.map(\.id), ["knight", "archer", "rogue"])
         XCTAssertTrue(session.unlockedHeroes.isEmpty)
         XCTAssertEqual(session.completedEncounterCount, 0)
+        XCTAssertFalse(session.canPersistCampaignProgress)
 
         session.toggleHeroSelection("knight")
         session.toggleHeroSelection("knight")
@@ -192,6 +200,7 @@ final class GameSessionTests: XCTestCase {
         session.continuePrimaryAction()
         clearWallByMovingDown(&session)
         XCTAssertEqual(session.completedEncounterCount, 1)
+        XCTAssertFalse(session.canPersistCampaignProgress)
 
         let storedData = try XCTUnwrap(defaults.data(forKey: UserDefaultsCampaignProgressStore.storageKey))
         let storedProgress = try JSONDecoder().decode(CampaignProgress.self, from: storedData)
@@ -204,7 +213,7 @@ final class GameSessionTests: XCTestCase {
             completedEncounterCount: 0
         )
         store.save(currentProgress)
-        XCTAssertEqual(store.load(), currentProgress)
+        XCTAssertEqual(store.load(), .valid(currentProgress))
     }
 
     func testUnlockableHeroClampsRequiredWinsToMinimumOfOne() {
@@ -661,6 +670,6 @@ final class GameSessionTests: XCTestCase {
 private struct FixedCampaignProgressStore: CampaignProgressStore {
     let progress: CampaignProgress
 
-    func load() -> CampaignProgress? { progress }
-    func save(_ progress: CampaignProgress) {}
+    func load() -> CampaignProgressLoadResult { .valid(progress) }
+    func save(_ progress: CampaignProgress) -> Bool { true }
 }

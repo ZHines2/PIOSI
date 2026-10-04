@@ -24,6 +24,11 @@ struct ContentView: View {
             Text(viewModel.subtitleText)
                 .font(.body)
                 .foregroundStyle(.secondary)
+            if let warning = viewModel.campaignProgressWarning {
+                Text(warning)
+                    .font(.footnote)
+                    .foregroundStyle(.orange)
+            }
         }
     }
 

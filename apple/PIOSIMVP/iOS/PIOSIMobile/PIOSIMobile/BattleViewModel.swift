@@ -19,6 +19,11 @@ final class BattleViewModel: ObservableObject {
     }
     var titleText: String { session.titleText() }
     var subtitleText: String { session.subtitleText() }
+    var campaignProgressWarning: String? {
+        session.canPersistCampaignProgress
+            ? nil
+            : "Campaign progress cannot be saved in this session."
+    }
 
     var primaryActionTitle: String {
         switch session.screen {

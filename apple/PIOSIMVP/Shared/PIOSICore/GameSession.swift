@@ -74,6 +74,7 @@ public struct GameSession: Equatable, Sendable {
     public private(set) var selectedHeroes: [CombatantBlueprint]
     public private(set) var unlockedHeroes: [CombatantBlueprint]
     public private(set) var partyRoster: [Combatant]
+    public private(set) var canPersistCampaignProgress: Bool
     public private(set) var currentLevelIndex: Int?
     public private(set) var completedEncounterCount: Int
     public private(set) var screen: SessionScreen
@@ -93,7 +94,15 @@ public struct GameSession: Equatable, Sendable {
     ) {
         self.content = content
         self.progressStore = progressStore
-        let savedProgress = progressStore.load()
+        let loadResult = progressStore.load()
+        let savedProgress: CampaignProgress?
+        switch loadResult {
+        case .valid(let progress):
+            savedProgress = progress
+        case .missing, .corrupt, .unsupportedSchema, .unavailable:
+            savedProgress = nil
+        }
+        self.canPersistCampaignProgress = loadResult != .unsupportedSchema && loadResult != .unavailable
         let savedWins = max(0, savedProgress?.completedEncounterCount ?? 0)
         let savedUnlockIDs = Set(savedProgress?.unlockedHeroIDs ?? [])
         self.unlockedHeroes = content.unlockableHeroes
@@ -116,9 +125,9 @@ public struct GameSession: Equatable, Sendable {
             unlockedHeroIDs: unlockedHeroes.map(\.id),
             completedEncounterCount: completedEncounterCount
         )
-        // Normalize known saved data, but leave missing or unsupported records untouched.
+        // Normalize known saved data; unsupported schema versions remain untouched.
         if let savedProgress, restoredProgress != savedProgress {
-            progressStore.save(restoredProgress)
+            self.canPersistCampaignProgress = progressStore.save(restoredProgress)
         }
     }
 
@@ -127,6 +136,7 @@ public struct GameSession: Equatable, Sendable {
             && lhs.selectedHeroes == rhs.selectedHeroes
             && lhs.unlockedHeroes == rhs.unlockedHeroes
             && lhs.partyRoster == rhs.partyRoster
+            && lhs.canPersistCampaignProgress == rhs.canPersistCampaignProgress
             && lhs.currentLevelIndex == rhs.currentLevelIndex
             && lhs.completedEncounterCount == rhs.completedEncounterCount
             && lhs.screen == rhs.screen
@@ -584,8 +594,8 @@ public struct GameSession: Equatable, Sendable {
         return Array(selected.prefix(partySizeLimit))
     }
 
-    private func persistCampaignProgress() {
-        progressStore.save(
+    private mutating func persistCampaignProgress() {
+        canPersistCampaignProgress = progressStore.save(
             CampaignProgress(
                 selectedHeroIDs: selectedHeroes.map(\.id),
                 unlockedHeroIDs: unlockedHeroes.map(\.id),
