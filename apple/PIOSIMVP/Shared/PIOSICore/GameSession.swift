@@ -549,7 +549,7 @@ public struct GameSession: Equatable, Sendable {
         selectedHeroes = Self.normalizedSelection(
             preferredHeroIDs: selectedHeroes.map(\.id),
             availableHeroes: availableHeroes,
-            fallbackHeroes: content.starterHeroes,
+            fallbackHeroes: [],
             partySizeLimit: partySizeLimit
         )
         partyRoster = []

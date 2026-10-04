@@ -142,20 +142,21 @@ final class GameSessionTests: XCTestCase {
         XCTAssertEqual(store.load()?.completedEncounterCount, 0)
     }
 
-    func testCorruptStoredProgressFallsBackToStarterParty() throws {
+    func testCorruptStoredProgressFallsBackWithoutOverwritingOnSelection() throws {
         let suiteName = "PIOSIProgressCorruptTests-\(UUID().uuidString)"
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
         defer { defaults.removePersistentDomain(forName: suiteName) }
-        defaults.set(Data("invalid progress".utf8), forKey: UserDefaultsCampaignProgressStore.storageKey)
+        let corruptData = Data("invalid progress".utf8)
+        defaults.set(corruptData, forKey: UserDefaultsCampaignProgressStore.storageKey)
+        let store = UserDefaultsCampaignProgressStore(suiteName: suiteName)
 
-        let session = GameSession(
-            content: .mvp,
-            progressStore: UserDefaultsCampaignProgressStore(suiteName: suiteName)
-        )
+        var session = GameSession(content: .mvp, progressStore: store)
 
         XCTAssertEqual(session.selectedHeroes.map(\.id), ["knight", "archer", "rogue"])
         XCTAssertTrue(session.unlockedHeroes.isEmpty)
         XCTAssertEqual(session.completedEncounterCount, 0)
+        session.toggleHeroSelection("knight")
+        XCTAssertEqual(defaults.data(forKey: UserDefaultsCampaignProgressStore.storageKey), corruptData)
     }
 
     func testUnsupportedProgressVersionSurvivesSelectionAndVictoryWrites() throws {
