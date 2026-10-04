@@ -99,20 +99,12 @@ public struct GameSession: Equatable, Sendable {
         let eligibleHeroes = Self.unlockableHeroes(in: content, completedEncounterCount: savedWins)
         self.unlockedHeroes = eligibleHeroes.filter { savedUnlockIDs.contains($0.id) }
         let availableHeroes = content.starterHeroes + self.unlockedHeroes
-        let heroesByID = Dictionary(availableHeroes.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
-        var selected: [CombatantBlueprint] = []
-        var selectedIDs = Set<String>()
-        for heroID in savedProgress?.selectedHeroIDs ?? [] {
-            if let hero = heroesByID[heroID], selectedIDs.insert(heroID).inserted {
-                selected.append(hero)
-            }
-        }
-        for hero in content.starterHeroes where selected.count < content.partySizeLimit {
-            if selectedIDs.insert(hero.id).inserted {
-                selected.append(hero)
-            }
-        }
-        self.selectedHeroes = Array(selected.prefix(content.partySizeLimit))
+        self.selectedHeroes = Self.normalizedSelection(
+            preferredHeroIDs: savedProgress?.selectedHeroIDs ?? [],
+            availableHeroes: availableHeroes,
+            fallbackHeroes: content.starterHeroes,
+            partySizeLimit: content.partySizeLimit
+        )
         self.partyRoster = []
         self.currentLevelIndex = nil
         self.completedEncounterCount = savedWins
@@ -554,16 +546,12 @@ public struct GameSession: Equatable, Sendable {
 
     private mutating func restartCampaign() {
         let previousSelection = selectedHeroes
-        let availableHeroIDs = Set(availableHeroes.map(\.id))
-        selectedHeroes = Array(selectedHeroes
-            .filter { availableHeroIDs.contains($0.id) }
-            .prefix(partySizeLimit))
-        var selectedHeroIDs = Set(selectedHeroes.map(\.id))
-        for hero in availableHeroes where selectedHeroes.count < partySizeLimit {
-            if selectedHeroIDs.insert(hero.id).inserted {
-                selectedHeroes.append(hero)
-            }
-        }
+        selectedHeroes = Self.normalizedSelection(
+            preferredHeroIDs: selectedHeroes.map(\.id),
+            availableHeroes: availableHeroes,
+            fallbackHeroes: content.starterHeroes,
+            partySizeLimit: partySizeLimit
+        )
         partyRoster = []
         currentLevelIndex = nil
         encounter = nil
@@ -571,6 +559,28 @@ public struct GameSession: Equatable, Sendable {
         if selectedHeroes != previousSelection {
             persistCampaignProgress()
         }
+    }
+
+    private static func normalizedSelection(
+        preferredHeroIDs: [String],
+        availableHeroes: [CombatantBlueprint],
+        fallbackHeroes: [CombatantBlueprint],
+        partySizeLimit: Int
+    ) -> [CombatantBlueprint] {
+        let heroesByID = Dictionary(availableHeroes.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+        var selected: [CombatantBlueprint] = []
+        var selectedIDs = Set<String>()
+        for heroID in preferredHeroIDs {
+            if let hero = heroesByID[heroID], selectedIDs.insert(heroID).inserted {
+                selected.append(hero)
+            }
+        }
+        for hero in fallbackHeroes where selected.count < partySizeLimit {
+            if selectedIDs.insert(hero.id).inserted {
+                selected.append(hero)
+            }
+        }
+        return Array(selected.prefix(partySizeLimit))
     }
 
     private func persistCampaignProgress() {

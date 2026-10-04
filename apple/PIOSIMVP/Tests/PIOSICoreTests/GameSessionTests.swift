@@ -127,6 +127,15 @@ final class GameSessionTests: XCTestCase {
         let storedData = try XCTUnwrap(defaults.data(forKey: UserDefaultsCampaignProgressStore.storageKey))
         let storedProgress = try JSONDecoder().decode(CampaignProgress.self, from: storedData)
         XCTAssertEqual(storedProgress.schemaVersion, CampaignProgress.currentSchemaVersion + 1)
+
+        defaults.removeObject(forKey: UserDefaultsCampaignProgressStore.storageKey)
+        let currentProgress = CampaignProgress(
+            selectedHeroIDs: ["knight", "archer", "rogue"],
+            unlockedHeroIDs: [],
+            completedEncounterCount: 0
+        )
+        store.save(currentProgress)
+        XCTAssertEqual(store.load(), currentProgress)
     }
 
     func testUnlockableHeroClampsRequiredWinsToMinimumOfOne() {
