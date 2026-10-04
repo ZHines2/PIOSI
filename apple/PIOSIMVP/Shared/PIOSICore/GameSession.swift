@@ -125,7 +125,6 @@ public struct GameSession: Equatable, Sendable {
 
     public mutating func moveActiveHero(by delta: GridPoint) {
         guard screen == .battle, var encounter else { return }
-        defer { self.encounter = encounter }
         guard let activeHero = encounter.activeHero, activeHero.isAlive else {
             finishDefeat(levelIndex: currentLevelIndex ?? 0, encounter: encounter)
             return
@@ -257,6 +256,7 @@ public struct GameSession: Equatable, Sendable {
     }
 
     private mutating func startAdventure() {
+        guard !content.levels.isEmpty else { return }
         partyRoster = stableHeroSort(
             selectedHeroes.enumerated().map { index, blueprint in
                 Combatant(
@@ -272,7 +272,11 @@ public struct GameSession: Equatable, Sendable {
     }
 
     private mutating func beginEncounter() {
-        guard let currentLevelIndex else { return }
+        guard let currentLevelIndex, content.levels.indices.contains(currentLevelIndex) else {
+            self.currentLevelIndex = nil
+            screen = .title
+            return
+        }
         let level = content.levels[currentLevelIndex]
         let seededHeroes = seedHeroesForEncounter(level: level)
         let seededEnemies = level.enemies.map { enemy in

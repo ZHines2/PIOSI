@@ -91,8 +91,8 @@ struct ContentView: View {
         switch viewModel.screen {
         case .title:
             return "Begin with Knight, Archer, and Rogue. Choose three heroes from your available roster."
-        case .briefing(let levelIndex):
-            return "Level \(levelIndex + 1) briefing: keep the original title and objective, but trim the presentation to a phone-friendly card before battle begins."
+        case .briefing:
+            return "Prepare your squad, break through the wall, and press on to the next encounter."
         case .encounterVictory:
             return "The squad punched through this barricade. Move on to the next story beat in the lite campaign."
         case .campaignVictory:

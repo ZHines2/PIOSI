@@ -46,6 +46,17 @@ final class GameSessionTests: XCTestCase {
         )
     }
 
+    func testCampaignWithoutLevelsDoesNotStart() {
+        var session = GameSession(content: GameContent(starterHeroes: GameContent.mvp.starterHeroes, levels: []))
+
+        session.continuePrimaryAction()
+        session.continuePrimaryAction()
+
+        XCTAssertEqual(session.screen, .title)
+        XCTAssertNil(session.currentLevelIndex)
+        XCTAssertNil(session.encounter)
+    }
+
     func testVictoryRestartPreservesUnlockedHeroesAndSelectedParty() {
         var session = GameSession(content: wizardUnlockContent())
         winNextEncounter(&session)
