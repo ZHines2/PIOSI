@@ -352,6 +352,7 @@ public struct GameSession: Equatable, Sendable {
     private mutating func consumeMovePointAndAdvance(encounter: inout EncounterState) {
         encounter.remainingMovePoints -= 1
         if encounter.wallHP <= 0 {
+            self.encounter = encounter
             return
         }
         if encounter.remainingMovePoints == 0 {
@@ -494,13 +495,20 @@ public struct GameSession: Equatable, Sendable {
     }
 
     private mutating func restartCampaign() {
-        let unlockedHeroes = self.unlockedHeroes
-        let selectedHeroes = self.selectedHeroes
-        let completedEncounterCount = self.completedEncounterCount
-        self = GameSession(content: content)
-        self.unlockedHeroes = unlockedHeroes
-        self.selectedHeroes = selectedHeroes
-        self.completedEncounterCount = completedEncounterCount
+        let availableHeroIDs = Set(availableHeroes.map(\.id))
+        selectedHeroes = Array(selectedHeroes
+            .filter { availableHeroIDs.contains($0.id) }
+            .prefix(partySizeLimit))
+        var selectedHeroIDs = Set(selectedHeroes.map(\.id))
+        for hero in availableHeroes where selectedHeroes.count < partySizeLimit {
+            if selectedHeroIDs.insert(hero.id).inserted {
+                selectedHeroes.append(hero)
+            }
+        }
+        partyRoster = []
+        currentLevelIndex = nil
+        encounter = nil
+        screen = .title
     }
 
     private mutating func finishDefeat(levelIndex: Int, encounter: EncounterState? = nil) {

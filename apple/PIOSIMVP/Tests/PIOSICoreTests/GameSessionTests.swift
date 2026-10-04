@@ -20,6 +20,17 @@ final class GameSessionTests: XCTestCase {
         XCTAssertEqual(session.unlockedHeroes.map(\.id), ["wizard"])
     }
 
+    func testMVPConfiguresWizardUnlockAndThresholdHasMinimum() throws {
+        let wizardUnlock = try XCTUnwrap(GameContent.mvp.unlockableHeroes.first)
+
+        XCTAssertEqual(wizardUnlock.hero.id, "wizard")
+        XCTAssertEqual(wizardUnlock.requiredEncounterWins, 2)
+        XCTAssertEqual(
+            UnlockableHero(hero: wizardUnlock.hero, requiredEncounterWins: 0).requiredEncounterWins,
+            1
+        )
+    }
+
     func testVictoryRestartPreservesUnlockedHeroesAndSelectedParty() {
         var session = GameSession(content: wizardUnlockContent())
         winNextEncounter(&session)
@@ -32,6 +43,26 @@ final class GameSessionTests: XCTestCase {
         XCTAssertEqual(session.unlockedHeroes.map(\.id), ["wizard"])
         XCTAssertEqual(session.selectedHeroes, selectedHeroes)
         XCTAssertEqual(session.completedEncounterCount, 2)
+    }
+
+    func testDefaultCampaignVictoryRestartPreservesWizardUnlock() {
+        var session = GameSession(content: .mvp)
+        session.continuePrimaryAction()
+        session.continuePrimaryAction()
+        clearWallByMovingDown(&session)
+        session.continuePrimaryAction()
+        session.continuePrimaryAction()
+        clearWallByMovingDown(&session)
+
+        XCTAssertEqual(session.screen, .campaignVictory)
+        XCTAssertEqual(session.unlockedHeroes.map(\.id), ["wizard"])
+        let selectedHeroes = session.selectedHeroes
+
+        session.continuePrimaryAction()
+
+        XCTAssertEqual(session.screen, .title)
+        XCTAssertEqual(session.unlockedHeroes.map(\.id), ["wizard"])
+        XCTAssertEqual(session.selectedHeroes, selectedHeroes)
     }
 
     func testLockedAndUnknownHeroesCannotBeSelected() {
@@ -245,6 +276,14 @@ final class GameSessionTests: XCTestCase {
         session.continuePrimaryAction()
         session.continuePrimaryAction()
         session.moveActiveHero(by: .down)
+    }
+
+    private func clearWallByMovingDown(_ session: inout GameSession) {
+        var actions = 0
+        while session.screen == .battle && actions < 200 {
+            session.moveActiveHero(by: .down)
+            actions += 1
+        }
     }
 
     private func wizardUnlockContent(includeDefeatLevel: Bool = false) -> GameContent {

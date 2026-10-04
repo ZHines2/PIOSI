@@ -71,7 +71,7 @@ struct ContentView: View {
                         Text(hero.symbol)
                         Text(hero.name)
                         Spacer()
-                        Text(isSelected ? "Selected" : "Add")
+                        Label(isSelected ? "Selected" : "Add", systemImage: isSelected ? "checkmark.circle.fill" : "circle")
                             .foregroundStyle(isSelected ? .green : .secondary)
                     }
                     .padding(12)
@@ -96,7 +96,7 @@ struct ContentView: View {
         case .encounterVictory:
             return "The squad punched through this barricade. Move on to the next story beat in the lite campaign."
         case .campaignVictory:
-            return "You finished the first-pass mobile slice. Phase 2 can add full roster selection, Mode Up, world map, and more content without replacing the core state layer."
+            return "You finished the first-pass mobile slice. Phase 2 can add the full hero roster, Mode Up, the world map, and more content without replacing the core state layer."
         case .defeat:
             return "The party was wiped out. Restart from the title to try the mobile route again."
         case .battle:
