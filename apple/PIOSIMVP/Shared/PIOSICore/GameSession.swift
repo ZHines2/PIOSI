@@ -81,6 +81,9 @@ public struct GameSession: Equatable, Sendable {
     public var availableHeroes: [CombatantBlueprint] {
         content.starterHeroes + unlockedHeroes
     }
+    public var partySizeLimit: Int {
+        min(3, availableHeroes.count)
+    }
 
     public init(content: GameContent = .mvp) {
         self.content = content
@@ -96,7 +99,7 @@ public struct GameSession: Equatable, Sendable {
         guard let hero = availableHeroes.first(where: { $0.id == heroID }) else { return }
         if let selectedIndex = selectedHeroes.firstIndex(where: { $0.id == heroID }) {
             selectedHeroes.remove(at: selectedIndex)
-        } else if selectedHeroes.count < 3 {
+        } else if selectedHeroes.count < partySizeLimit {
             selectedHeroes.append(hero)
         }
     }
@@ -104,7 +107,7 @@ public struct GameSession: Equatable, Sendable {
     public mutating func continuePrimaryAction() {
         switch screen {
         case .title:
-            guard selectedHeroes.count == 3 else { return }
+            guard selectedHeroes.count == partySizeLimit else { return }
             startAdventure()
         case .briefing:
             beginEncounter()

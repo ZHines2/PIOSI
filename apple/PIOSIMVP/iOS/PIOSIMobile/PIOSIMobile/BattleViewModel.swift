@@ -9,7 +9,8 @@ final class BattleViewModel: ObservableObject {
     var encounter: EncounterState? { session.encounter }
     var availableHeroes: [CombatantBlueprint] { session.availableHeroes }
     var selectedHeroIDs: Set<String> { Set(session.selectedHeroes.map(\.id)) }
-    var canStartAdventure: Bool { session.selectedHeroes.count == 3 }
+    var partySizeLimit: Int { session.partySizeLimit }
+    var canStartAdventure: Bool { session.selectedHeroes.count == session.partySizeLimit }
     var titleText: String { session.titleText() }
     var subtitleText: String { session.subtitleText() }
 

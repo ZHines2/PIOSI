@@ -60,7 +60,7 @@ struct ContentView: View {
 
     private var heroSelection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("Choose your squad (\(viewModel.selectedHeroIDs.count)/3)")
+            Text("Choose your squad (\(viewModel.selectedHeroIDs.count)/\(viewModel.partySizeLimit))")
                 .font(.subheadline.weight(.semibold))
             ForEach(viewModel.availableHeroes) { hero in
                 let isSelected = viewModel.selectedHeroIDs.contains(hero.id)
