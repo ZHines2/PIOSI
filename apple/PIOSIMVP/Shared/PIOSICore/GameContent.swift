@@ -77,7 +77,7 @@ public final class UserDefaultsCampaignProgressStore: CampaignProgressStore, @un
     private let defaults: UserDefaults?
     private let lock = NSLock()
     private var cachedData: Data?
-    private var preservesFutureSchema: Bool
+    private var preservesUnsupportedSchema: Bool
 
     public init(suiteName: String? = nil) {
         let defaults: UserDefaults?
@@ -89,7 +89,10 @@ public final class UserDefaultsCampaignProgressStore: CampaignProgressStore, @un
         self.defaults = defaults
         let data = defaults?.data(forKey: Self.storageKey)
         self.cachedData = data
-        self.preservesFutureSchema = Self.hasNewerSchema(data)
+        self.preservesUnsupportedSchema = Self.hasUnsupportedSchema(data)
+        if defaults == nil {
+            NSLog("PIOSI campaign progress suite is unavailable; campaign progress will not be saved.")
+        }
     }
 
     public func load() -> CampaignProgress? {
@@ -97,7 +100,7 @@ public final class UserDefaultsCampaignProgressStore: CampaignProgressStore, @un
         defer { lock.unlock() }
         let data = defaults?.data(forKey: Self.storageKey)
         cachedData = data
-        preservesFutureSchema = Self.hasNewerSchema(data)
+        preservesUnsupportedSchema = Self.hasUnsupportedSchema(data)
         guard let data else { return nil }
         guard let progress = try? JSONDecoder().decode(CampaignProgress.self, from: data),
               progress.schemaVersion == CampaignProgress.currentSchemaVersion else {
@@ -106,7 +109,7 @@ public final class UserDefaultsCampaignProgressStore: CampaignProgressStore, @un
         return progress
     }
 
-    /// Saves current-version progress unless the stored record is from a newer app schema.
+    /// Saves current-version progress unless the stored record uses an unsupported schema.
     public func save(_ progress: CampaignProgress) {
         lock.lock()
         defer { lock.unlock() }
@@ -114,9 +117,9 @@ public final class UserDefaultsCampaignProgressStore: CampaignProgressStore, @un
         let currentData = defaults.data(forKey: Self.storageKey)
         if currentData != cachedData {
             cachedData = currentData
-            preservesFutureSchema = Self.hasNewerSchema(currentData)
+            preservesUnsupportedSchema = Self.hasUnsupportedSchema(currentData)
         }
-        guard !preservesFutureSchema else { return }
+        guard !preservesUnsupportedSchema else { return }
         let data: Data
         do {
             data = try JSONEncoder().encode(progress)
@@ -133,12 +136,12 @@ public final class UserDefaultsCampaignProgressStore: CampaignProgressStore, @un
         let schemaVersion: Int
     }
 
-    private static func hasNewerSchema(_ data: Data?) -> Bool {
+    private static func hasUnsupportedSchema(_ data: Data?) -> Bool {
         guard let data,
               let schema = try? JSONDecoder().decode(CampaignProgressSchema.self, from: data) else {
             return false
         }
-        return schema.schemaVersion > CampaignProgress.currentSchemaVersion
+        return schema.schemaVersion != CampaignProgress.currentSchemaVersion
     }
 }
 

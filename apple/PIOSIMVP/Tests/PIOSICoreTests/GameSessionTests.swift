@@ -95,7 +95,7 @@ final class GameSessionTests: XCTestCase {
         XCTAssertEqual(session.selectedHeroes.map(\.id), ["archer"])
     }
 
-    func testOlderProgressSchemaFallsBackWithoutOverwriting() throws {
+    func testOlderProgressSchemaFallsBackWithoutOverwritingOnUserActions() throws {
         let suiteName = "PIOSIProgressOlderSchemaTests-\(UUID().uuidString)"
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
         defer { defaults.removePersistentDomain(forName: suiteName) }
@@ -108,10 +108,17 @@ final class GameSessionTests: XCTestCase {
         ])
         defaults.set(oldData, forKey: key)
 
-        let session = GameSession(content: .mvp, progressStore: UserDefaultsCampaignProgressStore(suiteName: suiteName))
+        var session = GameSession(content: .mvp, progressStore: UserDefaultsCampaignProgressStore(suiteName: suiteName))
 
         XCTAssertEqual(session.selectedHeroes.map(\.id), ["knight", "archer", "rogue"])
         XCTAssertTrue(session.unlockedHeroes.isEmpty)
+        session.toggleHeroSelection("knight")
+        session.toggleHeroSelection("knight")
+        session.continuePrimaryAction()
+        session.continuePrimaryAction()
+        clearWallByMovingDown(&session)
+
+        XCTAssertEqual(session.completedEncounterCount, 1)
         XCTAssertEqual(defaults.data(forKey: key), oldData)
     }
 
