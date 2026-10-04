@@ -71,24 +71,29 @@ public struct NoopCampaignProgressStore: CampaignProgressStore {
     public func save(_ progress: CampaignProgress) {}
 }
 
+// UserDefaults is thread-safe; the store's cached schema state is protected by this lock.
 public final class UserDefaultsCampaignProgressStore: CampaignProgressStore, @unchecked Sendable {
     static let storageKey = "piosi.campaignProgress"
-    private let defaults: UserDefaults
-    private let preservesFutureSchema: Bool
+    private let defaults: UserDefaults?
+    private let lock = NSLock()
+    private var cachedData: Data?
+    private var preservesFutureSchema: Bool
 
     public init(suiteName: String? = nil) {
-        let defaults: UserDefaults
+        let defaults: UserDefaults?
         if let suiteName {
-            defaults = UserDefaults(suiteName: suiteName) ?? .standard
+            defaults = UserDefaults(suiteName: suiteName)
         } else {
             defaults = .standard
         }
         self.defaults = defaults
-        self.preservesFutureSchema = Self.hasNewerSchema(defaults.data(forKey: Self.storageKey))
+        let data = defaults?.data(forKey: Self.storageKey)
+        self.cachedData = data
+        self.preservesFutureSchema = Self.hasNewerSchema(data)
     }
 
     public func load() -> CampaignProgress? {
-        guard let data = defaults.data(forKey: Self.storageKey) else { return nil }
+        guard let data = defaults?.data(forKey: Self.storageKey) else { return nil }
         guard let progress = try? JSONDecoder().decode(CampaignProgress.self, from: data),
               progress.schemaVersion == CampaignProgress.currentSchemaVersion else {
             return nil
@@ -98,12 +103,21 @@ public final class UserDefaultsCampaignProgressStore: CampaignProgressStore, @un
 
     /// Saves current-version progress unless the stored record is from a newer app schema.
     public func save(_ progress: CampaignProgress) {
+        lock.lock()
+        defer { lock.unlock() }
+        guard let defaults else { return }
+        let currentData = defaults.data(forKey: Self.storageKey)
+        if currentData != cachedData {
+            cachedData = currentData
+            preservesFutureSchema = Self.hasNewerSchema(currentData)
+        }
         guard !preservesFutureSchema else { return }
         guard let data = try? JSONEncoder().encode(progress) else {
             assertionFailure("Campaign progress could not be encoded.")
             return
         }
         defaults.set(data, forKey: Self.storageKey)
+        cachedData = data
     }
 
     private struct CampaignProgressSchema: Decodable {

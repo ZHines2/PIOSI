@@ -96,9 +96,11 @@ public struct GameSession: Equatable, Sendable {
         let savedProgress = progressStore.load()
         let savedWins = max(0, savedProgress?.completedEncounterCount ?? 0)
         let savedUnlockIDs = Set(savedProgress?.unlockedHeroIDs ?? [])
-        self.unlockedHeroes = content.unlockableHeroes
-            .filter { savedUnlockIDs.contains($0.hero.id) || $0.requiredEncounterWins <= savedWins }
-            .map(\.hero)
+        self.unlockedHeroes = Self.resolvedUnlockedHeroes(
+            in: content,
+            unlockedHeroIDs: savedUnlockIDs,
+            completedEncounterCount: savedWins
+        )
         let availableHeroes = content.starterHeroes + self.unlockedHeroes
         let heroesByID = Dictionary(availableHeroes.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
         var selected: [CombatantBlueprint] = []
@@ -527,11 +529,11 @@ public struct GameSession: Equatable, Sendable {
         partyRoster = stableHeroSort(encounter.heroes.filter(\.isAlive))
         completedEncounterCount += 1
         let completedLevelIndex = currentLevelIndex ?? 0
-        for unlock in content.unlockableHeroes where unlock.requiredEncounterWins <= completedEncounterCount {
-            if !unlockedHeroes.contains(where: { $0.id == unlock.hero.id }) {
-                unlockedHeroes.append(unlock.hero)
-            }
-        }
+        unlockedHeroes = Self.resolvedUnlockedHeroes(
+            in: content,
+            unlockedHeroIDs: Set(unlockedHeroes.map(\.id)),
+            completedEncounterCount: completedEncounterCount
+        )
         persistCampaignProgress()
         self.encounter = encounter
         if completedLevelIndex + 1 < content.levels.count {
@@ -582,6 +584,16 @@ public struct GameSession: Equatable, Sendable {
                 completedEncounterCount: completedEncounterCount
             )
         )
+    }
+
+    private static func resolvedUnlockedHeroes(
+        in content: GameContent,
+        unlockedHeroIDs: Set<String>,
+        completedEncounterCount: Int
+    ) -> [CombatantBlueprint] {
+        content.unlockableHeroes
+            .filter { unlockedHeroIDs.contains($0.hero.id) || $0.requiredEncounterWins <= completedEncounterCount }
+            .map(\.hero)
     }
 
     private mutating func finishDefeat(levelIndex: Int, encounter: EncounterState? = nil) {
