@@ -21,7 +21,7 @@ The MVP keeps one narrow playable path from the current web app. The starting sq
 
 Ported from the current web experience:
 
-- starter party built from the current core trio: Knight, Archer, Wizard
+- starting party of Knight, Archer, and Rogue, with Wizard unlocked after two encounter wins
 - level titles/objectives inspired by `content/levels.core.json`
 - agility-based hero turn order
 - grid movement, directional attacks, wall damage, enemy pursuit, and defeat handling

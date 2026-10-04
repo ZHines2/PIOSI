@@ -70,11 +70,14 @@ public struct EncounterState: Equatable, Sendable {
 }
 
 public struct GameSession: Equatable, Sendable {
+    private static let heroUnlockEncounterCount = 2
+
     public let content: GameContent
     public private(set) var selectedHeroes: [CombatantBlueprint]
     public private(set) var unlockedHeroes: [CombatantBlueprint]
     public private(set) var partyRoster: [Combatant]
     public private(set) var currentLevelIndex: Int?
+    public private(set) var completedEncounterCount: Int
     public private(set) var screen: SessionScreen
     public private(set) var encounter: EncounterState?
 
@@ -91,11 +94,13 @@ public struct GameSession: Equatable, Sendable {
         self.unlockedHeroes = []
         self.partyRoster = []
         self.currentLevelIndex = nil
+        self.completedEncounterCount = 0
         self.screen = .title
         self.encounter = nil
     }
 
     public mutating func toggleHeroSelection(_ heroID: String) {
+        guard screen == .title else { return }
         guard let hero = availableHeroes.first(where: { $0.id == heroID }) else { return }
         if let selectedIndex = selectedHeroes.firstIndex(where: { $0.id == heroID }) {
             selectedHeroes.remove(at: selectedIndex)
@@ -463,8 +468,9 @@ public struct GameSession: Equatable, Sendable {
     private mutating func finishVictory(encounter: inout EncounterState) {
         appendLog("The wall collapses.", to: &encounter)
         partyRoster = stableHeroSort(encounter.heroes.filter(\.isAlive))
+        completedEncounterCount += 1
         let completedLevelIndex = currentLevelIndex ?? 0
-        if completedLevelIndex + 1 >= 2 {
+        if completedEncounterCount >= Self.heroUnlockEncounterCount {
             for hero in content.unlockableHeroes where !unlockedHeroes.contains(where: { $0.id == hero.id }) {
                 unlockedHeroes.append(hero)
             }

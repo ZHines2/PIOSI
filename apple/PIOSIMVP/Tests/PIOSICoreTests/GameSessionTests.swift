@@ -26,6 +26,10 @@ final class GameSessionTests: XCTestCase {
             ]
         )
         var session = GameSession(content: content)
+        session.toggleHeroSelection("wizard")
+        session.toggleHeroSelection("unknown")
+        XCTAssertEqual(session.selectedHeroes.map(\.id), ["knight", "archer", "rogue"])
+
         session.continuePrimaryAction()
         session.continuePrimaryAction()
         session.moveActiveHero(by: .down)
@@ -45,9 +49,18 @@ final class GameSessionTests: XCTestCase {
         XCTAssertEqual(session.availableHeroes.map(\.id), ["knight", "archer", "rogue", "wizard"])
 
         session.toggleHeroSelection("knight")
+        session.continuePrimaryAction()
+        XCTAssertEqual(session.screen, .title)
+        session.toggleHeroSelection("knight")
+        XCTAssertEqual(session.selectedHeroes.count, 3)
+
+        session.toggleHeroSelection("knight")
         session.toggleHeroSelection("wizard")
         XCTAssertEqual(session.selectedHeroes.count, 3)
         XCTAssertTrue(session.selectedHeroes.contains(where: { $0.id == "wizard" }))
+        session.toggleHeroSelection("knight")
+        session.toggleHeroSelection("unknown")
+        XCTAssertEqual(session.selectedHeroes.count, 3)
 
         session.continuePrimaryAction()
         session.continuePrimaryAction()
