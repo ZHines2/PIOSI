@@ -10,61 +10,91 @@ final class GameSessionTests: XCTestCase {
         XCTAssertEqual(session.selectedHeroes[2].agility, 6)
     }
 
-    func testWizardUnlocksAfterTwoEncountersAndCanJoinSquad() {
-        let content = GameContent(
-            starterHeroes: [
-                CombatantBlueprint(id: "knight", name: "Knight", symbol: "K", attack: 4, range: 1, agility: 4, maxHP: 18),
-                CombatantBlueprint(id: "archer", name: "Archer", symbol: "A", attack: 3, range: 5, agility: 4, maxHP: 12),
-                CombatantBlueprint(id: "rogue", name: "Rogue", symbol: "R", attack: 4, range: 2, agility: 6, maxHP: 12)
-            ],
-            unlockableHeroes: [
-                CombatantBlueprint(id: "wizard", name: "Wizard", symbol: "W", attack: 2, range: 7, agility: 2, maxHP: 10)
-            ],
-            levels: [
-                LevelDefinition(id: 1, title: "First", summary: "First encounter.", rows: 2, columns: 4, wallHP: 1, enemies: []),
-                LevelDefinition(id: 2, title: "Second", summary: "Second encounter.", rows: 2, columns: 4, wallHP: 1, enemies: [])
-            ]
-        )
-        var session = GameSession(content: content)
-        session.toggleHeroSelection("wizard")
-        session.toggleHeroSelection("unknown")
-        XCTAssertEqual(session.selectedHeroes.map(\.id), ["knight", "archer", "rogue"])
+    func testWizardUnlocksAfterTwoEncounterWins() {
+        var session = GameSession(content: wizardUnlockContent())
 
-        session.continuePrimaryAction()
-        session.continuePrimaryAction()
-        session.moveActiveHero(by: .down)
-
-        XCTAssertEqual(session.screen, .encounterVictory(levelIndex: 0))
+        winNextEncounter(&session)
         XCTAssertTrue(session.unlockedHeroes.isEmpty)
 
-        session.continuePrimaryAction()
-        session.continuePrimaryAction()
-        session.moveActiveHero(by: .down)
-
-        XCTAssertEqual(session.screen, .campaignVictory)
+        winNextEncounter(&session)
         XCTAssertEqual(session.unlockedHeroes.map(\.id), ["wizard"])
+    }
+
+    func testLockedAndUnknownHeroesCannotBeSelected() {
+        var session = GameSession(content: wizardUnlockContent())
+
+        session.toggleHeroSelection("wizard")
+        session.toggleHeroSelection("unknown")
+
+        XCTAssertEqual(session.selectedHeroes.map(\.id), ["knight", "archer", "rogue"])
+        XCTAssertEqual(session.availableHeroes.map(\.id), ["knight", "archer", "rogue"])
+    }
+
+    func testIncompleteSquadCannotStartCampaign() {
+        var session = GameSession(content: .mvp)
+        session.toggleHeroSelection("knight")
 
         session.continuePrimaryAction()
+
         XCTAssertEqual(session.screen, .title)
-        XCTAssertEqual(session.availableHeroes.map(\.id), ["knight", "archer", "rogue", "wizard"])
+        XCTAssertNil(session.currentLevelIndex)
+    }
+
+    func testHeroSelectionIsIgnoredOutsideTitleScreen() {
+        var session = GameSession(content: .mvp)
+        session.continuePrimaryAction()
+        let selectedHeroes = session.selectedHeroes
 
         session.toggleHeroSelection("knight")
+
+        XCTAssertEqual(session.selectedHeroes, selectedHeroes)
+        XCTAssertEqual(session.screen, .briefing(levelIndex: 0))
+    }
+
+    func testUnlockedWizardCanReplaceStarterHero() {
+        var session = sessionAfterWizardUnlock()
         session.continuePrimaryAction()
-        XCTAssertEqual(session.screen, .title)
-        session.toggleHeroSelection("knight")
-        XCTAssertEqual(session.selectedHeroes.count, 3)
 
         session.toggleHeroSelection("knight")
         session.toggleHeroSelection("wizard")
+
+        XCTAssertEqual(session.availableHeroes.map(\.id), ["knight", "archer", "rogue", "wizard"])
         XCTAssertEqual(session.selectedHeroes.count, 3)
         XCTAssertTrue(session.selectedHeroes.contains(where: { $0.id == "wizard" }))
         session.toggleHeroSelection("knight")
-        session.toggleHeroSelection("unknown")
         XCTAssertEqual(session.selectedHeroes.count, 3)
+        XCTAssertFalse(session.selectedHeroes.contains(where: { $0.id == "knight" }))
+    }
+
+    func testSelectedWizardAppearsInNextEncounter() {
+        var session = sessionAfterWizardUnlock()
+        session.continuePrimaryAction()
+        session.toggleHeroSelection("knight")
+        session.toggleHeroSelection("wizard")
+        session.continuePrimaryAction()
+        session.continuePrimaryAction()
+
+        XCTAssertTrue(session.encounter?.heroes.contains(where: { $0.id == "wizard" }) == true)
+    }
+
+    func testUnlockedWizardPersistsAfterDefeatRestart() {
+        let content = wizardUnlockContent(includeDefeatLevel: true)
+        var session = GameSession(content: content)
+        winNextEncounter(&session)
+        winNextEncounter(&session)
+        session.continuePrimaryAction()
+        session.continuePrimaryAction()
+        session.continuePrimaryAction()
+        for _ in 0..<3 {
+            session.endTurn()
+        }
+
+        XCTAssertEqual(session.screen, .defeat(levelIndex: 2))
 
         session.continuePrimaryAction()
-        session.continuePrimaryAction()
-        XCTAssertTrue(session.encounter?.heroes.contains(where: { $0.id == "wizard" }) == true)
+
+        XCTAssertEqual(session.screen, .title)
+        XCTAssertEqual(session.unlockedHeroes.map(\.id), ["wizard"])
     }
 
     func testTitleAdvancesToFirstBriefingAndBattle() {
@@ -187,5 +217,49 @@ final class GameSessionTests: XCTestCase {
 
         XCTAssertEqual(session.encounter?.enemies.first?.position, GridPoint(x: 2, y: 2))
         XCTAssertEqual(session.encounter?.tile(at: GridPoint(x: 2, y: 2)), .enemy(session.encounter!.enemies.first!))
+    }
+
+    private func sessionAfterWizardUnlock() -> GameSession {
+        var session = GameSession(content: wizardUnlockContent())
+        winNextEncounter(&session)
+        winNextEncounter(&session)
+        return session
+    }
+
+    private func winNextEncounter(_ session: inout GameSession) {
+        session.continuePrimaryAction()
+        session.continuePrimaryAction()
+        session.moveActiveHero(by: .down)
+    }
+
+    private func wizardUnlockContent(includeDefeatLevel: Bool = false) -> GameContent {
+        let starterHeroes = [
+            CombatantBlueprint(id: "knight", name: "Knight", symbol: "K", attack: 4, range: 1, agility: 4, maxHP: 18),
+            CombatantBlueprint(id: "archer", name: "Archer", symbol: "A", attack: 3, range: 5, agility: 4, maxHP: 12),
+            CombatantBlueprint(id: "rogue", name: "Rogue", symbol: "R", attack: 4, range: 2, agility: 6, maxHP: 12)
+        ]
+        let wizard = CombatantBlueprint(id: "wizard", name: "Wizard", symbol: "W", attack: 2, range: 7, agility: 2, maxHP: 10)
+        var levels = [
+            LevelDefinition(id: 1, title: "First", summary: "First encounter.", rows: 2, columns: 4, wallHP: 1, enemies: []),
+            LevelDefinition(id: 2, title: "Second", summary: "Second encounter.", rows: 2, columns: 4, wallHP: 1, enemies: [])
+        ]
+        if includeDefeatLevel {
+            let enemies = (0..<3).map { index in
+                CombatantBlueprint(
+                    id: "enemy-\(index)",
+                    name: "Enemy",
+                    symbol: "E",
+                    attack: 100,
+                    range: 1,
+                    agility: 1,
+                    maxHP: 10,
+                    startingPosition: GridPoint(x: index, y: 1)
+                )
+            }
+            levels.append(
+                LevelDefinition(id: 3, title: "Third", summary: "Defeat test.", rows: 4, columns: 4, wallHP: 99, enemies: enemies)
+            )
+        }
+        return GameContent(starterHeroes: starterHeroes, unlockableHeroes: [wizard], levels: levels)
     }
 }
