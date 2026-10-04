@@ -30,10 +30,16 @@ public struct LevelDefinition: Identifiable, Equatable, Codable, Sendable {
 
 public struct GameContent: Equatable, Sendable {
     public let starterHeroes: [CombatantBlueprint]
+    public let unlockableHeroes: [CombatantBlueprint]
     public let levels: [LevelDefinition]
 
-    public init(starterHeroes: [CombatantBlueprint], levels: [LevelDefinition]) {
+    public init(
+        starterHeroes: [CombatantBlueprint],
+        unlockableHeroes: [CombatantBlueprint] = [],
+        levels: [LevelDefinition]
+    ) {
         self.starterHeroes = starterHeroes
+        self.unlockableHeroes = unlockableHeroes
         self.levels = levels
     }
 
@@ -41,6 +47,9 @@ public struct GameContent: Equatable, Sendable {
         starterHeroes: [
             CombatantBlueprint(id: "knight", name: "Knight", symbol: "♞", attack: 4, range: 1, agility: 4, maxHP: 18),
             CombatantBlueprint(id: "archer", name: "Archer", symbol: "⚔", attack: 3, range: 5, agility: 4, maxHP: 12),
+            CombatantBlueprint(id: "rogue", name: "Rogue", symbol: "☠", attack: 4, range: 2, agility: 6, maxHP: 12)
+        ],
+        unlockableHeroes: [
             CombatantBlueprint(id: "wizard", name: "Wizard", symbol: "✡", attack: 2, range: 7, agility: 2, maxHP: 10)
         ],
         levels: [

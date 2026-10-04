@@ -72,30 +72,46 @@ public struct EncounterState: Equatable, Sendable {
 public struct GameSession: Equatable, Sendable {
     public let content: GameContent
     public private(set) var selectedHeroes: [CombatantBlueprint]
+    public private(set) var unlockedHeroes: [CombatantBlueprint]
     public private(set) var partyRoster: [Combatant]
     public private(set) var currentLevelIndex: Int?
     public private(set) var screen: SessionScreen
     public private(set) var encounter: EncounterState?
 
+    public var availableHeroes: [CombatantBlueprint] {
+        content.starterHeroes + unlockedHeroes
+    }
+
     public init(content: GameContent = .mvp) {
         self.content = content
         self.selectedHeroes = Array(content.starterHeroes.prefix(3))
+        self.unlockedHeroes = []
         self.partyRoster = []
         self.currentLevelIndex = nil
         self.screen = .title
         self.encounter = nil
     }
 
+    public mutating func toggleHeroSelection(_ heroID: String) {
+        guard let hero = availableHeroes.first(where: { $0.id == heroID }) else { return }
+        if let selectedIndex = selectedHeroes.firstIndex(where: { $0.id == heroID }) {
+            selectedHeroes.remove(at: selectedIndex)
+        } else if selectedHeroes.count < 3 {
+            selectedHeroes.append(hero)
+        }
+    }
+
     public mutating func continuePrimaryAction() {
         switch screen {
         case .title:
+            guard selectedHeroes.count == 3 else { return }
             startAdventure()
         case .briefing:
             beginEncounter()
         case .encounterVictory:
             advanceToNextBeat()
         case .campaignVictory, .defeat:
-            self = GameSession(content: content)
+            restartCampaign()
         case .battle:
             break
         }
@@ -220,14 +236,16 @@ public struct GameSession: Equatable, Sendable {
             }
             return "This first-pass campaign slice is complete."
         case .campaignVictory:
-            return "Two original levels, one mobile-friendly loop, and a clean base for phase 2."
+            let unlockedNames = unlockedHeroes.map(\.name).joined(separator: ", ")
+            return unlockedNames.isEmpty
+                ? "Two original levels, one mobile-friendly loop, and a clean base for phase 2."
+                : "\(unlockedNames) joined the available roster. Choose a new squad to continue."
         case .defeat:
             return "All living heroes were dropped before the wall could fall."
         }
     }
 
     private mutating func startAdventure() {
-        selectedHeroes = Array(content.starterHeroes.prefix(3))
         partyRoster = stableHeroSort(
             selectedHeroes.enumerated().map { index, blueprint in
                 Combatant(
@@ -443,6 +461,11 @@ public struct GameSession: Equatable, Sendable {
         appendLog("The wall collapses.", to: &encounter)
         partyRoster = stableHeroSort(encounter.heroes.filter(\.isAlive))
         let completedLevelIndex = currentLevelIndex ?? 0
+        if completedLevelIndex + 1 >= 2 {
+            for hero in content.unlockableHeroes where !unlockedHeroes.contains(where: { $0.id == hero.id }) {
+                unlockedHeroes.append(hero)
+            }
+        }
         self.encounter = encounter
         if completedLevelIndex + 1 < content.levels.count {
             screen = .encounterVictory(levelIndex: completedLevelIndex)
@@ -461,6 +484,14 @@ public struct GameSession: Equatable, Sendable {
         self.currentLevelIndex = nextLevelIndex
         self.encounter = nil
         screen = .briefing(levelIndex: nextLevelIndex)
+    }
+
+    private mutating func restartCampaign() {
+        let unlockedHeroes = self.unlockedHeroes
+        let selectedHeroes = self.selectedHeroes
+        self = GameSession(content: content)
+        self.unlockedHeroes = unlockedHeroes
+        self.selectedHeroes = selectedHeroes
     }
 
     private mutating func finishDefeat(levelIndex: Int, encounter: EncounterState? = nil) {

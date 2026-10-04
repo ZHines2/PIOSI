@@ -43,8 +43,12 @@ struct ContentView: View {
         VStack(alignment: .leading, spacing: 16) {
             Text(stageCopy)
                 .font(.headline)
+            if case .title = viewModel.screen {
+                heroSelection
+            }
             Button(viewModel.primaryActionTitle, action: viewModel.triggerPrimaryAction)
                 .buttonStyle(PrimaryCTAButtonStyle())
+                .disabled(viewModel.screen == .title && !viewModel.canStartAdventure)
         }
         .padding(18)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -54,10 +58,38 @@ struct ContentView: View {
         )
     }
 
+    private var heroSelection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Choose your squad (\(viewModel.selectedHeroIDs.count)/3)")
+                .font(.subheadline.weight(.semibold))
+            ForEach(viewModel.availableHeroes) { hero in
+                let isSelected = viewModel.selectedHeroIDs.contains(hero.id)
+                Button {
+                    viewModel.toggleHeroSelection(hero.id)
+                } label: {
+                    HStack {
+                        Text(hero.symbol)
+                        Text(hero.name)
+                        Spacer()
+                        Text(isSelected ? "Selected" : "Add")
+                            .foregroundStyle(isSelected ? .green : .secondary)
+                    }
+                    .padding(12)
+                    .background(
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .fill(Color.white.opacity(isSelected ? 0.12 : 0.05))
+                    )
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("\(isSelected ? "Remove" : "Add") \(hero.name) \(isSelected ? "from" : "to") squad")
+            }
+        }
+    }
+
     private var stageCopy: String {
         switch viewModel.screen {
         case .title:
-            return "This Swift MVP keeps the current web loop intentionally small: fixed starter party, two battles, touch-first controls, and a clean core model ready for expansion."
+            return "Begin with Knight, Archer, and Rogue. Choose three heroes from your available roster."
         case .briefing(let levelIndex):
             return "Level \(levelIndex + 1) briefing: keep the original title and objective, but trim the presentation to a phone-friendly card before battle begins."
         case .encounterVictory:

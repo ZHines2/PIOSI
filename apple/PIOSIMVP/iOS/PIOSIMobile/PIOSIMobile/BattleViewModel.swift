@@ -7,6 +7,9 @@ final class BattleViewModel: ObservableObject {
 
     var screen: SessionScreen { session.screen }
     var encounter: EncounterState? { session.encounter }
+    var availableHeroes: [CombatantBlueprint] { session.availableHeroes }
+    var selectedHeroIDs: Set<String> { Set(session.selectedHeroes.map(\.id)) }
+    var canStartAdventure: Bool { session.selectedHeroes.count == 3 }
     var titleText: String { session.titleText() }
     var subtitleText: String { session.subtitleText() }
 
@@ -27,6 +30,10 @@ final class BattleViewModel: ObservableObject {
 
     func triggerPrimaryAction() {
         updateSession { $0.continuePrimaryAction() }
+    }
+
+    func toggleHeroSelection(_ heroID: String) {
+        updateSession { $0.toggleHeroSelection(heroID) }
     }
 
     func move(_ delta: GridPoint) {
