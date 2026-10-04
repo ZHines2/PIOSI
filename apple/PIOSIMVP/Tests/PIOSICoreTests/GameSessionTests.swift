@@ -81,6 +81,60 @@ final class GameSessionTests: XCTestCase {
         XCTAssertFalse(session.selectedHeroes.contains(where: { $0.id == "wizard" }))
     }
 
+    func testPartialSavedSquadRemainsPartialAfterSessionRecreation() {
+        let store = FixedCampaignProgressStore(
+            progress: CampaignProgress(
+                selectedHeroIDs: ["archer"],
+                unlockedHeroIDs: [],
+                completedEncounterCount: 0
+            )
+        )
+
+        let session = GameSession(content: .mvp, progressStore: store)
+
+        XCTAssertEqual(session.selectedHeroes.map(\.id), ["archer"])
+    }
+
+    func testOlderProgressSchemaFallsBackWithoutOverwriting() throws {
+        let suiteName = "PIOSIProgressOlderSchemaTests-\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let key = UserDefaultsCampaignProgressStore.storageKey
+        let oldData = try JSONSerialization.data(withJSONObject: [
+            "schemaVersion": CampaignProgress.currentSchemaVersion - 1,
+            "selectedHeroIDs": ["wizard"],
+            "unlockedHeroIDs": ["wizard"],
+            "completedEncounterCount": 2
+        ])
+        defaults.set(oldData, forKey: key)
+
+        let session = GameSession(content: .mvp, progressStore: UserDefaultsCampaignProgressStore(suiteName: suiteName))
+
+        XCTAssertEqual(session.selectedHeroes.map(\.id), ["knight", "archer", "rogue"])
+        XCTAssertTrue(session.unlockedHeroes.isEmpty)
+        XCTAssertEqual(defaults.data(forKey: key), oldData)
+    }
+
+    func testNegativeStoredWinCountIsNormalizedToZero() throws {
+        let suiteName = "PIOSIProgressNegativeWinsTests-\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let key = UserDefaultsCampaignProgressStore.storageKey
+        let invalidData = try JSONSerialization.data(withJSONObject: [
+            "schemaVersion": CampaignProgress.currentSchemaVersion,
+            "selectedHeroIDs": ["knight", "archer", "rogue"],
+            "unlockedHeroIDs": [],
+            "completedEncounterCount": -5
+        ])
+        defaults.set(invalidData, forKey: key)
+        let store = UserDefaultsCampaignProgressStore(suiteName: suiteName)
+
+        let session = GameSession(content: .mvp, progressStore: store)
+
+        XCTAssertEqual(session.completedEncounterCount, 0)
+        XCTAssertEqual(store.load()?.completedEncounterCount, 0)
+    }
+
     func testCorruptStoredProgressFallsBackToStarterParty() throws {
         let suiteName = "PIOSIProgressCorruptTests-\(UUID().uuidString)"
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))

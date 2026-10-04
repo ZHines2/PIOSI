@@ -117,7 +117,11 @@ public final class UserDefaultsCampaignProgressStore: CampaignProgressStore, @un
             preservesFutureSchema = Self.hasNewerSchema(currentData)
         }
         guard !preservesFutureSchema else { return }
-        guard let data = try? JSONEncoder().encode(progress) else {
+        let data: Data
+        do {
+            data = try JSONEncoder().encode(progress)
+        } catch {
+            NSLog("PIOSI campaign progress could not be encoded: %@", String(describing: error))
             assertionFailure("Campaign progress could not be encoded.")
             return
         }

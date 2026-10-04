@@ -102,7 +102,7 @@ public struct GameSession: Equatable, Sendable {
         self.selectedHeroes = Self.normalizedSelection(
             preferredHeroIDs: savedProgress?.selectedHeroIDs ?? [],
             availableHeroes: availableHeroes,
-            fallbackHeroes: content.starterHeroes,
+            fallbackHeroes: savedProgress == nil ? content.starterHeroes : [],
             partySizeLimit: content.partySizeLimit
         )
         self.partyRoster = []
