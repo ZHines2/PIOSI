@@ -83,7 +83,7 @@ public struct GameSession: Equatable, Sendable {
         content.starterHeroes + unlockedHeroes
     }
     public var partySizeLimit: Int {
-        min(content.partySizeLimit, availableHeroes.count)
+        content.partySizeLimit
     }
 
     public init(content: GameContent = .mvp) {
@@ -125,6 +125,7 @@ public struct GameSession: Equatable, Sendable {
 
     public mutating func moveActiveHero(by delta: GridPoint) {
         guard screen == .battle, var encounter else { return }
+        defer { self.encounter = encounter }
         guard let activeHero = encounter.activeHero, activeHero.isAlive else {
             finishDefeat(levelIndex: currentLevelIndex ?? 0, encounter: encounter)
             return
@@ -165,6 +166,7 @@ public struct GameSession: Equatable, Sendable {
 
     public mutating func attack(in delta: GridPoint) {
         guard screen == .battle, var encounter else { return }
+        defer { self.encounter = encounter }
         guard let activeHero = encounter.activeHero, activeHero.isAlive else { return }
 
         for step in 1...max(1, activeHero.range) {
@@ -204,6 +206,7 @@ public struct GameSession: Equatable, Sendable {
 
     public mutating func endTurn() {
         guard screen == .battle, var encounter else { return }
+        defer { self.encounter = encounter }
         advanceTurn(encounter: &encounter)
     }
 
@@ -213,6 +216,7 @@ public struct GameSession: Equatable, Sendable {
         case .title:
             return "PIOSI MVP"
         case .briefing(let levelIndex):
+            guard content.levels.indices.contains(levelIndex) else { return "Briefing" }
             return content.levels[levelIndex].title
         case .battle:
             return encounter?.level.title ?? "Battle"
@@ -231,6 +235,7 @@ public struct GameSession: Equatable, Sendable {
         case .title:
             return "A phone-first Swift pass through the core battle loop."
         case .briefing(let levelIndex):
+            guard content.levels.indices.contains(levelIndex) else { return "This briefing is unavailable." }
             return content.levels[levelIndex].summary
         case .battle:
             guard let encounter else { return "" }

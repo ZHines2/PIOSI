@@ -20,14 +20,29 @@ final class GameSessionTests: XCTestCase {
         XCTAssertEqual(session.unlockedHeroes.map(\.id), ["wizard"])
     }
 
-    func testMVPConfiguresWizardUnlockAndThresholdHasMinimum() throws {
+    func testMVPConfiguresWizardUnlockAfterTwoWins() throws {
         let wizardUnlock = try XCTUnwrap(GameContent.mvp.unlockableHeroes.first)
 
         XCTAssertEqual(wizardUnlock.hero.id, "wizard")
         XCTAssertEqual(wizardUnlock.requiredEncounterWins, 2)
+    }
+
+    func testUnlockableHeroClampsRequiredWinsToMinimumOfOne() {
+        let wizard = GameContent.mvp.unlockableHeroes[0].hero
+
         XCTAssertEqual(
-            UnlockableHero(hero: wizardUnlock.hero, requiredEncounterWins: 0).requiredEncounterWins,
+            UnlockableHero(hero: wizard, requiredEncounterWins: 0).requiredEncounterWins,
             1
+        )
+    }
+
+    func testInvalidBriefingIndicesUseFallbackText() {
+        let session = GameSession(content: .mvp)
+
+        XCTAssertEqual(session.titleText(for: .briefing(levelIndex: -1)), "Briefing")
+        XCTAssertEqual(
+            session.subtitleText(for: .briefing(levelIndex: GameContent.mvp.levels.count)),
+            "This briefing is unavailable."
         )
     }
 
