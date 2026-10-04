@@ -71,7 +71,6 @@ public struct EncounterState: Equatable, Sendable {
 
 public struct GameSession: Equatable, Sendable {
     private static let maxPartySize = 3
-    private static let heroUnlockEncounterCount = 2
 
     public let content: GameContent
     public private(set) var selectedHeroes: [CombatantBlueprint]
@@ -471,9 +470,9 @@ public struct GameSession: Equatable, Sendable {
         partyRoster = stableHeroSort(encounter.heroes.filter(\.isAlive))
         completedEncounterCount += 1
         let completedLevelIndex = currentLevelIndex ?? 0
-        if completedEncounterCount >= Self.heroUnlockEncounterCount {
-            for hero in content.unlockableHeroes where !unlockedHeroes.contains(where: { $0.id == hero.id }) {
-                unlockedHeroes.append(hero)
+        for unlock in content.unlockableHeroes where unlock.requiredEncounterWins <= completedEncounterCount {
+            if !unlockedHeroes.contains(where: { $0.id == unlock.hero.id }) {
+                unlockedHeroes.append(unlock.hero)
             }
         }
         self.encounter = encounter
@@ -499,9 +498,11 @@ public struct GameSession: Equatable, Sendable {
     private mutating func restartCampaign() {
         let unlockedHeroes = self.unlockedHeroes
         let selectedHeroes = self.selectedHeroes
+        let completedEncounterCount = self.completedEncounterCount
         self = GameSession(content: content)
         self.unlockedHeroes = unlockedHeroes
         self.selectedHeroes = selectedHeroes
+        self.completedEncounterCount = completedEncounterCount
     }
 
     private mutating func finishDefeat(levelIndex: Int, encounter: EncounterState? = nil) {

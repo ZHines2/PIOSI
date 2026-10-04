@@ -28,14 +28,24 @@ public struct LevelDefinition: Identifiable, Equatable, Codable, Sendable {
     }
 }
 
+public struct UnlockableHero: Equatable, Sendable {
+    public let hero: CombatantBlueprint
+    public let requiredEncounterWins: Int
+
+    public init(hero: CombatantBlueprint, requiredEncounterWins: Int) {
+        self.hero = hero
+        self.requiredEncounterWins = max(1, requiredEncounterWins)
+    }
+}
+
 public struct GameContent: Equatable, Sendable {
     public let starterHeroes: [CombatantBlueprint]
-    public let unlockableHeroes: [CombatantBlueprint]
+    public let unlockableHeroes: [UnlockableHero]
     public let levels: [LevelDefinition]
 
     public init(
         starterHeroes: [CombatantBlueprint],
-        unlockableHeroes: [CombatantBlueprint] = [],
+        unlockableHeroes: [UnlockableHero] = [],
         levels: [LevelDefinition]
     ) {
         self.starterHeroes = starterHeroes
@@ -50,7 +60,10 @@ public struct GameContent: Equatable, Sendable {
             CombatantBlueprint(id: "rogue", name: "Rogue", symbol: "☠", attack: 4, range: 2, agility: 6, maxHP: 12)
         ],
         unlockableHeroes: [
-            CombatantBlueprint(id: "wizard", name: "Wizard", symbol: "✡", attack: 2, range: 7, agility: 2, maxHP: 10)
+            UnlockableHero(
+                hero: CombatantBlueprint(id: "wizard", name: "Wizard", symbol: "✡", attack: 2, range: 7, agility: 2, maxHP: 10),
+                requiredEncounterWins: 2
+            )
         ],
         levels: [
             LevelDefinition(

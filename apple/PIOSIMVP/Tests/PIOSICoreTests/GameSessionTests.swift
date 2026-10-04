@@ -20,6 +20,20 @@ final class GameSessionTests: XCTestCase {
         XCTAssertEqual(session.unlockedHeroes.map(\.id), ["wizard"])
     }
 
+    func testVictoryRestartPreservesUnlockedHeroesAndSelectedParty() {
+        var session = GameSession(content: wizardUnlockContent())
+        winNextEncounter(&session)
+        winNextEncounter(&session)
+        let selectedHeroes = session.selectedHeroes
+
+        session.continuePrimaryAction()
+
+        XCTAssertEqual(session.screen, .title)
+        XCTAssertEqual(session.unlockedHeroes.map(\.id), ["wizard"])
+        XCTAssertEqual(session.selectedHeroes, selectedHeroes)
+        XCTAssertEqual(session.completedEncounterCount, 2)
+    }
+
     func testLockedAndUnknownHeroesCannotBeSelected() {
         var session = GameSession(content: wizardUnlockContent())
 
@@ -95,6 +109,7 @@ final class GameSessionTests: XCTestCase {
 
         XCTAssertEqual(session.screen, .title)
         XCTAssertEqual(session.unlockedHeroes.map(\.id), ["wizard"])
+        XCTAssertEqual(session.completedEncounterCount, 2)
     }
 
     func testTitleAdvancesToFirstBriefingAndBattle() {
@@ -260,6 +275,10 @@ final class GameSessionTests: XCTestCase {
                 LevelDefinition(id: 3, title: "Third", summary: "Defeat test.", rows: 4, columns: 4, wallHP: 99, enemies: enemies)
             )
         }
-        return GameContent(starterHeroes: starterHeroes, unlockableHeroes: [wizard], levels: levels)
+        return GameContent(
+            starterHeroes: starterHeroes,
+            unlockableHeroes: [UnlockableHero(hero: wizard, requiredEncounterWins: 2)],
+            levels: levels
+        )
     }
 }
