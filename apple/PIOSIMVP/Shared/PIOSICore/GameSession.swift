@@ -110,7 +110,7 @@ public struct GameSession: Equatable, Sendable {
     public mutating func continuePrimaryAction() {
         switch screen {
         case .title:
-            guard selectedHeroes.count == partySizeLimit else { return }
+            guard !selectedHeroes.isEmpty, selectedHeroes.count == partySizeLimit else { return }
             startAdventure()
         case .briefing:
             beginEncounter()
@@ -130,7 +130,8 @@ public struct GameSession: Equatable, Sendable {
             return
         }
         guard encounter.remainingMovePoints > 0 else {
-            endTurn()
+            advanceTurn(encounter: &encounter)
+            self.encounter = encounter
             return
         }
 

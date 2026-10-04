@@ -57,6 +57,16 @@ final class GameSessionTests: XCTestCase {
         XCTAssertNil(session.encounter)
     }
 
+    func testCampaignWithoutStarterHeroesCannotStart() {
+        let level = LevelDefinition(id: 1, title: "Empty", summary: "No party.", rows: 2, columns: 2, wallHP: 1, enemies: [])
+        var session = GameSession(content: GameContent(starterHeroes: [], levels: [level]))
+
+        session.continuePrimaryAction()
+
+        XCTAssertEqual(session.partySizeLimit, 0)
+        XCTAssertEqual(session.screen, .title)
+    }
+
     func testVictoryRestartPreservesUnlockedHeroesAndSelectedParty() {
         var session = GameSession(content: wizardUnlockContent())
         winNextEncounter(&session)
@@ -231,6 +241,24 @@ final class GameSessionTests: XCTestCase {
 
         XCTAssertEqual(session.encounter?.enemies.first?.position, GridPoint(x: 1, y: 0))
         XCTAssertEqual(session.encounter?.heroes.first?.hp, 7)
+    }
+
+    func testMovementWithoutMovePointsAdvancesTurnAndPersistsState() {
+        let content = GameContent(
+            starterHeroes: [
+                CombatantBlueprint(id: "hero", name: "Hero", symbol: "H", attack: 2, range: 1, agility: 0, maxHP: 10)
+            ],
+            levels: [
+                LevelDefinition(id: 1, title: "No Moves", summary: "Turn should advance.", rows: 3, columns: 3, wallHP: 99, enemies: [])
+            ]
+        )
+        var session = GameSession(content: content)
+        session.continuePrimaryAction()
+        session.continuePrimaryAction()
+
+        session.moveActiveHero(by: .right)
+
+        XCTAssertEqual(session.encounter?.turnCount, 2)
     }
 
     func testEnemyTargetingBreaksDistanceTiesDeterministically() {

@@ -62,27 +62,32 @@ struct ContentView: View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Choose your squad (\(viewModel.selectedHeroIDs.count)/\(viewModel.partySizeLimit))")
                 .font(.subheadline.weight(.semibold))
-            ForEach(viewModel.availableHeroes) { hero in
-                let isSelected = viewModel.selectedHeroIDs.contains(hero.id)
-                Button {
-                    viewModel.toggleHeroSelection(hero.id)
-                } label: {
-                    HStack {
-                        Text(hero.symbol)
-                        Text(hero.name)
-                        Spacer()
-                        Label(isSelected ? "Selected" : "Add", systemImage: isSelected ? "checkmark.circle.fill" : "circle")
-                            .foregroundStyle(isSelected ? .green : .secondary)
+            if viewModel.availableHeroes.isEmpty {
+                Text("No heroes are available.")
+                    .foregroundStyle(.secondary)
+            } else {
+                ForEach(viewModel.availableHeroes) { hero in
+                    let isSelected = viewModel.selectedHeroIDs.contains(hero.id)
+                    Button {
+                        viewModel.toggleHeroSelection(hero.id)
+                    } label: {
+                        HStack {
+                            Text(hero.symbol)
+                            Text(hero.name)
+                            Spacer()
+                            Label(isSelected ? "Selected" : "Add", systemImage: isSelected ? "checkmark.circle.fill" : "circle")
+                                .foregroundStyle(isSelected ? .green : .secondary)
+                        }
+                        .padding(12)
+                        .background(
+                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                .fill(Color.white.opacity(isSelected ? 0.12 : 0.05))
+                        )
                     }
-                    .padding(12)
-                    .background(
-                        RoundedRectangle(cornerRadius: 14, style: .continuous)
-                            .fill(Color.white.opacity(isSelected ? 0.12 : 0.05))
-                    )
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("\(isSelected ? "Remove" : "Add") \(hero.name) \(isSelected ? "from" : "to") squad")
+                    .accessibilityAddTraits(isSelected ? .isSelected : [])
                 }
-                .buttonStyle(.plain)
-                .accessibilityLabel("\(isSelected ? "Remove" : "Add") \(hero.name) \(isSelected ? "from" : "to") squad")
-                .accessibilityAddTraits(isSelected ? .isSelected : [])
             }
         }
     }
@@ -90,7 +95,7 @@ struct ContentView: View {
     private var stageCopy: String {
         switch viewModel.screen {
         case .title:
-            return "Begin with Knight, Archer, and Rogue. Choose three heroes from your available roster."
+            return "Begin with \(viewModel.starterHeroNames.joined(separator: ", ")). Choose \(viewModel.partySizeLimit) heroes from your available roster."
         case .briefing:
             return "Prepare your squad, break through the wall, and press on to the next encounter."
         case .encounterVictory:
@@ -219,6 +224,8 @@ private struct BoardCell: View {
             RoundedRectangle(cornerRadius: 12, style: .continuous)
                 .stroke(borderColor, lineWidth: 1)
         )
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(tileAccessibilityLabel)
     }
 
     private var symbol: String {
@@ -253,6 +260,19 @@ private struct BoardCell: View {
             return isActive ? .white : .clear
         default:
             return .clear
+        }
+    }
+
+    private var tileAccessibilityLabel: String {
+        switch tile {
+        case .empty:
+            return "Empty tile"
+        case .wall:
+            return "Wall"
+        case .hero(let hero, let isActive):
+            return "\(isActive ? "Active " : "")\(hero.name), HP \(max(0, hero.hp)) of \(hero.maxHP)"
+        case .enemy(let enemy):
+            return "\(enemy.name), HP \(max(0, enemy.hp)) of \(enemy.maxHP)"
         }
     }
 }

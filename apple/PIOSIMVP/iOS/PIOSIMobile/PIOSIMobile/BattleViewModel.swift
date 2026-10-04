@@ -8,9 +8,12 @@ final class BattleViewModel: ObservableObject {
     var screen: SessionScreen { session.screen }
     var encounter: EncounterState? { session.encounter }
     var availableHeroes: [CombatantBlueprint] { session.availableHeroes }
+    var starterHeroNames: [String] { session.content.starterHeroes.map(\.name) }
     var selectedHeroIDs: Set<String> { Set(session.selectedHeroes.map(\.id)) }
     var partySizeLimit: Int { session.partySizeLimit }
-    var canStartAdventure: Bool { session.selectedHeroes.count == session.partySizeLimit }
+    var canStartAdventure: Bool {
+        !session.selectedHeroes.isEmpty && session.selectedHeroes.count == session.partySizeLimit
+    }
     var titleText: String { session.titleText() }
     var subtitleText: String { session.subtitleText() }
 

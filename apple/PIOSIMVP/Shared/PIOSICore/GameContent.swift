@@ -51,7 +51,7 @@ public struct GameContent: Equatable, Sendable {
         levels: [LevelDefinition]
     ) {
         self.starterHeroes = starterHeroes
-        self.partySizeLimit = max(1, min(partySizeLimit, starterHeroes.count))
+        self.partySizeLimit = min(max(1, partySizeLimit), starterHeroes.count)
         self.unlockableHeroes = unlockableHeroes
         self.levels = levels
     }
