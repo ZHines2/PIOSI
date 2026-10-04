@@ -125,6 +125,7 @@ public struct GameSession: Equatable, Sendable {
 
     public mutating func moveActiveHero(by delta: GridPoint) {
         guard screen == .battle, var encounter else { return }
+        defer { self.encounter = encounter }
         guard let activeHero = encounter.activeHero, activeHero.isAlive else {
             finishDefeat(levelIndex: currentLevelIndex ?? 0, encounter: encounter)
             return
@@ -138,7 +139,6 @@ public struct GameSession: Equatable, Sendable {
         let destination = activeHero.position.translated(by: delta)
         guard isInsideBoard(destination, level: encounter.level) else {
             appendLog("The battlefield ends there.", to: &encounter)
-            self.encounter = encounter
             return
         }
 
@@ -150,7 +150,6 @@ public struct GameSession: Equatable, Sendable {
 
         guard isPassable(destination, encounter: encounter) else {
             appendLog("\(activeHero.name) cannot move into an occupied tile.", to: &encounter)
-            self.encounter = encounter
             return
         }
 
@@ -159,8 +158,6 @@ public struct GameSession: Equatable, Sendable {
         appendLog("\(activeHero.name) advances to (\(destination.x), \(destination.y)).", to: &encounter)
         if encounter.remainingMovePoints == 0 {
             advanceTurn(encounter: &encounter)
-        } else {
-            self.encounter = encounter
         }
     }
 
@@ -311,7 +308,7 @@ public struct GameSession: Equatable, Sendable {
 
     private func seedHeroesForEncounter(level: LevelDefinition) -> [Combatant] {
         let sortedRoster = stableHeroSort(partyRoster)
-        let width = max(1, min(level.columns, 3))
+        let width = max(1, min(level.columns, content.partySizeLimit))
         return sortedRoster.enumerated().map { index, hero in
             var seededHero = hero
             seededHero.position = GridPoint(x: index % width, y: index / width)
@@ -410,7 +407,7 @@ public struct GameSession: Equatable, Sendable {
         appendLog("Enemy turn begins.", to: &encounter)
         for enemyIndex in encounter.enemies.indices {
             guard encounter.enemies[enemyIndex].isAlive else { continue }
-            for _ in 0..<encounter.enemies[enemyIndex].agility {
+            for _ in 0..<max(0, encounter.enemies[enemyIndex].agility) {
                 moveEnemy(enemyIndex: enemyIndex, encounter: &encounter)
             }
             enemyAttackIfPossible(enemyIndex: enemyIndex, encounter: &encounter)

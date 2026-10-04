@@ -279,6 +279,85 @@ final class GameSessionTests: XCTestCase {
         XCTAssertEqual(session.encounter?.wallHP, 7)
     }
 
+    func testAttackHoldsFireWhenAllyBlocksPath() throws {
+        let content = GameContent(
+            starterHeroes: [
+                CombatantBlueprint(id: "first", name: "First", symbol: "F", attack: 2, range: 2, agility: 1, maxHP: 10),
+                CombatantBlueprint(id: "ally", name: "Ally", symbol: "A", attack: 2, range: 1, agility: 1, maxHP: 10)
+            ],
+            levels: [
+                LevelDefinition(id: 1, title: "Ally Block", summary: "Ally blocks attack.", rows: 3, columns: 4, wallHP: 99, enemies: [])
+            ]
+        )
+        var session = GameSession(content: content)
+        session.continuePrimaryAction()
+        session.continuePrimaryAction()
+
+        session.attack(in: .right)
+
+        let encounter = try XCTUnwrap(session.encounter)
+        XCTAssertTrue(encounter.log.contains(where: { $0.contains("holds fire") }))
+    }
+
+    func testAttackCanDefeatAnEnemyInRange() throws {
+        let content = GameContent(
+            starterHeroes: [
+                CombatantBlueprint(id: "hero", name: "Hero", symbol: "H", attack: 5, range: 2, agility: 1, maxHP: 10)
+            ],
+            levels: [
+                LevelDefinition(
+                    id: 1,
+                    title: "Enemy Target",
+                    summary: "Enemy is in attack range.",
+                    rows: 3,
+                    columns: 4,
+                    wallHP: 99,
+                    enemies: [
+                        CombatantBlueprint(id: "enemy", name: "Enemy", symbol: "E", attack: 1, range: 1, agility: 1, maxHP: 4, startingPosition: GridPoint(x: 1, y: 0))
+                    ]
+                )
+            ]
+        )
+        var session = GameSession(content: content)
+        session.continuePrimaryAction()
+        session.continuePrimaryAction()
+
+        session.attack(in: .right)
+
+        let encounter = try XCTUnwrap(session.encounter)
+        XCTAssertTrue(encounter.enemies.isEmpty)
+        XCTAssertTrue(encounter.log.contains(where: { $0.contains("Enemy falls.") }))
+    }
+
+    func testAttackWithNoTargetLogsMissAndNegativeEnemyAgilityIsSafe() throws {
+        let content = GameContent(
+            starterHeroes: [
+                CombatantBlueprint(id: "hero", name: "Hero", symbol: "H", attack: 2, range: 1, agility: 1, maxHP: 10)
+            ],
+            levels: [
+                LevelDefinition(
+                    id: 1,
+                    title: "No Target",
+                    summary: "No target in attack direction.",
+                    rows: 3,
+                    columns: 4,
+                    wallHP: 99,
+                    enemies: [
+                        CombatantBlueprint(id: "enemy", name: "Enemy", symbol: "E", attack: 1, range: 1, agility: -1, maxHP: 5, startingPosition: GridPoint(x: 2, y: 0))
+                    ]
+                )
+            ]
+        )
+        var session = GameSession(content: content)
+        session.continuePrimaryAction()
+        session.continuePrimaryAction()
+
+        session.attack(in: .left)
+
+        let encounter = try XCTUnwrap(session.encounter)
+        XCTAssertTrue(encounter.log.contains(where: { $0.contains("attacks, but nothing is in range") }))
+    }
+
     func testEnemyTargetingBreaksDistanceTiesDeterministically() {
         let content = GameContent(
             starterHeroes: [
