@@ -93,7 +93,7 @@ public final class UserDefaultsCampaignProgressStore: CampaignProgressStore, @un
         if defaults == nil {
             NSLog("PIOSI campaign progress suite is unavailable; campaign progress will not be saved.")
         } else if preservesUnsupportedSchema {
-            NSLog("PIOSI campaign progress uses an unsupported or corrupt schema; it will not be overwritten.")
+            NSLog("PIOSI campaign progress uses an unsupported schema; it will not be overwritten.")
         }
     }
 
@@ -140,7 +140,7 @@ public final class UserDefaultsCampaignProgressStore: CampaignProgressStore, @un
 
     private static func hasUnsupportedSchema(_ data: Data?) -> Bool {
         guard let data else { return false }
-        guard let schema = try? JSONDecoder().decode(CampaignProgressSchema.self, from: data) else { return true }
+        guard let schema = try? JSONDecoder().decode(CampaignProgressSchema.self, from: data) else { return false }
         return schema.schemaVersion != CampaignProgress.currentSchemaVersion
     }
 }

@@ -65,20 +65,23 @@ final class GameSessionTests: XCTestCase {
         XCTAssertEqual(session.selectedHeroes.map(\.id), ["archer", "wizard", "rogue"])
     }
 
-    func testSavedUnlockIDDoesNotBypassWinRequirement() {
+    func testSavedUnlockRemainsUnlockedWhenContentRequirementChanges() {
         let store = FixedCampaignProgressStore(
             progress: CampaignProgress(
                 selectedHeroIDs: ["wizard", "archer", "rogue"],
                 unlockedHeroIDs: ["wizard"],
-                completedEncounterCount: 0
+                completedEncounterCount: 2
             )
         )
 
-        let session = GameSession(content: wizardUnlockContent(), progressStore: store)
+        let session = GameSession(
+            content: wizardUnlockContent(requiredEncounterWins: 3),
+            progressStore: store
+        )
 
-        XCTAssertTrue(session.unlockedHeroes.isEmpty)
-        XCTAssertFalse(session.availableHeroes.contains(where: { $0.id == "wizard" }))
-        XCTAssertFalse(session.selectedHeroes.contains(where: { $0.id == "wizard" }))
+        XCTAssertEqual(session.unlockedHeroes.map(\.id), ["wizard"])
+        XCTAssertTrue(session.availableHeroes.contains(where: { $0.id == "wizard" }))
+        XCTAssertTrue(session.selectedHeroes.contains(where: { $0.id == "wizard" }))
     }
 
     func testPartialSavedSquadRemainsPartialAfterSessionRecreation() {
@@ -142,7 +145,7 @@ final class GameSessionTests: XCTestCase {
         XCTAssertEqual(store.load()?.completedEncounterCount, 0)
     }
 
-    func testCorruptStoredProgressFallsBackWithoutOverwritingOnSelection() throws {
+    func testCorruptStoredProgressFallsBackAndRecoversOnSelection() throws {
         let suiteName = "PIOSIProgressCorruptTests-\(UUID().uuidString)"
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
         defer { defaults.removePersistentDomain(forName: suiteName) }
@@ -156,7 +159,11 @@ final class GameSessionTests: XCTestCase {
         XCTAssertTrue(session.unlockedHeroes.isEmpty)
         XCTAssertEqual(session.completedEncounterCount, 0)
         session.toggleHeroSelection("knight")
-        XCTAssertEqual(defaults.data(forKey: UserDefaultsCampaignProgressStore.storageKey), corruptData)
+        let recoveredData = try XCTUnwrap(defaults.data(forKey: UserDefaultsCampaignProgressStore.storageKey))
+        XCTAssertNotEqual(recoveredData, corruptData)
+        let recoveredProgress = try JSONDecoder().decode(CampaignProgress.self, from: recoveredData)
+        XCTAssertEqual(recoveredProgress.selectedHeroIDs, ["archer", "rogue"])
+        XCTAssertEqual(recoveredProgress.completedEncounterCount, 0)
     }
 
     func testUnsupportedProgressVersionSurvivesSelectionAndVictoryWrites() throws {
@@ -612,7 +619,10 @@ final class GameSessionTests: XCTestCase {
         }
     }
 
-    private func wizardUnlockContent(includeDefeatLevel: Bool = false) -> GameContent {
+    private func wizardUnlockContent(
+        includeDefeatLevel: Bool = false,
+        requiredEncounterWins: Int = 2
+    ) -> GameContent {
         let starterHeroes = [
             CombatantBlueprint(id: "knight", name: "Knight", symbol: "K", attack: 4, range: 1, agility: 4, maxHP: 18),
             CombatantBlueprint(id: "archer", name: "Archer", symbol: "A", attack: 3, range: 5, agility: 4, maxHP: 12),
@@ -642,7 +652,7 @@ final class GameSessionTests: XCTestCase {
         }
         return GameContent(
             starterHeroes: starterHeroes,
-            unlockableHeroes: [UnlockableHero(hero: wizard, requiredEncounterWins: 2)],
+            unlockableHeroes: [UnlockableHero(hero: wizard, requiredEncounterWins: requiredEncounterWins)],
             levels: levels
         )
     }

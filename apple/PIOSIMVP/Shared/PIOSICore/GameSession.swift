@@ -96,8 +96,9 @@ public struct GameSession: Equatable, Sendable {
         let savedProgress = progressStore.load()
         let savedWins = max(0, savedProgress?.completedEncounterCount ?? 0)
         let savedUnlockIDs = Set(savedProgress?.unlockedHeroIDs ?? [])
-        let eligibleHeroes = Self.unlockableHeroes(in: content, completedEncounterCount: savedWins)
-        self.unlockedHeroes = eligibleHeroes.filter { savedUnlockIDs.contains($0.id) }
+        self.unlockedHeroes = content.unlockableHeroes
+            .map(\.hero)
+            .filter { savedUnlockIDs.contains($0.id) }
         let availableHeroes = content.starterHeroes + self.unlockedHeroes
         self.selectedHeroes = Self.normalizedSelection(
             preferredHeroIDs: savedProgress?.selectedHeroIDs ?? [],
