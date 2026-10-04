@@ -74,13 +74,17 @@ public struct NoopCampaignProgressStore: CampaignProgressStore {
 public final class UserDefaultsCampaignProgressStore: CampaignProgressStore, @unchecked Sendable {
     static let storageKey = "piosi.campaignProgress"
     private let defaults: UserDefaults
+    private let preservesFutureSchema: Bool
 
     public init(suiteName: String? = nil) {
+        let defaults: UserDefaults
         if let suiteName {
-            self.defaults = UserDefaults(suiteName: suiteName) ?? .standard
+            defaults = UserDefaults(suiteName: suiteName) ?? .standard
         } else {
-            self.defaults = .standard
+            defaults = .standard
         }
+        self.defaults = defaults
+        self.preservesFutureSchema = Self.hasNewerSchema(defaults.data(forKey: Self.storageKey))
     }
 
     public func load() -> CampaignProgress? {
@@ -92,12 +96,9 @@ public final class UserDefaultsCampaignProgressStore: CampaignProgressStore, @un
         return progress
     }
 
+    /// Saves current-version progress unless the stored record is from a newer app schema.
     public func save(_ progress: CampaignProgress) {
-        if let data = defaults.data(forKey: Self.storageKey),
-           let existingVersion = try? JSONDecoder().decode(CampaignProgressSchema.self, from: data).schemaVersion,
-           existingVersion > CampaignProgress.currentSchemaVersion {
-            return
-        }
+        guard !preservesFutureSchema else { return }
         guard let data = try? JSONEncoder().encode(progress) else {
             assertionFailure("Campaign progress could not be encoded.")
             return
@@ -107,6 +108,14 @@ public final class UserDefaultsCampaignProgressStore: CampaignProgressStore, @un
 
     private struct CampaignProgressSchema: Decodable {
         let schemaVersion: Int
+    }
+
+    private static func hasNewerSchema(_ data: Data?) -> Bool {
+        guard let data,
+              let schema = try? JSONDecoder().decode(CampaignProgressSchema.self, from: data) else {
+            return false
+        }
+        return schema.schemaVersion > CampaignProgress.currentSchemaVersion
     }
 }
 

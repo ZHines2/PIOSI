@@ -124,6 +124,7 @@ public struct GameSession: Equatable, Sendable {
             unlockedHeroIDs: unlockedHeroes.map(\.id),
             completedEncounterCount: completedEncounterCount
         )
+        // Normalize known saved data, but leave missing or unsupported records untouched.
         if let savedProgress, restoredProgress != savedProgress {
             progressStore.save(restoredProgress)
         }

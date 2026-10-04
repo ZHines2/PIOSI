@@ -85,14 +85,14 @@ final class GameSessionTests: XCTestCase {
         let suiteName = "PIOSIProgressVersionTests-\(UUID().uuidString)"
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
         defer { defaults.removePersistentDomain(forName: suiteName) }
-        let store = UserDefaultsCampaignProgressStore(suiteName: suiteName)
         let unsupportedProgress = CampaignProgress(
             schemaVersion: CampaignProgress.currentSchemaVersion + 1,
             selectedHeroIDs: ["wizard"],
             unlockedHeroIDs: ["wizard"],
             completedEncounterCount: 2
         )
-        store.save(unsupportedProgress)
+        UserDefaultsCampaignProgressStore(suiteName: suiteName).save(unsupportedProgress)
+        let store = UserDefaultsCampaignProgressStore(suiteName: suiteName)
 
         var session = GameSession(content: .mvp, progressStore: store)
 
