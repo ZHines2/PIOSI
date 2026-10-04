@@ -2,6 +2,58 @@ import XCTest
 @testable import PIOSICore
 
 final class GameSessionTests: XCTestCase {
+    func testStarterPartyIsKnightArcherRogue() {
+        let session = GameSession(content: .mvp)
+
+        XCTAssertEqual(session.selectedHeroes.map(\.id), ["knight", "archer", "rogue"])
+        XCTAssertEqual(session.selectedHeroes.map(\.name), ["Knight", "Archer", "Rogue"])
+        XCTAssertEqual(session.selectedHeroes[2].agility, 6)
+    }
+
+    func testWizardUnlocksAfterTwoEncountersAndCanJoinSquad() {
+        let content = GameContent(
+            starterHeroes: [
+                CombatantBlueprint(id: "knight", name: "Knight", symbol: "K", attack: 4, range: 1, agility: 4, maxHP: 18),
+                CombatantBlueprint(id: "archer", name: "Archer", symbol: "A", attack: 3, range: 5, agility: 4, maxHP: 12),
+                CombatantBlueprint(id: "rogue", name: "Rogue", symbol: "R", attack: 4, range: 2, agility: 6, maxHP: 12)
+            ],
+            unlockableHeroes: [
+                CombatantBlueprint(id: "wizard", name: "Wizard", symbol: "W", attack: 2, range: 7, agility: 2, maxHP: 10)
+            ],
+            levels: [
+                LevelDefinition(id: 1, title: "First", summary: "First encounter.", rows: 2, columns: 4, wallHP: 1, enemies: []),
+                LevelDefinition(id: 2, title: "Second", summary: "Second encounter.", rows: 2, columns: 4, wallHP: 1, enemies: [])
+            ]
+        )
+        var session = GameSession(content: content)
+        session.continuePrimaryAction()
+        session.continuePrimaryAction()
+        session.moveActiveHero(by: .down)
+
+        XCTAssertEqual(session.screen, .encounterVictory(levelIndex: 0))
+        XCTAssertTrue(session.unlockedHeroes.isEmpty)
+
+        session.continuePrimaryAction()
+        session.continuePrimaryAction()
+        session.moveActiveHero(by: .down)
+
+        XCTAssertEqual(session.screen, .campaignVictory)
+        XCTAssertEqual(session.unlockedHeroes.map(\.id), ["wizard"])
+
+        session.continuePrimaryAction()
+        XCTAssertEqual(session.screen, .title)
+        XCTAssertEqual(session.availableHeroes.map(\.id), ["knight", "archer", "rogue", "wizard"])
+
+        session.toggleHeroSelection("knight")
+        session.toggleHeroSelection("wizard")
+        XCTAssertEqual(session.selectedHeroes.count, 3)
+        XCTAssertTrue(session.selectedHeroes.contains(where: { $0.id == "wizard" }))
+
+        session.continuePrimaryAction()
+        session.continuePrimaryAction()
+        XCTAssertTrue(session.encounter?.heroes.contains(where: { $0.id == "wizard" }) == true)
+    }
+
     func testTitleAdvancesToFirstBriefingAndBattle() {
         var session = GameSession(content: .mvp)
 
