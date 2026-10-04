@@ -51,6 +51,7 @@ public struct GameContent: Equatable, Sendable {
         levels: [LevelDefinition]
     ) {
         self.starterHeroes = starterHeroes
+        // An empty starter roster intentionally yields a zero-sized party.
         self.partySizeLimit = min(max(1, partySizeLimit), starterHeroes.count)
         self.unlockableHeroes = unlockableHeroes
         self.levels = levels

@@ -261,6 +261,24 @@ final class GameSessionTests: XCTestCase {
         XCTAssertEqual(session.encounter?.turnCount, 2)
     }
 
+    func testRangedHeroCanDamageWallFromWithinRange() {
+        let content = GameContent(
+            starterHeroes: [
+                CombatantBlueprint(id: "archer", name: "Archer", symbol: "A", attack: 3, range: 5, agility: 1, maxHP: 10)
+            ],
+            levels: [
+                LevelDefinition(id: 1, title: "Ranged Wall", summary: "Test ranged wall damage.", rows: 5, columns: 3, wallHP: 10, enemies: [])
+            ]
+        )
+        var session = GameSession(content: content)
+        session.continuePrimaryAction()
+        session.continuePrimaryAction()
+
+        session.attack(in: .down)
+
+        XCTAssertEqual(session.encounter?.wallHP, 7)
+    }
+
     func testEnemyTargetingBreaksDistanceTiesDeterministically() {
         let content = GameContent(
             starterHeroes: [
@@ -292,7 +310,7 @@ final class GameSessionTests: XCTestCase {
         XCTAssertEqual(session.encounter?.heroes.first?.hp, 9)
     }
 
-    func testEnemySpawnIsClampedOffWallRow() {
+    func testEnemySpawnIsClampedOffWallRow() throws {
         let content = GameContent(
             starterHeroes: [
                 CombatantBlueprint(id: "hero", name: "Hero", symbol: "H", attack: 2, range: 1, agility: 1, maxHP: 10)
@@ -315,8 +333,10 @@ final class GameSessionTests: XCTestCase {
         session.continuePrimaryAction()
         session.continuePrimaryAction()
 
-        XCTAssertEqual(session.encounter?.enemies.first?.position, GridPoint(x: 2, y: 2))
-        XCTAssertEqual(session.encounter?.tile(at: GridPoint(x: 2, y: 2)), .enemy(session.encounter!.enemies.first!))
+        let encounter = try XCTUnwrap(session.encounter)
+        let enemy = try XCTUnwrap(encounter.enemies.first)
+        XCTAssertEqual(enemy.position, GridPoint(x: 2, y: 2))
+        XCTAssertEqual(encounter.tile(at: GridPoint(x: 2, y: 2)), .enemy(enemy))
     }
 
     private func sessionAfterWizardUnlock() -> GameSession {

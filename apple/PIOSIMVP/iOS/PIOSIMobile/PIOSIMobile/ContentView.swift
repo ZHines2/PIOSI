@@ -83,6 +83,7 @@ struct ContentView: View {
                             RoundedRectangle(cornerRadius: 14, style: .continuous)
                                 .fill(Color.white.opacity(isSelected ? 0.12 : 0.05))
                         )
+                        .accessibilityElement(children: .ignore)
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel("\(isSelected ? "Remove" : "Add") \(hero.name) \(isSelected ? "from" : "to") squad")
@@ -95,7 +96,10 @@ struct ContentView: View {
     private var stageCopy: String {
         switch viewModel.screen {
         case .title:
-            return "Begin with \(viewModel.starterHeroNames.joined(separator: ", ")). Choose \(viewModel.partySizeLimit) heroes from your available roster."
+            let starterNames = viewModel.starterHeroNames.joined(separator: ", ")
+            return starterNames.isEmpty
+                ? "No heroes are available for this campaign."
+                : "Begin with \(starterNames). Choose \(viewModel.partySizeLimit) heroes from your available roster."
         case .briefing:
             return "Prepare your squad, break through the wall, and press on to the next encounter."
         case .encounterVictory:
@@ -187,6 +191,8 @@ private struct BattleScreen: View {
                 }
                 .padding(12)
                 .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Color.white.opacity(hero.isAlive ? 0.06 : 0.03)))
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(hero.summaryLine)
             }
         }
     }

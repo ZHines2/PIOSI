@@ -373,13 +373,17 @@ public struct GameSession: Equatable, Sendable {
     }
 
     private mutating func advanceTurn(encounter: inout EncounterState) {
+        guard screen == .battle else {
+            self.encounter = encounter
+            return
+        }
         if encounter.liveHeroes.isEmpty {
             finishDefeat(levelIndex: currentLevelIndex ?? 0, encounter: encounter)
             return
         }
 
         var nextIndex = encounter.activeHeroIndex + 1
-        while true {
+        for _ in encounter.heroes.indices {
             if nextIndex >= encounter.heroes.count {
                 encounter.turnCount += 1
                 runEnemyPhase(encounter: &encounter)
@@ -399,6 +403,7 @@ public struct GameSession: Equatable, Sendable {
             }
             nextIndex += 1
         }
+        finishDefeat(levelIndex: currentLevelIndex ?? 0, encounter: encounter)
     }
 
     private func runEnemyPhase(encounter: inout EncounterState) {
