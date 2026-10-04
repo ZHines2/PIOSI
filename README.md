@@ -5,6 +5,17 @@ THE SAGAS CONTINUE
 
 PIOSI CORE is a clean, data-driven version of the game designed to be wrapped with [Tauri](https://tauri.app/) and shipped, then expanded over time by updating content data files — no engine changes required.
 
+## Swift MVP
+
+A first-pass, mobile-first Swift starter now lives in `apple/PIOSIMVP`.
+
+- `Shared/PIOSICore/` contains the lite campaign state/model layer.
+- `iOS/PIOSIMobile/` contains the SwiftUI iPhone shell.
+- `Tests/PIOSICoreTests/` validates the core progression and combat loop with `swift test`.
+- The starting squad is Knight, Archer, and Rogue; Wizard unlocks after the first two encounters. The iOS app saves unlocked heroes, the selected squad, and encounter wins across launches; active battles are not saved.
+
+See `apple/PIOSIMVP/README.md` for what was ported in phase 1 and what remains for phase 2.
+
 The runtime now also includes:
 
 - `gameModel.js` for normalized combat state, stable IDs, battle phases, and deterministic RNG
